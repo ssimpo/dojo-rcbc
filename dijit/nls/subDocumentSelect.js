@@ -1,0 +1,5 @@
+define({
+	root: ({
+		"buttonAdd": "Add"
+	})
+});

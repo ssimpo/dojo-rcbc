@@ -1,0 +1,73 @@
+<div data-dojo-attach-point="containerNode">
+<div class="rcbcAgeRangeHiddenDiv" data-dojo-attach-point="hiddenDiv">
+	<div data-dojo-attach-point="fromBlock">
+		<input
+			data-dojo-type="dijit/form/NumberSpinner"
+			data-dojo-attach-point="fromAgeNode"
+			data-dojo-props="value:0,constraints:{min:0,max:125}"
+			class="rcbcAgeRangeAgeSpinner"
+		/>${i18n.yearsPostfix}&nbsp;
+		<input
+			data-dojo-type="dijit/form/NumberSpinner"
+			data-dojo-attach-point="fromMonthsNode"
+			data-dojo-props="value:0,constraints:{min:0,max:12}"
+			class="rcbcAgeRangeAgeSpinner"
+		/>${i18n.monthsPostfix}
+	</div>
+	<div data-dojo-attach-point="toBlock" class="rcbcAgeRangeToBlock">
+		<input
+			data-dojo-type="dijit/form/NumberSpinner"
+			data-dojo-attach-point="toAgeNode"
+			data-dojo-props="value:0,constraints:{min:0,max:125}"
+			class="rcbcAgeRangeAgeSpinner"
+		/>${i18n.yearsPostfix}&nbsp;
+		<input
+			data-dojo-type="dijit/form/NumberSpinner"
+			data-dojo-attach-point="toMonthsNode"
+			data-dojo-props="value:0,constraints:{min:0,max:12}"
+			class="rcbcAgeRangeAgeSpinner"
+		/>${i18n.monthsPostfix}
+	</div>
+	<table data-dojo-attach-point="hiddenTable"></table>
+</div>
+<table
+	summary="Table to display a grid of age range fields"
+	class="rcbcAgeRangeTable"
+><tbody data-dojo-attach-point="ageRangeTable">
+	<tr>
+		<th
+			rowspan="2"
+			class="rcbcAgeRangeSelectorTh"
+			data-dojo-attach-point="selectorCell"
+		>
+			<input
+				data-dojo-type="dijit/form/Select"
+				data-dojo-attach-point="selectorNode"
+				data-dojo-props="options:[
+					{label:'${i18n.aboveAge}',value:'above', selected:true},
+					{label:'${i18n.belowAge}',value:'below'},
+					{label:'${i18n.betweenAge}',value:'between'}
+				]"
+				class="rcbcAgeRangeSelector"
+			/>
+		</th>
+		<th
+			data-dojo-attach-point="fromTitleCell"
+			class="rcbcAgeRangeCell"
+		>&nbsp;</th>
+		<td
+			data-dojo-attach-point="fromCell"
+			class="rcbcAgeRangeCell"
+		>&nbsp;</td>
+	</tr><tr data-dojo-attach-point="secondRow">
+		<th
+			data-dojo-attach-point="toTitleCell"
+			class="rcbcAgeRangeCell"
+		>&nbsp;</th>
+		<td
+			data-dojo-attach-point="toCell"
+			class="rcbcAgeRangeCell"
+		>&nbsp;</td>
+	</tr>
+</tbody></table>
+</div>
