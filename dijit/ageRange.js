@@ -27,7 +27,7 @@ define([
 			this._init();
 		},
 		
-		_init: function(){
+		_init: function() {
 			on(
 				this.selectorNode,
 				"change",
