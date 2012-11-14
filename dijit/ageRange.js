@@ -27,7 +27,7 @@ define([
 			this._init();
 		},
 		
-		_init: function() {
+		_init: function(){
 			on(
 				this.selectorNode,
 				"change",
@@ -37,7 +37,7 @@ define([
 			this._handleSelector();
 		},
 		
-		_getValueAttr: function(){
+		_getValueAttr: function (){
 			var selectValue = this.selectorNode.get("value");
 			selectValue = selectValue.charAt(0).toUpperCase() + selectValue.slice(1);
 			return this["_getAttValue"+selectValue]();
@@ -66,7 +66,7 @@ define([
 					"from": this.fromAgeNode.get("value"),
 					"to": this.toAgeNode.get("value")
 				},
-				"months": {
+				"months":{
 					"from": this.fromMonthsNode.get("value"),
 					"to": this.toMonthsNode.get("value")
 				}
