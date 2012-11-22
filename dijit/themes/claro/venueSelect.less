@@ -1,0 +1,128 @@
+.ROUNDED-CORNERS-TOP (@radius: 5px) {
+  border-top-left-radius: @radius;
+  border-top-right-radius: @radius;
+  -webkit-border-top-left-radius: @radius;
+  -webkit-border-top-right-radius: @radius;
+  -moz-border-radius-topleft: @radius;
+  -moz-border-radius-topright: @radius;
+}
+
+.ROUNDED-CORNERS-BOTTOM (@radius: 5px) {
+  border-bottom-left-radius: @radius;
+  border-bottom-right-radius: @radius;
+  -webkit-border-bottom-left-radius: @radius;
+  -webkit-border-bottom-right-radius: @radius;
+  -moz-border-radius-bottomleft: @radius;
+  -moz-border-radius-bottomright: @radius;
+}
+
+.ROUNDED-CORNERS (@radius: 5px) {
+    .ROUNDED-CORNERS-TOP(@radius);
+    .ROUNDED-CORNERS-BOTTOM(@radius);
+}
+
+@grey1: #efefef;
+@grey2: #dddddd;
+
+.dojoRcbcDijitVenueSelect {
+	background-color: #ffffff;
+	width: 100%;
+	
+	.dojoRcbcDijitVenueSelectAddCell {
+		width: 10%;
+		vertical-align: top;
+	}
+	
+	.dojoRcbcDijitVenueSelectSelectionCell {
+		vertical-align: top;
+	}
+	
+	.dojoRcbcDijitVenueSelectAdd {
+		float: left;
+		display: block !important;
+		margin-right:25px;
+	}
+	
+	.dojoRcbcDijitVenueSelectSelection {
+		padding: 5px;
+	}
+}
+
+.dojoRcbcDijitVenueSelectDialog{
+	margin: 10px;
+}
+
+.dijitDialog {
+	//background-color: #ffffff;
+}
+
+.dojoRcbcDijitLinkedIdListPlaceHolder {
+	margin: 5px;
+}
+
+.dojoRcbcDijitLinkedIdListItem {
+	
+	.dojoRcbcDijitLinkedIdListItemEntry {
+		float: left;
+		clear: right;
+		margin: 5px;
+	}
+	
+	.dijitButton {
+		float: left;
+		font-size: 0.8em;
+		margin: 5px;
+		
+		.dijitButtonNodeLinkedIdList:hover {
+			border: 1px solid #000000;
+			background-color: #f0f0f0;
+			.ROUNDED-CORNERS(3px);
+		}
+		
+		.dijitButtonNodeLinkedIdList {
+			border: 1px solid #f0f0f0;
+		}
+	}
+}
+
+.dojoRcbcDijitDialog {
+	width: 50%;
+}
+
+.dojoRcbcDijitVenueSelectDialog {
+	font-size: 0.9em;
+	
+	label {
+		font-weight: bold;
+	}
+	
+	table.standard {
+		width: 96%;
+		
+		td, th {
+			padding: 5px;
+		}
+		
+		tr.lgrey th, tr.lgrey td {
+			background-color: @grey1;
+		}
+		
+		tr.dgrey th, tr.dgrey td {
+			background-color: @grey2;
+		}
+	}
+	
+	.smallGreyBox {
+		margin: 5px;
+		margin-left: 0px;
+		text-align: left;
+		padding: 5px;
+		display: inline-block;
+	}
+}
+
+.dijitDialogPaneContent {
+	overflow: scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}

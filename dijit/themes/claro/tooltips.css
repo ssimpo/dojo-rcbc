@@ -1,0 +1,9 @@
+.dojoDijitHelperTooltip{width:200px;background-color:#ccddff;font-size:0.9em;padding:5px;margin:0px;}.dojoDijitHelperTooltip .label{color:#0000ff;}
+.dojoDijitErrorTooltip{width:200px;background-color:#ffcccc;font-size:0.9em;padding:5px;margin:0px;}.dojoDijitErrorTooltip .label{color:#ff0000;}
+.dojoDijitMissingTooltip{width:200px;background-color:#ffcc99;font-size:0.9em;padding:5px;margin:0px;}.dojoDijitMissingTooltip .label{color:#333333;}
+.dojoDijitInfoTooltip{width:200px;background-color:#ddffdd;font-size:0.9em;padding:5px;margin:0px;}.dojoDijitInfoTooltip .label{color:#009900;}
+.dojoDijitInfoTooltip table{border-collapse:collapse;}.dojoDijitInfoTooltip table td,.dojoDijitInfoTooltip table th{vertical-align:top;padding:3px;}
+.dojoDijitInfoTooltip table .r{border-right:1px solid #009900;}
+.dojoDijitInfoTooltip table .l{border-left:1px solid #009900;}
+.dojoDijitInfoTooltip table .b{border-bottom:1px solid #009900;}
+.dojoDijitInfoTooltip table .t{border-top:1px solid #009900;}
