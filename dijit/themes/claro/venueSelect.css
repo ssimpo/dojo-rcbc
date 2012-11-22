@@ -1,0 +1,16 @@
+.dojoRcbcDijitVenueSelect{background-color:#ffffff;width:100%;}.dojoRcbcDijitVenueSelect .dojoRcbcDijitVenueSelectAddCell{width:10%;vertical-align:top;}
+.dojoRcbcDijitVenueSelect .dojoRcbcDijitVenueSelectSelectionCell{vertical-align:top;}
+.dojoRcbcDijitVenueSelect .dojoRcbcDijitVenueSelectAdd{float:left;display:block !important;margin-right:25px;}
+.dojoRcbcDijitVenueSelect .dojoRcbcDijitVenueSelectSelection{padding:5px;}
+.dojoRcbcDijitVenueSelectDialog{margin:10px;}
+.dojoRcbcDijitLinkedIdListPlaceHolder{margin:5px;}
+.dojoRcbcDijitLinkedIdListItem .dojoRcbcDijitLinkedIdListItemEntry{float:left;clear:right;margin:5px;}
+.dojoRcbcDijitLinkedIdListItem .dijitButton{float:left;font-size:0.8em;margin:5px;}.dojoRcbcDijitLinkedIdListItem .dijitButton .dijitButtonNodeLinkedIdList:hover{border:1px solid #000000;background-color:#f0f0f0;border-top-left-radius:3px;border-top-right-radius:3px;-webkit-border-top-left-radius:3px;-webkit-border-top-right-radius:3px;-moz-border-radius-topleft:3px;-moz-border-radius-topright:3px;border-bottom-left-radius:3px;border-bottom-right-radius:3px;-webkit-border-bottom-left-radius:3px;-webkit-border-bottom-right-radius:3px;-moz-border-radius-bottomleft:3px;-moz-border-radius-bottomright:3px;}
+.dojoRcbcDijitLinkedIdListItem .dijitButton .dijitButtonNodeLinkedIdList{border:1px solid #f0f0f0;}
+.dojoRcbcDijitDialog{width:50%;}
+.dojoRcbcDijitVenueSelectDialog{font-size:0.9em;}.dojoRcbcDijitVenueSelectDialog label{font-weight:bold;}
+.dojoRcbcDijitVenueSelectDialog table.standard{width:96%;}.dojoRcbcDijitVenueSelectDialog table.standard td,.dojoRcbcDijitVenueSelectDialog table.standard th{padding:5px;}
+.dojoRcbcDijitVenueSelectDialog table.standard tr.lgrey th,.dojoRcbcDijitVenueSelectDialog table.standard tr.lgrey td{background-color:#efefef;}
+.dojoRcbcDijitVenueSelectDialog table.standard tr.dgrey th,.dojoRcbcDijitVenueSelectDialog table.standard tr.dgrey td{background-color:#dddddd;}
+.dojoRcbcDijitVenueSelectDialog .smallGreyBox{margin:5px;margin-left:0px;text-align:left;padding:5px;display:inline-block;}
+.dijitDialogPaneContent{overflow:scroll;overflow-x:hidden;overflow-y:scroll;}
