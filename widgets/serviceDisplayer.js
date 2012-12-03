@@ -16,12 +16,13 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-construct",
 	"dojo/_base/array",
-	"./serviceDisplayer/contactsTable"
+	"./serviceDisplayer/contactsTable",
+	"./serviceDisplayer/venueDisplayer"
 ], function(
 	declare, _widget, _templated, _wTemplate, i18n, strings, template,
 	request, lang, domConstr, array,
 	
-	contactsTable
+	contactsTable, venueDisplayer
 ) {
 	"use strict";
 	
@@ -65,6 +66,7 @@ define([
 		},
 		
 		_jsonLoaded: function(data){
+			console.log(data);
 			this.data = data;
 			this._createContent();
 		},
@@ -74,6 +76,7 @@ define([
 			domConstr.place(this._createDescription(), this.domNode);
 			domConstr.place(this._createKeyFeatures(), this.domNode);
 			domConstr.place(this._createContactsTable(), this.domNode);
+			domConstr.place(this._createVenues(), this.domNode);
 		},
 		
 		_getField: function(fieldName){
@@ -84,6 +87,32 @@ define([
 			}
 			
 			return lang.trim(value);
+		},
+		
+		_createVenues: function(){
+			var div = domConstr.create("div");
+			
+			if(this.data.hasOwnProperty("venues")){
+				array.forEach(this.data.venues, function(venue){
+					var venueDom = this._createVenue(venue);
+					if(venueDom !== null){
+						domConstr.place(venueDom, div);
+					}
+				},this);
+			}
+			
+			return div;
+		},
+		
+		_createVenue: function(venue){
+			var venueDom = null;
+			
+			if(venue.venueId != ""){
+				var venueWidget = new venueDisplayer(venue);
+				venueDom = venueWidget.domNode;
+			}
+			
+			return venueDom;
 		},
 		
 		_createContactsTable: function(){
