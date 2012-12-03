@@ -17,12 +17,15 @@ define([
 	"dojo/dom-construct",
 	"dojo/_base/array",
 	"./serviceDisplayer/contactsTable",
-	"./serviceDisplayer/venueDisplayer"
+	"./serviceDisplayer/venueDisplayer",
+	"./serviceDisplayer/costTable",
+	"./serviceDisplayer/accessTable",
+	"./serviceDisplayer/serviceHoursTable"
 ], function(
 	declare, _widget, _templated, _wTemplate, i18n, strings, template,
 	request, lang, domConstr, array,
 	
-	contactsTable, venueDisplayer
+	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
 ) {
 	"use strict";
 	
@@ -77,6 +80,9 @@ define([
 			domConstr.place(this._createKeyFeatures(), this.domNode);
 			domConstr.place(this._createContactsTable(), this.domNode);
 			domConstr.place(this._createVenues(), this.domNode);
+			domConstr.place(this._createCostTable(), this.domNode);
+			domConstr.place(this._createAccessTable(), this.domNode);
+			domConstr.place(this._createServiceHoursTable(), this.domNode);
 		},
 		
 		_getField: function(fieldName){
@@ -87,6 +93,90 @@ define([
 			}
 			
 			return lang.trim(value);
+		},
+		
+		_createServiceHoursTable: function(){
+			var div = domConstr.create("div");
+			
+			if(this.data.hasOwnProperty("servicePeriods")){
+				if(this.data.servicePeriods.length > 0){
+					var widget = new serviceHoursTable({
+						"data": this.data.servicePeriods
+					});
+					
+					return widget.domNode;
+				}
+			}
+			
+			return domConstr.create("div");
+		},
+		
+		_createAccessTable: function(){
+			if(this._hasAccessDetails()){
+				var widget = new accessTable({
+					"data": this.data
+				});
+					
+				return widget.domNode;
+			}
+			
+			return domConstr.create("div");
+		},
+		
+		_hasAccessDetails: function(){
+			if(this.data.appointmentOnly == "Yes"){
+				if(this.data.appointmentOnlyDetails != ""){
+					return true;
+				}
+			}
+			if(this.data.dropIn == "Yes"){
+				if(this.data.dropInDetails != ""){
+					return true;
+				}
+			}
+			if(this.data.genderTarget == "Yes"){
+				if(this.data.genderTargetType != ""){
+					return true;
+				}
+			}
+			if(this.data.geographicRestriction == "Yes"){
+				if(this.data.geographicCoverage != ""){
+					return true;
+				}
+			}
+			if(this.data.referralOnly == "Yes"){
+				if(this.data.referralOnlyDetails != ""){
+					return true;
+				}
+			}
+			if(this.data.ageTarget == "Yes"){
+				if((this.data.age1 != "") || (this.data.age2 != "")){
+					return true;
+				}
+				if((this.data.age1Months != "") || (this.data.age2Months != "")){
+					return true;
+				}
+			}
+			if(this.data.accessDetails != ""){
+				return true;
+			}
+			return false;
+		},
+		
+		_createCostTable: function(){
+			var div = domConstr.create("div");
+			
+			if(this.data.hasOwnProperty("costs")){
+				if(this.data.costs.length > 0){
+					var widget = new costTable({
+						"data": this.data.costs
+					});
+					
+					return widget.domNode;
+				}
+			}
+			
+			return domConstr.create("div");
 		},
 		
 		_createVenues: function(){
