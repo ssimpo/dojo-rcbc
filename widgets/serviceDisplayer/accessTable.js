@@ -30,6 +30,8 @@ define([
 		
 		"data": {},
 		
+		"_tableIsBlank": true,
+		
 		postCreate: function(){
 			this._init();
 		},
@@ -41,49 +43,63 @@ define([
 			this._addDropIn();
 			this._addAge();
 			this._addOther();
+			
+			if(!this._tableIsBlank){
+				this._writeLastRow();
+			}
 		},
 		
 		_addDetails: function(){
 			if(this.data.accessDetails != ""){
-				domConstr.create("span", {
+				domConstr.create("p", {
 					"innerHTML": this.data.accessDetails
-				}, this.domNode);
+				}, this.domNode, "first");
+				this._tableIsBlank = false;
 			}
 		},
 		
 		_addReferrel: function(){
 			if(this.data.referralOnly == "Yes"){
-				var tr = domConstr.create("tr", {}, this.domNode);
+				var tr = domConstr.create("tr", {}, this.tableNode);
 				domConstr.create("th", {
-					"innerHTML": "By referral only:"
+					"innerHTML": "By referral only:",
+					"class": "r b p30"
 				}, tr);
 				domConstr.create("td", {
-					"innerHTML": this.data.referralOnlyDetails
+					"innerHTML": this.data.referralOnlyDetails,
+					"class": "b"
 				}, tr);
+				this._tableIsBlank = false;
 			}
 		},
 		
 		_addAppointments: function(){
 			if(this.data.appointmentOnly == "Yes"){
-				var tr = domConstr.create("tr", {}, this.domNode);
+				var tr = domConstr.create("tr", {}, this.tableNode);
 				domConstr.create("th", {
-					"innerHTML": "By appointnent only:"
+					"innerHTML": "By appointnent only:",
+					"class": "r b p30"
 				}, tr);
 				domConstr.create("td", {
-					"innerHTML": this.data.appointmentOnlyDetails
+					"innerHTML": this.data.appointmentOnlyDetails,
+					"class": "b"
 				}, tr);
+				this._tableIsBlank = false;
 			}
 		},
 		
 		_addDropIn: function(){
 			if(this.data.dropIn == "Yes"){
-				var tr = domConstr.create("tr", {}, this.domNode);
+				var tr = domConstr.create("tr", {}, this.tableNode);
 				domConstr.create("th", {
-					"innerHTML": "Dropin details:"
+					"innerHTML": "Dropin details:",
+					"class": "r b p30"
 				}, tr);
 				domConstr.create("td", {
-					"innerHTML": this.data.dropInDetails
+					"innerHTML": this.data.dropInDetails,
+					"class": "b"
 				}, tr);
+				this._tableIsBlank = false;
 			}
 		},
 		
@@ -94,9 +110,10 @@ define([
 		
 		_addOther: function(){
 			if(this.ageTarget == "Yes"){
-				var tr = domConstr.create("tr", {}, this.domNode);
+				var tr = domConstr.create("tr", {}, this.tableNode);
 				domConstr.create("th", {
-					"innerHTML": "Other access details:"
+					"innerHTML": "Other access details:",
+					"class": "r b p30"
 				}, tr);
 				
 				if(this.data.ageTargetType == "Above"){
@@ -120,9 +137,10 @@ define([
 				}
 				
 				domConstr.create("td", {
-					"innerHTML": html
+					"innerHTML": html,
+					"class": "b"
 				}, tr);
-				
+				this._tableIsBlank = false;
 			}
 		},
 		
@@ -139,7 +157,18 @@ define([
 			}
 			
 			return "";
-		}
+		},
+		
+		_writeLastRow: function(){
+			var tr = domConstr.create("tr", {}, this.tableNode);
+			domConstr.create("td", {
+				"innerHTML": "&nbsp;",
+				"class": "r"
+			}, tr);
+			domConstr.create("td", {
+				"innerHTML": "&nbsp;",
+			}, tr);
+		},
 	});
 	
 	return construct;
