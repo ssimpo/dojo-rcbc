@@ -48,31 +48,66 @@ define([
 		
 		_createAnchor: function(){
 			var details = lang.trim(this.details);
-			if(details !== ""){
+			if(!this._isBlank(details)){
 				domAttr.set(this.anchorNode, "href", this._parseUrl(details));
 				domAttr.set(this.anchorNode, "innerHTML", details);
 			}
 		},
 		
 		_createDescription: function(){
-			var description = lang.trim(this.description);
-			if(description !== ""){
-				if(this.descriptionNode === null){
-					this.descriptionNode = domConstr.create("div", {
-					}, this.detailsCell);
-				}
-				
-				domAttr.set(this.descriptionNode, "innerHTML", description);
+			if(!this._isBlank(this.description)){
+				this._addDescriptionNode();
+				domAttr.set(
+					this.descriptionNode,
+					"innerHTML",
+					lang.trim(this.description)
+				);
 			}else{
-				if(this.descriptionNode !== null){
-					domConstr.destroy(this.descriptionNode);
-					this.descriptionNode = null;
-				}
+				this._removeDescriptionNode();
+			}
+		},
+		
+		_addDescriptionNode: function(){
+			if(this._isBlank(this.descriptionNode)){
+				this.descriptionNode = domConstr.create("div", {
+				}, this.detailsCell);
+			}
+		},
+		
+		_removeDescriptionNode: function(){
+			if(!this._isBlank(this.descriptionNode)){
+				domConstr.destroy(this.descriptionNode);
+				this.descriptionNode = null;
 			}
 		},
 		
 		_parseUrl: function(url){
 			return "mailto:"+url;
+		},
+		
+		_isBlank: function(value){
+			if((value === null) || (value === undefined) || (value === "")){
+				return true;
+			}
+			
+			if(toString.call(value) === '[object String]'){
+				if(lang.trim(value) === ""){
+					return true;
+				}
+			}else if(Object.prototype.toString.call(value) === '[object Object]'){
+				for(var key in map){
+					if(map.hasOwnProperty(key)){
+						return false;
+					}
+				}
+				return true;
+			}else if(Object.prototype.toString.call(value) === '[object Array]'){
+				if(value.length == 0){
+					return true;
+				}
+			}
+			
+			return false;
 		}
 	});
 	

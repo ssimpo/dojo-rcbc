@@ -210,7 +210,8 @@ define([
 				var contacts = this.data.contacts;
 				if(contacts.length > 0){
 					var contactsWidget = new contactsTable({
-						"data":contacts
+						"data":contacts,
+						"title": strings.contactsTitle
 					});
 					
 					return contactsWidget.domNode;
