@@ -93,7 +93,7 @@ define([
 		},
 		
 		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "")){
+			if((value === null) || (value === undefined) || (value === "") || (value === false)){
 				return true;
 			}
 			

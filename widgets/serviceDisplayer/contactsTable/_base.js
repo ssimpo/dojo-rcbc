@@ -49,11 +49,11 @@ define([
 		},
 		
 		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "")){
+			if((value === null) || (value === undefined) || (value === "") || (value === false)){
 				return true;
 			}
 			
-			if(toString.call(value) === '[object String]'){
+			if(Object.prototype.toString.call(value) === '[object String]'){
 				if(lang.trim(value) === ""){
 					return true;
 				}
