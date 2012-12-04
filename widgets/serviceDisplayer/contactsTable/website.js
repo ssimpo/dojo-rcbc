@@ -6,7 +6,7 @@
 //		Stephen Simpson <me@simpo.org>, <http://simpo.org>
 define([
 	"dojo/_base/declare",
-	"dijit/_WidgetBase",
+	"./_base",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
 	"dojo/i18n",
@@ -16,12 +16,12 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-construct"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	declare, _base, _templated, _wTemplate, i18n, strings, template,
 	domAttr, lang, domConstr
 ) {
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([_base, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -54,63 +54,11 @@ define([
 			}
 		},
 		
-		_createDescription: function(){
-			if(!this._isBlank(this.description)){
-				this._addDescriptionNode();
-				domAttr.set(
-					this.descriptionNode,
-					"innerHTML",
-					lang.trim(this.description)
-				);
-			}else{
-				this._removeDescriptionNode();
-			}
-		},
-		
-		_addDescriptionNode: function(){
-			if(this._isBlank(this.descriptionNode)){
-				this.descriptionNode = domConstr.create("div", {
-				}, this.detailsCell);
-			}
-		},
-		
-		_removeDescriptionNode: function(){
-			if(!this._isBlank(this.descriptionNode)){
-				domConstr.destroy(this.descriptionNode);
-				this.descriptionNode = null;
-			}
-		},
-		
 		_parseUrl: function(url){
 			if((url.indexOf("http://") !== -1 || url.indexOf("https://") !== -1)){
 				return url;
 			}
 			return "http://"+url;
-		},
-		
-		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "")){
-				return true;
-			}
-			
-			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value) === ""){
-					return true;
-				}
-			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				for(var key in map){
-					if(map.hasOwnProperty(key)){
-						return false;
-					}
-				}
-				return true;
-			}else if(Object.prototype.toString.call(value) === '[object Array]'){
-				if(value.length == 0){
-					return true;
-				}
-			}
-			
-			return false;
 		}
 	});
 	
