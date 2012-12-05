@@ -9,18 +9,24 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_tableMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/accessTable",
 	"dojo/text!./views/accessTable.html",
 	"dojo/dom-construct",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"dojo/_base/array"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
-	domConstr, lang
+	declare,
+	_widget, _templated, _wTemplate, _tableMixin,
+	i18n, strings, template,
+	domConstr, lang, array
 ){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _tableMixin
+	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -31,11 +37,9 @@ define([
 		
 		"data": {},
 		"title": "",
+		"columnWidths": [30],
 		
 		"_tableIsBlank": true,
-		
-		"_trueValues": ["yes", "true", "on", "checked", "ticked", "1"],
-		"_falseValues": ["no", "false", "off", "unchecked", "unticked", "0"],
 		
 		postCreate: function(){
 			this._init();
@@ -77,17 +81,16 @@ define([
 			}
 			
 			if(this._isTrue(test) && !this._isBlank(details)){
-				var tr = domConstr.create("tr", {}, this.tableNode);
-				domConstr.create("th", {
-					"innerHTML": title,
-					"class": "r b p30"
-				}, tr);
-				domConstr.create("td", {
-					"innerHTML": details,
-					"class": "b"
-				}, tr);
+				domConstr.place(
+					this._createTr([title, details]),
+					this.tableNode
+				);
 				this._tableIsBlank = false;
 			}
+		},
+		
+		_writeLastRow: function(){
+			domConstr.place(this._createLastTr(2), this.tableNode);
 		},
 		
 		_addReferrel: function(){
@@ -198,126 +201,6 @@ define([
 			}
 			
 			return "";
-		},
-		
-		_writeLastRow: function(){
-			var tr = domConstr.create("tr", {}, this.tableNode);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-				"class": "r"
-			}, tr);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-			}, tr);
-		},
-		
-		_isTrue: function(value){
-			if(value === true){
-				return true;
-			}
-			if(value === 1){
-				return true;
-			}
-			
-			try{
-				var stringValue = value.toString();
-				for(var i = 0; i < this._trueValues.length; i++){
-					if(this._isEqual(stringValue, this._trueValues[i])){
-						return true;
-					}
-				}
-			}catch(e){
-				return false;
-			}
-			
-			return false;
-		},
-		
-		_isFalse: function(value){
-			if(value === false){
-				return true;
-			}
-			if(value === 0){
-				return true;
-			}
-			if(this._isBlank(value)){
-				return true;
-			}
-			try{
-				var stringValue = value.toString();
-				for(var i = 0; i < this._falseValues.length; i++){
-					if(this._isEqual(stringValue, this._falseValues[i])){
-						return true;
-					}
-				}
-			}catch(e){
-				return false;
-			}
-			
-			return false;
-		},
-		
-		_isEqual: function(value1, value2){
-			if(value1 === value2){
-				return true;
-			}else if((Object.prototype.toString.call(value1) === '[object String]') && (Object.prototype.toString.call(value2) === '[object String]')){
-				return (lang.trim(value1.toLowerCase()) == lang.trim(value2.toLowerCase()));
-			}else if(this._isBlank(value1) && this._isBlank(value2)){
-				return true;
-			}
-			
-			return false;
-		},
-		
-		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "") || (value === false)){
-				return true;
-			}
-			
-			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value) === ""){
-					return true;
-				}
-			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				return (this._isEmptyObject(value) || this._isBlankObject(value));
-			}else if(Object.prototype.toString.call(value) === '[object Array]'){
-				if(value.length == 0){
-					return true;
-				}else{
-					return this._isBlankArray(value);
-				}
-			}
-			
-			return false;
-		},
-		
-		_isBlankArray: function(ary){
-			for(var i = 0; i < ary.length; i++){
-				if(!this._isBlank(ary[i])){
-					return false;
-				}
-			}
-			
-			return true;
-		},
-		
-		_isEmptyObject: function(obj){
-			for(var key in obj){
-				if(obj.hasOwnProperty(key)){
-					return false;
-				}
-			}
-			return true;
-		},
-		
-		_isBlankObject: function(obj){
-			for(var key in obj){
-				if(!this._isBlank(obj[key])){
-					return false
-				}
-			}
-			
-			return true;
 		}
 	});
 	
