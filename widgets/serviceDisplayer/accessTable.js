@@ -84,7 +84,7 @@ define([
 		
 		_addReferrel: function(){
 			this._addRow(
-				"By referral only:",
+				strings.referrelOnly + ":",
 				this.data.referralOnly,
 				this.data.referralOnlyDetails
 			);
@@ -92,7 +92,7 @@ define([
 		
 		_addAppointments: function(){
 			this._addRow(
-				"By appointnent only:",
+				strings.appointmentOnly + ":",
 				this.data.appointmentOnly,
 				this.data.appointmentOnlyDetails
 			);
@@ -100,7 +100,7 @@ define([
 		
 		_addDropIn: function(){
 			this._addRow(
-				"Dropin details:",
+				strings.dropinDetails + ":",
 				this.data.dropIn,
 				this.data.dropInDetails
 			);
@@ -114,7 +114,7 @@ define([
 					age = this._getAgeBlock(2);
 				}
 				if(!this._isBlank(age)){
-					html += "above "+age;
+					html += strings.above + " "+age;
 				}
 			}else if(this._isEqual(this.data.ageTargetType, "Below")){
 				var age = this._getAgeBlock(1);
@@ -122,14 +122,14 @@ define([
 					age = this._getAgeBlock(2);
 				}
 				if(!this._isBlank(age)){
-					html += "below "+age;
+					html += strings.below + " " + age;
 				}
 			}else if(this._isEqual(this.data.ageTargetType, "Between")){
-				html += "between "+this._getAgeBlock(1)+" - "+this._getAgeBlock(2);
+				html += strings.between + " " + this._getAgeBlock(1)+" - "+this._getAgeBlock(2);
 			}
 				
 			this._addRow(
-				"Age target:",
+				strings.ageTarget+":",
 				this.data.ageTarget,
 				html
 			);
@@ -139,19 +139,19 @@ define([
 			var html = "";
 			if(this._isTrue(this.data.genderTarget) || this._isTrue(this.data.geographicRestriction)){
 				if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Male")){
-					html += "This is targetted towards men.  "
+					html += strings.restrictedToMen + ".  "
 				}else if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Female")){
-					html += "This is targetted towards women.  "
+					html += strings.restrictedToWomen + ".  "
 				}
 			}
 			
 			if(this._isTrue(this.data.geographicRestriction) && !this._isBlank(this.data.geographicCoverage)){
 				if(Object.prototype.toString.call(this.data.geographicCoverage) === '[object Array]'){
-					html += "Restricted to the following areas: " + this._combineListAsText(this.data.geographicCoverage) + ".  ";
+					html += strings.restrictedToAreas + ": " + this._combineListAsText(this.data.geographicCoverage) + ".  ";
 				}
 			}
 			
-			this._addRow("Other restrictions:", html);
+			this._addRow(strings.otherRestrictions+":", html);
 		},
 		
 		_combineListAsText: function(list, joiner, lastJoiner){
@@ -159,8 +159,8 @@ define([
 			
 			if(Object.prototype.toString.call(list) === '[object Array]'){
 				if(list.length > 0){
-					lastJoiner = ((lastJoiner === undefined) ? " and ": lastJoiner);
-					joiner = ((joiner === undefined) ? ", ": joiner);
+					lastJoiner = ((lastJoiner === undefined) ? strings.and : lastJoiner);
+					joiner = ((joiner === undefined) ? ", " : joiner);
 					
 					for(var i = 0; i < list.length; i++){
 						if(i == 0){
@@ -182,11 +182,11 @@ define([
 			var months = this.data["age"+no.toString()+"Months"];
 			
 			if((!this._isBlank(age)) && (!this._isBlank(months))){
-				return age+"yrs "+months+"mths";
+				return age + strings.yrs + " " + months + strings.mths;
 			}else if(!this._isBlank(age)){
-				return age+"yrs";
+				return age + strings.yrs;
 			}else if(!this._isBlank(months)){
-				return months+"mths";
+				return months + strings.mths;
 			}
 			
 			return "";
