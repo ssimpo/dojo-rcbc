@@ -9,13 +9,65 @@ define([
 	"../_variableTestMixin",
 	"dojo/dom-construct",
 	"dojo/_base/lang",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"dojo/dom-style",
+	"dojo/query"
 ], function(
-	declare, _variableTestMixin, domConstr, lang, array
-) {
+	declare, _variableTestMixin, domConstr, lang, array, domStyle, $
+){
 	"use strict";
 	
 	var construct = declare(_variableTestMixin, {
+		_tableIsEmpty: function(tableDom){
+			tableDom = this._getTableDom(tableDom);
+			
+			var trs = $("tr", tableDom);
+			if(trs.length == 0){
+				return true;
+			}
+			
+			var cells = $("td,th", tableDom);
+			var isBlank = true;
+			array.every(cells, function(cell){
+				if(!this._isBlank(cell.innerHTML)){
+					isBlank = false;
+					return false;
+				}
+				return true;
+			}, this);
+			
+			
+			return isBlank;
+		},
+		
+		_hasTitle: function(tableDom){
+			return ($("h2", this.domNode).length > 0);
+		},
+		
+		_getTableDom: function(tableDom){
+			if(tableDom === undefined){
+				if(this.tableNode !== undefined){
+					tableDom = this.tableNode;
+				}else{
+					return true;
+				}
+			}
+			
+			return tableDom;
+		},
+		
+		_hideTable: function(){
+			domStyle.set(this.domNode, "display", "none");
+		},
+		
+		_addTitle: function(){
+			if(!this._isBlank(this.title) && !this._hasTitle()){
+				domConstr.create("h2",{
+					"innerHTML": this.title + ":",
+				}, this.domNode, "first");
+			}
+		},
+		
 		_createTr: function(cells, lastRow){
 			lastRow = ((lastRow === undefined) ? false : lastRow);
 			var tr = domConstr.create("tr");

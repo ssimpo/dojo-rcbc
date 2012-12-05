@@ -48,9 +48,11 @@ define([
 		_init: function(){
 			if(!this._isBlank(this.data)){
 				this._createTableRows();
-				this._writeLastRow();
-				if(!this._isBlank(this.title)){
+				if(!this._tableIsEmpty()){
+					this._writeLastRow();
 					this._addTitle();
+				}else{
+					this._hideTable();
 				}
 			}
 		},
@@ -65,12 +67,6 @@ define([
 		
 		_writeLastRow: function(){
 			domConstr.place(this._createLastTr(3), this.tableNode);
-		},
-		
-		_addTitle: function(){
-			domConstr.create("h2",{
-				"innerHTML": this.title + ":",
-			}, this.domNode, "first");
 		},
 		
 		_placeRows: function(rows){

@@ -49,35 +49,43 @@ define([
 		},
 		
 		_processContacts: function(){
+			var self = this;
+			var count = this.data.length;
+			var callback = function(){
+				count--;
+				if(count <= 0){
+					if(!self._tableIsEmpty()){
+						self._writeLastRow();
+						self._addTitle();
+					}else{
+						self._hideTable();
+					}
+				}
+			};
+			
 			array.forEach(this.data, function(contact, n){
 				var tr = domConstr.create("tr", {}, this.tableNode);
-				this._processContact(contact, tr);
+				this._processContact(contact, tr, callback);
 			}, this);
-			if(!this._isBlank(this.data)){
-				this._writeLastRow();
-				if(!this._isBlank(this.title)){
-					this._addTitle();
-				}
-			}
-		},
-		
-		_addTitle: function(){
-			domConstr.create("h2",{
-				"innerHTML": this.title + ":",
-			}, this.domNode, "first");
 		},
 		
 		_writeLastRow: function(){
 			domConstr.place(this._createLastTr(2), this.tableNode);
 		},
 		
-		_processContact: function(contact, tr){
+		_processContact: function(contact, tr, callback){
 			var type = lang.trim(contact.type);
+			
+			require.on("error", function(e){
+				callback();
+			});
+			
 			if(type !== ""){
 				var dojoId = "./contactsTable/"+this._camelize(type);
 				require([dojoId], lang.hitch(this, function(construct){
 					var rowWidget = new construct(contact);
 					domConstr.place(rowWidget.domNode, tr, "replace");
+					callback();
 				}));
 			}
 		},

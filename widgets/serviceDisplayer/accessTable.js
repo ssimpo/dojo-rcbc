@@ -39,30 +39,28 @@ define([
 		"title": "",
 		"columnWidths": [30],
 		
-		"_tableIsBlank": true,
-		
 		postCreate: function(){
 			this._init();
 		},
 		
 		_init: function(){
+			this._addRows();
+			
+			if(!this._tableIsEmpty()){
+				this._writeLastRow();
+				this._addTitle();
+			}else{
+				this._hideTable();
+			}
+		},
+		
+		_addRows: function(){
 			this._addDetails();
 			this._addReferrel();
 			this._addAppointments();
 			this._addDropIn();
 			this._addAge();
 			this._addOther();
-			
-			if(!this._tableIsBlank){
-				this._writeLastRow();
-				this._addTitle();
-			}
-		},
-		
-		_addTitle: function(){
-			domConstr.create("h2",{
-				"innerHTML": this.title + ":",
-			}, this.domNode, "first");
 		},
 		
 		_addDetails: function(){
@@ -70,7 +68,6 @@ define([
 				domConstr.create("p", {
 					"innerHTML": this.data.accessDetails
 				}, this.domNode, "first");
-				this._tableIsBlank = false;
 			}
 		},
 		
@@ -85,7 +82,6 @@ define([
 					this._createTr([title, details]),
 					this.tableNode
 				);
-				this._tableIsBlank = false;
 			}
 		},
 		
