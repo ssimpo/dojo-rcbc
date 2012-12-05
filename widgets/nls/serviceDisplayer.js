@@ -1,5 +1,6 @@
 define({
 	root: ({
-		"contactsTitle": "Contact information"
+		"contactsTitle": "Contact information",
+		"serviceHours": "Service hours"
 	})
 });
