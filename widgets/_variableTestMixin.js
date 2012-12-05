@@ -80,7 +80,7 @@ define([
 			}
 			
 			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value) === ""){
+				if(lang.trim(value.replace(/\&nbsp\;/g," ")) === ""){
 					return true;
 				}
 			}else if(Object.prototype.toString.call(value) === '[object Object]'){

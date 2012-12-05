@@ -11,9 +11,10 @@ define([
 	"dojo/_base/lang",
 	"dojo/_base/array",
 	"dojo/dom-style",
-	"dojo/query"
+	"dojo/query",
+	"dojo/dom-attr"
 ], function(
-	declare, _variableTestMixin, domConstr, lang, array, domStyle, $
+	declare, _variableTestMixin, domConstr, lang, array, domStyle, $, domAttr
 ){
 	"use strict";
 	
@@ -29,7 +30,7 @@ define([
 			var cells = $("td,th", tableDom);
 			var isBlank = true;
 			array.every(cells, function(cell){
-				if(!this._isBlank(cell.innerHTML)){
+				if(!this._isBlank(domAttr.get(cell, "innerHTML"))){
 					isBlank = false;
 					return false;
 				}
