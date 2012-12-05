@@ -9,6 +9,7 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_tableMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceHoursTable",
 	"dojo/text!./views/serviceHoursTable.html",
@@ -16,12 +17,16 @@ define([
 	"dojo/_base/array",
 	"dojo/_base/lang"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	declare,
+	_widget, _templated, _wTemplate, _tableMixin,
+	i18n, strings, template,
 	domConstr, array, lang
-) {
+){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _tableMixin
+	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -32,6 +37,7 @@ define([
 		
 		"title": "",
 		"data": [],
+		"columnWidths": [10, 20],
 		
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
 		
@@ -58,18 +64,7 @@ define([
 		},
 		
 		_writeLastRow: function(){
-			var tr = domConstr.create("tr", {}, this.tableNode);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-				"class": "r"
-			}, tr);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-				"class": "r"
-			}, tr);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;"
-			}, tr);
+			domConstr.place(this._createLastTr(3), this.tableNode);
 		},
 		
 		_addTitle: function(){
@@ -131,78 +126,16 @@ define([
 		},
 		
 		_createRow: function(day, row){
-			var tr = domConstr.create("tr");
-				
-			domConstr.create("th", {
-				"innerHTML": day,
-				"class": "r b p10"
-			}, tr);
-			domConstr.create("td", {
-				"innerHTML": this._formatHours(row.hours1) + "-" + this._formatHours(row.hours2),
-				"class": "r b p20"
-			}, tr);
-			
-			domConstr.create("td", {
-				"innerHTML": row.description,
-				"class": "b"
-			}, tr);
-			
-			return tr;
+			var hours = this._formatHoursRange(row.hours1, row.hours2);
+			return this._createTr([day, hours, row.description]);
 		},
 		
 		_formatHours: function(hours){
 			return hours.substring(0,5);
 		},
 		
-		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "") || (value === false)){
-				return true;
-			}
-			
-			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value) === ""){
-					return true;
-				}
-			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				return (this._isEmptyObject(value) || this._isBlankObject(value));
-			}else if(Object.prototype.toString.call(value) === '[object Array]'){
-				if(value.length == 0){
-					return true;
-				}else{
-					return this._isBlankArray(value);
-				}
-			}
-			
-			return false;
-		},
-		
-		_isBlankArray: function(ary){
-			for(var i = 0; i < ary.length; i++){
-				if(!this._isBlank(ary[i])){
-					return false;
-				}
-			}
-			
-			return true;
-		},
-		
-		_isEmptyObject: function(obj){
-			for(var key in obj){
-				if(obj.hasOwnProperty(key)){
-					return false;
-				}
-			}
-			return true;
-		},
-		
-		_isBlankObject: function(obj){
-			for(var key in obj){
-				if(!this._isBlank(obj[key])){
-					return false
-				}
-			}
-			
-			return true;
+		_formatHoursRange: function(hours1, hours2){
+			return this._formatHours(hours1) + "-" + this._formatHours(hours2);
 		}
 	});
 	

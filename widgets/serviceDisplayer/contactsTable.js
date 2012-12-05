@@ -9,6 +9,7 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_tableMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/contactsTable",
 	"dojo/text!./views/contactsTable.html",
@@ -17,12 +18,16 @@ define([
 	"dojo/_base/lang",
 	"require"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	declare,
+	_widget, _templated, _wTemplate, _tableMixin,
+	i18n, strings, template,
 	array, domConstr, lang, require
 ){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _tableMixin
+	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -33,6 +38,7 @@ define([
 		
 		"data": [],
 		"title": "",
+		"columnWidths": [30],
 		
 		postCreate: function(){
 			this._init();
@@ -49,9 +55,9 @@ define([
 			}, this);
 			if(!this._isBlank(this.data)){
 				this._writeLastRow();
-			}
-			if(!this._isBlank(this.title)){
-				this._addTitle();
+				if(!this._isBlank(this.title)){
+					this._addTitle();
+				}
 			}
 		},
 		
@@ -62,14 +68,7 @@ define([
 		},
 		
 		_writeLastRow: function(){
-			var tr = domConstr.create("tr", {}, this.tableNode);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-				"class": "r"
-			}, tr);
-			domConstr.create("td", {
-				"innerHTML": "&nbsp;",
-			}, tr);
+			domConstr.place(this._createLastTr(2), this.tableNode);
 		},
 		
 		_processContact: function(contact, tr){
@@ -90,57 +89,6 @@ define([
 				}
 				return index == 0 ? match.toLowerCase() : match.toUpperCase();
 			});
-		},
-		
-		_isBlank: function(value){
-			if((value === null) || (value === undefined) || (value === "") || (value === false)){
-				return true;
-			}
-			
-			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value) === ""){
-					return true;
-				}
-			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				return (this._isEmptyObject(value) || this._isBlankObject(value));
-			}else if(Object.prototype.toString.call(value) === '[object Array]'){
-				if(value.length == 0){
-					return true;
-				}else{
-					return this._isBlankArray(value);
-				}
-			}
-			
-			return false;
-		},
-		
-		_isBlankArray: function(ary){
-			for(var i = 0; i < ary.length; i++){
-				if(!this._isBlank(ary[i])){
-					return false;
-				}
-			}
-			
-			return true;
-		},
-		
-		_isEmptyObject: function(obj){
-			for(var key in obj){
-				if(obj.hasOwnProperty(key)){
-					return false;
-				}
-			}
-			return true;
-		},
-		
-		_isBlankObject: function(obj){
-			for(var key in obj){
-				if(!this._isBlank(obj[key])){
-					return false
-				}
-			}
-			
-			return true;
 		}
 	});
 	
