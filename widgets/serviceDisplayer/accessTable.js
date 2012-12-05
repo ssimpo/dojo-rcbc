@@ -63,6 +63,11 @@ define([
 		},
 		
 		_addRow: function(title, test, details){
+			if((details === undefined) && (test !== undefined)){
+				details = test;
+				test = true;
+			}
+			
 			if(this._isTrue(test) && !this._isBlank(details)){
 				var tr = domConstr.create("tr", {}, this.tableNode);
 				domConstr.create("th", {
@@ -131,8 +136,45 @@ define([
 		},
 		
 		_addOther: function(){
-			if((this.data.genderTarget == "Yes") || (this.data.geographicRestriction == "Yes")){
+			var html = "";
+			if(this._isTrue(this.data.genderTarget) || this._isTrue(this.data.geographicRestriction)){
+				if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Male")){
+					html += "This is targetted towards men.  "
+				}else if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Female")){
+					html += "This is targetted towards women.  "
+				}
 			}
+			
+			if(this._isTrue(this.data.geographicRestriction) && !this._isBlank(this.data.geographicCoverage)){
+				if(Object.prototype.toString.call(this.data.geographicCoverage) === '[object Array]'){
+					html += "Restricted to the following areas: " + this._combineListAsText(this.data.geographicCoverage) + ".  ";
+				}
+			}
+			
+			this._addRow("Other restrictions:", html);
+		},
+		
+		_combineListAsText: function(list, joiner, lastJoiner){
+			var text = "";
+			
+			if(Object.prototype.toString.call(list) === '[object Array]'){
+				if(list.length > 0){
+					lastJoiner = ((lastJoiner === undefined) ? " and ": lastJoiner);
+					joiner = ((joiner === undefined) ? ", ": joiner);
+					
+					for(var i = 0; i < list.length; i++){
+						if(i == 0){
+							text += list[i];
+						}else if(i == (list.length - 1)){
+							text += lastJoiner + list[i];
+						}else{
+							text += joiner + list[i];
+						}
+					}
+				}
+			}
+			
+			return text;
 		},
 		
 		_getAgeBlock: function(no){
