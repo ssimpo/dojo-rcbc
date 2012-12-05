@@ -45,15 +45,13 @@ define([
 		_init: function(){
 			if(!this._isBlank(this.data)){
 				this._createRows();
-				this._writeLastRow();
-				this._addTitle();
+				if(!this._tableIsEmpty()){
+					this._writeLastRow();
+					this._addTitle();
+				}else{
+					this._hideTable();
+				}
 			}
-		},
-		
-		_addTitle: function(){
-			domConstr.create("h2",{
-				"innerHTML": this.title + ":",
-			}, this.domNode, "first");
 		},
 		
 		_createRows: function(){
