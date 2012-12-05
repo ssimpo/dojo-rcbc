@@ -101,7 +101,8 @@ define([
 			if(this.data.hasOwnProperty("servicePeriods")){
 				if(this.data.servicePeriods.length > 0){
 					var widget = new serviceHoursTable({
-						"data": this.data.servicePeriods
+						"data": this.data.servicePeriods,
+						"title": strings.serviceHours
 					});
 					
 					return widget.domNode;
