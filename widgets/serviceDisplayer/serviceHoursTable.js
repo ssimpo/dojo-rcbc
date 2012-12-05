@@ -30,6 +30,9 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
+		"title": "",
+		"data": [],
+		
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
 		
 		postCreate: function(){
@@ -161,19 +164,45 @@ define([
 					return true;
 				}
 			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				for(var key in map){
-					if(map.hasOwnProperty(key)){
-						return false;
-					}
-				}
-				return true;
+				return (this._isEmptyObject(value) || this._isBlankObject(value));
 			}else if(Object.prototype.toString.call(value) === '[object Array]'){
 				if(value.length == 0){
 					return true;
+				}else{
+					return this._isBlankArray(value);
 				}
 			}
 			
 			return false;
+		},
+		
+		_isBlankArray: function(ary){
+			for(var i = 0; i < ary.length; i++){
+				if(!this._isBlank(ary[i])){
+					return false;
+				}
+			}
+			
+			return true;
+		},
+		
+		_isEmptyObject: function(obj){
+			for(var key in obj){
+				if(obj.hasOwnProperty(key)){
+					return false;
+				}
+			}
+			return true;
+		},
+		
+		_isBlankObject: function(obj){
+			for(var key in obj){
+				if(!this._isBlank(obj[key])){
+					return false
+				}
+			}
+			
+			return true;
 		}
 	});
 	
