@@ -115,7 +115,8 @@ define([
 		_createAccessTable: function(){
 			if(this._hasAccessDetails()){
 				var widget = new accessTable({
-					"data": this.data
+					"data": this.data,
+					"title": strings.accessDetails
 				});
 					
 				return widget.domNode;
@@ -170,7 +171,8 @@ define([
 			if(this.data.hasOwnProperty("costs")){
 				if(this.data.costs.length > 0){
 					var widget = new costTable({
-						"data": this.data.costs
+						"data": this.data.costs,
+						"title": strings.costDetails
 					});
 					
 					return widget.domNode;
