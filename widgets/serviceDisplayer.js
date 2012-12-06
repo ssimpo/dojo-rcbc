@@ -16,6 +16,7 @@ define([
 	"dojo/request",
 	"dojo/_base/lang",
 	"dojo/dom-construct",
+	"dojo/dom-attr",
 	"dojo/_base/array",
 	"./serviceDisplayer/contactsTable",
 	"./serviceDisplayer/venueDisplayer",
@@ -26,7 +27,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	request, lang, domConstr, array,
+	request, lang, domConstr, domAttr, array,
 	
 	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
 ){
@@ -46,6 +47,15 @@ define([
 		"id": "",
 		"data": {},
 		
+		"titleNode": null,
+		"keyFeaturesNode": null,
+		"descriptionNode": null,
+		"contactsWidget": null,
+		"costsWidget": null,
+		"accessWidget": null,
+		"serviceHoursWidget": null,
+		"venuesNode": null,
+		
 		"_accessTesters": [
 			["appointmentOnly", "appointmentOnlyDetails"],
 			["dropIn", "dropInDetails"],
@@ -53,21 +63,13 @@ define([
 			["geographicRestriction", "geographicCoverage"],
 			["referralOnly", "referralOnlyDetails"]
 		],
+		"_updateUrl": "/test/stephen/pin.nsf/getService?openagent",
 		
-		
-		postCreate: function(){
-			this._init();
-		},
-		
-		_init: function(){
-			this._loadServiceJson();
-		},
-		
-		_loadServiceJson: function(){
-			if(this.id !== ""){
-				if(this.id.length == 32){
+		_loadServiceJson: function(id){
+			if(!this._isBlank(id)){
+				if(id.length == 32){
 					request(
-						"/test/stephen/pin.nsf/getService?openagent&id="+this.id, {
+						this._updateUrl + "&id=" + id, {
 							"handleAs": "json",
 							"preventCache": true
 						}
@@ -81,21 +83,107 @@ define([
 			}
 		},
 		
+		_setValueAttr: function (id){
+			this._loadServiceJson(id);
+			this.value = id;
+		},
+		
 		_jsonLoaded: function(data){
 			console.log(data);
 			this.data = data;
 			this._createContent();
 		},
 		
+		_createAttachPoint: function(propName, tagName, constructor){
+			constructor = ((constructor == undefined) ? {} : constructor);
+			
+			if(!this._isElement(this[propName]) && !this._isWidget(this[propName])){
+				if(Object.prototype.toString.call(tagName) === '[object String]'){
+					this[propName] = domConstr.create(
+						tagName, constructor, this.domNode
+					);
+				}else{
+					this[propName] = new tagName(constructor);
+					if(this._isWidget(this[propName])){
+						domConstr.place(this[propName].domNode, this.domNode);
+					}
+				}
+			}
+		},
+		
 		_createContent: function(){
-			domConstr.place(this._createTitle(), this.domNode);
-			domConstr.place(this._createDescription(), this.domNode);
-			domConstr.place(this._createKeyFeatures(), this.domNode);
-			domConstr.place(this._createContactsTable(), this.domNode);
-			domConstr.place(this._createVenues(), this.domNode);
-			domConstr.place(this._createCostTable(), this.domNode);
-			domConstr.place(this._createAccessTable(), this.domNode);
-			domConstr.place(this._createServiceHoursTable(), this.domNode);
+			this._createTitle();
+			this._createDescription();
+			this._createKeyFeatures();
+			this._createContactsTable();
+			this._createVenues();
+			this._createCostTable();
+			this._createAccessTable();
+			this._createServiceHoursTable();
+		},
+		
+		_createTitle: function(){
+			this._createAttachPoint("titleNode", "h1");
+			domConstr.empty(this.titleNode);
+			
+			var title = this._getTitle();
+			title = ((title === "") ? "Unknown Service": title);
+			domAttr.set(this.titleNode, "innerHTML", title);
+			
+			return this.titleNode;
+		},
+		
+		_createKeyFeatures: function(){
+			this._createAttachPoint("keyFeaturesNode", "div");
+			domConstr.empty(this.keyFeaturesNode);
+			
+			var ol = this._createFeaturesOl();
+			if(!this._isBlank(ol)){
+				domConstr.create("h2", {
+					"innerHTML": "Key Features:"
+				}, this.keyFeaturesNode);
+				domConstr.place(ol, this.keyFeaturesNode);
+			}
+			
+			return this.keyFeaturesNode;
+		},
+		
+		_createFeaturesOl: function(){
+			var ol = domConstr.create("ol");
+			
+			array.forEach([1,2,3,4,5,6], function(key){
+				var feature = this._getField("keyFeature"+key);
+				if(!this._isBlank(feature)){
+					domConstr.create("li", {
+						"innerHTML": feature
+					}, ol);
+				}
+			}, this);
+			
+			return ol;
+		},
+		
+		_createDescription: function(){
+			this._createAttachPoint("descriptionNode", "div");
+			domConstr.empty(this.descriptionNode);
+			
+			var description = this._getField("description");
+			this._createParagraphNodesFromText(
+				this.descriptionNode, description
+			);
+			
+			return this.descriptionNode;
+		},
+		
+		_createParagraphNodesFromText: function(parentNode, text){
+			var paras = text.split("\n\n");
+			array.forEach(paras, function(para){
+				domConstr.create("p", {
+					"innerHTML": para.replace(/\n/g, "<br />")
+				}, parentNode);
+			}, this);
+			
+			return parentNode;
 		},
 		
 		_getField: function(fieldName){
@@ -108,54 +196,98 @@ define([
 			return lang.trim(value);
 		},
 		
+		_getTitle: function(){
+			var title = "";
+			var serviceTitle = this._getField("serviceName");
+			var orgTitle = this._getField("orgName");
+			
+			if((serviceTitle === "") && (orgTitle !== "")){
+				title = orgTitle;
+			}else if((serviceTitle !== "") && (orgTitle !== "")){
+				title = serviceTitle + " ("+orgTitle+")";
+			}else{
+				title = serviceTitle;
+			}
+			
+			return title;
+		},
+		
 		_createServiceHoursTable: function(){
-			return this._getTableWidgetDom({
+			this._getTableWidgetDom({
+				"propertyNode": "serviceHoursWidget",
 				"constructor": serviceHoursTable,
 				"field": "servicePeriods",
 				"title": strings.serviceHours
 			});
+			return this.serviceHoursWidget.domNode;
 		},
 		
 		_createAccessTable: function(){
 			if(this._hasAccessDetails()){
-				return this._getTableWidgetDom({
+				this._getTableWidgetDom({
+					"propertyNode": "accessWidget",
 					"constructor": accessTable,
 					"title": strings.accessDetails
 				});
+				return this.accessWidget.domNode;
 			}
 			
 			return domConstr.create("div");
 		},
 		
 		_createCostTable: function(){
-			return this._getTableWidgetDom({
+			this._getTableWidgetDom({
+				"propertyNode": "costsWidget",
 				"constructor": costTable,
 				"field": "costs",
 				"title": strings.costDetails
 			});
+			return this.costsWidget.domNode;
 		},
 		
 		_createContactsTable: function(){
-			return this._getTableWidgetDom({
+			this._getTableWidgetDom({
+				"propertyNode": "contactsWidget",
 				"constructor": contactsTable,
 				"field": "contacts",
 				"title": strings.contactsTitle
 			});
+			return this.contactsWidget.domNode;
 		},
 		
 		_getTableWidgetDom: function(args){
 			args = this._getTableWidgetSetDataArgument(args);
 			
+			var node;
 			if(args.hasOwnProperty("data")){
-				var widget = new args.constructor({
-					"data": args.data,
-					"title": args.title
-				});
-				
-				return widget.domNode;
+				if(args.hasOwnProperty("propertyNode")){
+					this._createAttachPoint(
+						args.propertyNode,
+						args.constructor, {
+							"data": args.data,
+							"title": args.title
+						}
+					);
+					node = this[args.propertyNode].domNode;
+				}else{
+					var widget = new args.constructor({
+						"data": args.data,
+						"title": args.title
+					});
+					node = widget.domNode;
+				}
 			}
 			
-			return domConstr.create("div");
+			if(node === undefined){
+				if(args.hasOwnProperty("propertyNode")){
+					this._createAttachPoint(args.propertyNode, "div");
+					node = this.contactsWidget;
+				}else{
+					node = domConstr.create("div");
+				}
+			}
+			
+			return node;
 		},
 		
 		_getTableWidget: function(args){
@@ -175,6 +307,26 @@ define([
 			}
 			
 			return args;
+		},
+		
+		_hasAccessDetails: function(){
+			for(var i = 0; i < this._accessTesters.length; i++){
+				if(this._hasAccessCheck(
+					this._accessTesters[i][0],
+					this._accessTesters[i][1]
+				)){
+					return true;
+				}
+			}
+			
+			if(this._hasAccessCheckAge()){
+				return true;
+			}
+			
+			if(this._isBlank(this.data.accessDetails)){
+				return true;
+			}
+			return false;
 		},
 		
 		_hasAccessCheck: function(enableField, contentField){
@@ -200,39 +352,20 @@ define([
 			return false;
 		},
 		
-		_hasAccessDetails: function(){
-			for(var i = 0; i < this._accessTesters.length; i++){
-				if(this._hasAccessCheck(
-					this._accessTesters[i][0],
-					this._accessTesters[i][1]
-				)){
-					return true;
-				}
-			}
-			
-			if(this._hasAccessCheckAge()){
-				return true;
-			}
-			
-			if(this._isBlank(this.data.accessDetails)){
-				return true;
-			}
-			return false;
-		},
-		
 		_createVenues: function(){
-			var div = domConstr.create("div");
+			this._createAttachPoint("venuesNode", "div");
+			domConstr.empty(this.venuesNode);
 			
 			if(!this._isBlank(this.data.venues)){
 				array.forEach(this.data.venues, function(venue){
 					var venueDom = this._createVenue(venue);
 					if(venueDom !== null){
-						domConstr.place(venueDom, div);
+						domConstr.place(venueDom, this.venuesNode);
 					}
 				},this);
 			}
 			
-			return div;
+			return this.venuesNode;
 		},
 		
 		_createVenue: function(venue){
@@ -244,69 +377,6 @@ define([
 			}
 			
 			return venueDom;
-		},
-		
-		_createKeyFeatures: function(){
-			var div = domConstr.create("div");
-			var ol = domConstr.create("ol");
-			var hasFeatures = false;
-			
-			array.forEach([1,2,3,4,5,6], function(key){
-				var feature = this._getField("keyFeature"+key);
-				if(feature !== ""){
-					domConstr.create("li", {
-						"innerHTML": feature
-					}, ol);
-					hasFeatures = true;
-				}
-			}, this);
-			
-			if(hasFeatures){
-				domConstr.create("h2", {
-					"innerHTML": "Key Features:"
-				}, div);
-				domConstr.place(ol, div);
-			}
-			
-			return div;
-		},
-		
-		_createDescription: function(){
-			var description = this._getField("description");
-			description = description.split("\n\n");
-			
-			var div = domConstr.create("div");
-			array.forEach(description, function(para){
-				domConstr.create("p", {
-					"innerHTML": para.replace(/\n/g, "<br />")
-				}, div);
-			}, this);
-			
-			return div;
-		},
-		
-		_createTitle: function(){
-			var title = this._getTitle();
-			var titleDom = domConstr.create("h1", {
-				"innerHTML": ((title === "") ? "Unknown Service": title)
-			});
-			return titleDom;
-		},
-		
-		_getTitle: function(){
-			var title = "";
-			var serviceTitle = this._getField("serviceName");
-			var orgTitle = this._getField("orgName");
-			
-			if((serviceTitle === "") && (orgTitle !== "")){
-				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")){
-				title = serviceTitle + " ("+orgTitle+")";
-			}else{
-				title = serviceTitle;
-			}
-			
-			return title;
 		}
 	});
 	
