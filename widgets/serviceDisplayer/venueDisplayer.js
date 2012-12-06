@@ -44,7 +44,6 @@ define([
 			this._getData();
 			this._addDescription();
 			this._mainDiv = this.domNode;
-			console.log(this.data);
 			
 			this._addTitle();
 			this._addAddress();
