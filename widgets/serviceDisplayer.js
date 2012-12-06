@@ -9,6 +9,7 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceDisplayer",
 	"dojo/text!./views/serviceDisplayer.html",
@@ -22,14 +23,18 @@ define([
 	"./serviceDisplayer/accessTable",
 	"./serviceDisplayer/serviceHoursTable"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	declare,
+	_widget, _templated, _wTemplate, _variableTestMixin,
+	i18n, strings, template,
 	request, lang, domConstr, array,
 	
 	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
-) {
+){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _variableTestMixin
+	],{
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -40,6 +45,14 @@ define([
 		
 		"id": "",
 		"data": {},
+		
+		"_accessTesters": [
+			["appointmentOnly", "appointmentOnlyDetails"],
+			["dropIn", "dropInDetails"],
+			["genderTarget", "genderTargetType"],
+			["geographicRestriction", "geographicCoverage"],
+			["referralOnly", "referralOnlyDetails"]
+		],
 		
 		
 		postCreate: function(){
@@ -98,15 +111,13 @@ define([
 		_createServiceHoursTable: function(){
 			var div = domConstr.create("div");
 			
-			if(this.data.hasOwnProperty("servicePeriods")){
-				if(this.data.servicePeriods.length > 0){
-					var widget = new serviceHoursTable({
-						"data": this.data.servicePeriods,
-						"title": strings.serviceHours
-					});
+			if(!this._isBlank(this.data.servicePeriods)){
+				var widget = new serviceHoursTable({
+					"data": this.data.servicePeriods,
+					"title": strings.serviceHours
+				});
 					
-					return widget.domNode;
-				}
+				return widget.domNode;
 			}
 			
 			return domConstr.create("div");
@@ -125,41 +136,44 @@ define([
 			return domConstr.create("div");
 		},
 		
+		_hasAccessCheck: function(enableField, contentField){
+			if(this._isTrue(this.data[enableField])){
+				if(this._isBlank(this.data[contentField])){
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
+		_hasAccessCheckAge: function(){
+			if(this._isTrue(this.data.ageTarget)){
+				if((this._isBlank(this.data.age1)) || (this._isBlank(this.data.age2))){
+					return true;
+				}
+				if((this._isBlank(this.data.age1Months)) || (this._isBlank(this.data.age2Months))){
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
 		_hasAccessDetails: function(){
-			if(this.data.appointmentOnly == "Yes"){
-				if(this.data.appointmentOnlyDetails != ""){
+			for(var i = 0; i < this._accessTesters.length; i++){
+				if(this._hasAccessCheck(
+					this._accessTesters[i][0],
+					this._accessTesters[i][1]
+				)){
 					return true;
 				}
 			}
-			if(this.data.dropIn == "Yes"){
-				if(this.data.dropInDetails != ""){
-					return true;
-				}
+			
+			if(this._hasAccessCheckAge()){
+				return true;
 			}
-			if(this.data.genderTarget == "Yes"){
-				if(this.data.genderTargetType != ""){
-					return true;
-				}
-			}
-			if(this.data.geographicRestriction == "Yes"){
-				if(this.data.geographicCoverage != ""){
-					return true;
-				}
-			}
-			if(this.data.referralOnly == "Yes"){
-				if(this.data.referralOnlyDetails != ""){
-					return true;
-				}
-			}
-			if(this.data.ageTarget == "Yes"){
-				if((this.data.age1 != "") || (this.data.age2 != "")){
-					return true;
-				}
-				if((this.data.age1Months != "") || (this.data.age2Months != "")){
-					return true;
-				}
-			}
-			if(this.data.accessDetails != ""){
+			
+			if(this._isBlank(this.data.accessDetails)){
 				return true;
 			}
 			return false;
@@ -168,15 +182,13 @@ define([
 		_createCostTable: function(){
 			var div = domConstr.create("div");
 			
-			if(this.data.hasOwnProperty("costs")){
-				if(this.data.costs.length > 0){
-					var widget = new costTable({
-						"data": this.data.costs,
-						"title": strings.costDetails
-					});
+			if(!this._isBlank(this.data.costs)){
+				var widget = new costTable({
+					"data": this.data.costs,
+					"title": strings.costDetails
+				});
 					
-					return widget.domNode;
-				}
+				return widget.domNode;
 			}
 			
 			return domConstr.create("div");
@@ -185,7 +197,7 @@ define([
 		_createVenues: function(){
 			var div = domConstr.create("div");
 			
-			if(this.data.hasOwnProperty("venues")){
+			if(!this._isBlank(this.data.venues)){
 				array.forEach(this.data.venues, function(venue){
 					var venueDom = this._createVenue(venue);
 					if(venueDom !== null){
@@ -209,16 +221,13 @@ define([
 		},
 		
 		_createContactsTable: function(){
-			if(this.data.hasOwnProperty("contacts")){
-				var contacts = this.data.contacts;
-				if(contacts.length > 0){
-					var contactsWidget = new contactsTable({
-						"data":contacts,
-						"title": strings.contactsTitle
-					});
+			if(!this._isBlank(this.data.contacts)){
+				var contactsWidget = new contactsTable({
+					"data": this.data.contacts,
+					"title": strings.contactsTitle
+				});
 					
-					return contactsWidget.domNode;
-				}
+				return contactsWidget.domNode;
 			}
 			
 			return domConstr.create("div");
@@ -276,9 +285,9 @@ define([
 			var serviceTitle = this._getField("serviceName");
 			var orgTitle = this._getField("orgName");
 			
-			if((serviceTitle === "") && (orgTitle !== "")) {
+			if((serviceTitle === "") && (orgTitle !== "")){
 				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")) {
+			}else if((serviceTitle !== "") && (orgTitle !== "")){
 				title = serviceTitle + " ("+orgTitle+")";
 			}else{
 				title = serviceTitle;
