@@ -7,9 +7,10 @@
 define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
-	"dojo/dom-attr"
+	"dojo/dom-attr",
+	"dijit/registry"
 ], function(
-	declare, lang, domAttr
+	declare, lang, domAttr, registry
 ){
 	"use strict";
 	
@@ -136,6 +137,19 @@ define([
 					(o instanceof HTMLElement) :
 					(o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string")
 			);
+		},
+		
+		_isWidget: function(obj){
+			if((typeof obj === "object") && (obj !== undefined) && (obj !== null)){
+				if(obj.hasOwnProperty("domNode")){
+					try{
+						var widget = registry.byNode(obj.domNode);
+						return (widget !== undefined);
+					}catch(e){}
+				}
+			}
+			
+			return false;
 		}
 	});
 	
