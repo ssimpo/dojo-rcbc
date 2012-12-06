@@ -19,6 +19,8 @@ define([
 	"use strict";
 	
 	var construct = declare(_variableTestMixin, {
+		"titleDom": null,
+		
 		_tableIsEmpty: function(tableDom){
 			tableDom = this._getTableDom(tableDom);
 			
@@ -42,7 +44,7 @@ define([
 		},
 		
 		_hasTitle: function(tableDom){
-			return ($("h2", this.domNode).length > 0);
+			return this._isElement(this.titleDom);
 		},
 		
 		_getTableDom: function(tableDom){
@@ -58,14 +60,82 @@ define([
 		},
 		
 		_hideTable: function(){
-			domStyle.set(this.domNode, "display", "none");
+			if(this._isElement(this.hiddenNode)){
+				this._hideTitleNode();
+				this._hideDetailsNode();
+				this._hideTableNode();
+			}
+		},
+		
+		_hideTitleNode: function(){
+			if(this._isElement(this.titleDom)){
+				domConstr.place(this.titleDom, this.hiddenNode);
+			}
+		},
+		
+		_hideDetailsNode: function(){
+			if(this._isElement(this.detailsNode)){
+				domConstr.place(this.detailsNode, this.hiddenNode);
+			}
+		},
+		
+		_hideTableNode: function(){
+			if(this._isElement(this.tableNode)){
+				domConstr.place(this.tableNode, this.hiddenNode);
+			}
+		},
+		
+		_showTable: function(){
+			if(this._isElement(this.hiddenNode)){
+				this._showTitleNode();
+				this._showDetailsNode();
+				this._showTableNode();
+			}
+		},
+		
+		_showTitleNode: function(){
+			if(this._isElement(this.titleDom)){
+				if((!this._isBlank(this.titleDom)) && (!this._tableIsEmpty() || !this._isBlank(this.detailsNode))){
+					domConstr.place(this.titleDom, this.domNode, "first");
+				}else{
+					this._hideTitleNode();
+				}
+			}
+		},
+		
+		_showDetailsNode: function(){
+			if(this._isElement(this.detailsNode)){
+				if(!this._isBlank(this.detailsNode)){
+					domConstr.place(this.detailsNode, this.domNode);
+				}else{
+					this._hideDetailsNode();
+				}
+			}
+		},
+		
+		_showTableNode: function(){
+			if(this._isElement(this.tableNode)){
+				if(!this._isBlank(this.tableNode)){
+					domConstr.place(this.tableNode, this.domNode);
+				}else{
+					this._hideTableNode();
+				}
+			}
 		},
 		
 		_addTitle: function(){
 			if(!this._isBlank(this.title) && !this._hasTitle()){
-				domConstr.create("h2",{
-					"innerHTML": this.title + ":",
-				}, this.domNode, "first");
+				this.titleDom = domConstr.create(
+					"h2",{}, this.domNode, "first"
+				);
+			}
+			if(this._hasTitle()){
+				domConstr.empty(this.titleDom);
+				if(!this._isBlank(this.title)){
+					domAttr.set(this.titleDom, "innerHTML", this.title + ":");
+				}else{
+					domAttr.set(this.titleDom, "innerHTML", "");
+				}
 			}
 		},
 		

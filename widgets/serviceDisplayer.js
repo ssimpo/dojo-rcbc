@@ -312,9 +312,7 @@ define([
 		
 		_getTableWidgetSetDataArgument: function(args){
 			if(args.hasOwnProperty("field")){
-				if(!this._isBlank(this.data[args.field])){
-					args.data = this.data[args.field];
-				}
+				args.data = this.data[args.field];
 			}else{
 				args.data = this.data;	
 			}

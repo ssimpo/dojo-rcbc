@@ -41,19 +41,27 @@ define([
 		
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
 		
-		postCreate: function(){
+		_setDataAttr: function(data){
+			this.data = data;
 			this._init();
 		},
 		
+		_setTitleAttr: function(title){
+			this.title = title;
+			this._addTitle();
+			this._showTitleNode();
+		},
+		
 		_init: function(){
+			domConstr.empty(this.tableNode);
 			if(!this._isBlank(this.data)){
 				this._createTableRows();
-				if(!this._tableIsEmpty()){
-					this._writeLastRow();
-					this._addTitle();
-				}else{
-					this._hideTable();
-				}
+			}
+			if(!this._tableIsEmpty()){
+				this._showTable();
+				this._writeLastRow();
+			}else{
+				this._hideTable();
 			}
 		},
 		

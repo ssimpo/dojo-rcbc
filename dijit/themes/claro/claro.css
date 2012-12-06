@@ -1,6 +1,21 @@
 @import url("./venueSelect.css");
+
 @import url("./ageRange.css");
+
 @import url("./tooltips.css");
+
 @import url("./checkWithDetails.css");
+
 @import url("./dialog.css");
-div.dojoRcbcDijitLinkedIdListItem:hover{cursor:pointer;}
+div.dojoRcbcDijitLinkedIdListItem:hover {
+  cursor: pointer;
+}
+div.hiddenDiv {
+  visibility: hidden;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
