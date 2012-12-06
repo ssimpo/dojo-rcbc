@@ -40,12 +40,15 @@ define([
 		"title": "",
 		"columnWidths": [30],
 		
-		postCreate: function(){
-			this._init();
+		_setDataAttr: function(data){
+			this.data = data;
+			this._processContacts();
 		},
 		
-		_init: function(){
-			this._processContacts();
+		_setTitleAttr: function(title){
+			this.title = title;
+			this._addTitle();
+			this._showTitleNode();
 		},
 		
 		_processContacts: function(){
@@ -55,14 +58,15 @@ define([
 				count--;
 				if(count <= 0){
 					if(!self._tableIsEmpty()){
+						self._showTable();
 						self._writeLastRow();
-						self._addTitle();
 					}else{
 						self._hideTable();
 					}
 				}
 			};
 			
+			domConstr.empty(this.tableNode);
 			array.forEach(this.data, function(contact, n){
 				var tr = domConstr.create("tr", {}, this.tableNode);
 				this._processContact(contact, tr, callback);
@@ -83,9 +87,11 @@ define([
 			if(type !== ""){
 				var dojoId = "./contactsTable/"+this._camelize(type);
 				require([dojoId], lang.hitch(this, function(construct){
-					var rowWidget = new construct(contact);
-					domConstr.place(rowWidget.domNode, tr, "replace");
-					callback();
+					if(!this._isBlank(tr.parentNode)){
+						var rowWidget = new construct(contact);
+						domConstr.place(rowWidget.domNode, tr, "replace");
+						callback();
+					}
 				}));
 			}
 		},

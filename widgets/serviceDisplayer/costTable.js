@@ -38,19 +38,27 @@ define([
 		"title": "",
 		"columnWidths": [30],
 		
-		postCreate: function(){
+		_setDataAttr: function(data){
+			this.data = data;
 			this._init();
 		},
 		
+		_setTitleAttr: function(title){
+			this.title = title;
+			this._addTitle();
+			this._showTitleNode();
+		},
+		
 		_init: function(){
+			domConstr.empty(this.tableNode);
 			if(!this._isBlank(this.data)){
 				this._createRows();
-				if(!this._tableIsEmpty()){
-					this._writeLastRow();
-					this._addTitle();
-				}else{
-					this._hideTable();
-				}
+			}
+			if(!this._tableIsEmpty()){
+				this._showTable();
+				this._writeLastRow();
+			}else{
+				this._hideTable();
 			}
 		},
 		

@@ -15,12 +15,13 @@ define([
 	"dojo/text!./views/accessTable.html",
 	"dojo/dom-construct",
 	"dojo/_base/lang",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"dojo/dom-attr"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _tableMixin,
 	i18n, strings, template,
-	domConstr, lang, array
+	domConstr, lang, array, domAttr
 ){
 	"use strict";
 	
@@ -39,16 +40,27 @@ define([
 		"title": "",
 		"columnWidths": [30],
 		
-		postCreate: function(){
+		_setDataAttr: function(data){
+			this.data = data;
 			this._init();
 		},
 		
+		_setTitleAttr: function(title){
+			this.title = title;
+			this._addTitle();
+			this._showTitleNode();
+		},
+		
 		_init: function(){
-			this._addRows();
+			domConstr.empty(this.tableNode);
+			domConstr.empty(this.detailsNode);
 			
+			if(!this._isBlank(this.data)){
+				this._addRows();
+			}
 			if(!this._tableIsEmpty()){
+				this._showTable();
 				this._writeLastRow();
-				this._addTitle();
 			}else{
 				this._hideTable();
 			}
@@ -65,9 +77,11 @@ define([
 		
 		_addDetails: function(){
 			if(!this._isBlank(this.data.accessDetails)){
-				domConstr.create("p", {
-					"innerHTML": this.data.accessDetails
-				}, this.domNode, "first");
+				domAttr.set(
+					this.detailsNode,
+					"innerHTML",
+					this.data.accessDetails
+				)
 			}
 		},
 		
