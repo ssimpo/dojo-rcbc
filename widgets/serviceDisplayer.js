@@ -109,31 +109,72 @@ define([
 		},
 		
 		_createServiceHoursTable: function(){
-			var div = domConstr.create("div");
-			
-			if(!this._isBlank(this.data.servicePeriods)){
-				var widget = new serviceHoursTable({
-					"data": this.data.servicePeriods,
-					"title": strings.serviceHours
+			return this._getTableWidgetDom({
+				"constructor": serviceHoursTable,
+				"field": "servicePeriods",
+				"title": strings.serviceHours
+			});
+		},
+		
+		_createAccessTable: function(){
+			if(this._hasAccessDetails()){
+				return this._getTableWidgetDom({
+					"constructor": accessTable,
+					"title": strings.accessDetails
 				});
-					
+			}
+			
+			return domConstr.create("div");
+		},
+		
+		_createCostTable: function(){
+			return this._getTableWidgetDom({
+				"constructor": costTable,
+				"field": "costs",
+				"title": strings.costDetails
+			});
+		},
+		
+		_createContactsTable: function(){
+			return this._getTableWidgetDom({
+				"constructor": contactsTable,
+				"field": "contacts",
+				"title": strings.contactsTitle
+			});
+		},
+		
+		_getTableWidgetDom: function(args){
+			args = this._getTableWidgetSetDataArgument(args);
+			
+			if(args.hasOwnProperty("data")){
+				var widget = new args.constructor({
+					"data": args.data,
+					"title": args.title
+				});
+				
 				return widget.domNode;
 			}
 			
 			return domConstr.create("div");
 		},
 		
-		_createAccessTable: function(){
-			if(this._hasAccessDetails()){
-				var widget = new accessTable({
-					"data": this.data,
-					"title": strings.accessDetails
-				});
-					
-				return widget.domNode;
+		_getTableWidget: function(args){
+			return new args.constructor({
+				"data": args.data,
+				"title": args.title
+			});
+		},
+		
+		_getTableWidgetSetDataArgument: function(args){
+			if(args.hasOwnProperty("field")){
+				if(!this._isBlank(this.data[args.field])){
+					args.data = this.data[args.field];
+				}
+			}else{
+				args.data = this.data;	
 			}
 			
-			return domConstr.create("div");
+			return args;
 		},
 		
 		_hasAccessCheck: function(enableField, contentField){
@@ -179,21 +220,6 @@ define([
 			return false;
 		},
 		
-		_createCostTable: function(){
-			var div = domConstr.create("div");
-			
-			if(!this._isBlank(this.data.costs)){
-				var widget = new costTable({
-					"data": this.data.costs,
-					"title": strings.costDetails
-				});
-					
-				return widget.domNode;
-			}
-			
-			return domConstr.create("div");
-		},
-		
 		_createVenues: function(){
 			var div = domConstr.create("div");
 			
@@ -218,19 +244,6 @@ define([
 			}
 			
 			return venueDom;
-		},
-		
-		_createContactsTable: function(){
-			if(!this._isBlank(this.data.contacts)){
-				var contactsWidget = new contactsTable({
-					"data": this.data.contacts,
-					"title": strings.contactsTitle
-				});
-					
-				return contactsWidget.domNode;
-			}
-			
-			return domConstr.create("div");
 		},
 		
 		_createKeyFeatures: function(){
