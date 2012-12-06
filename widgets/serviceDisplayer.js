@@ -64,6 +64,7 @@ define([
 			["referralOnly", "referralOnlyDetails"]
 		],
 		"_updateUrl": "/test/stephen/pin.nsf/getService?openagent",
+		"_tested": "DD0C5C64625A045380257A48002B0D32",
 		
 		_loadServiceJson: function(id){
 			if(!this._isBlank(id)){
@@ -92,6 +93,12 @@ define([
 			console.log(data);
 			this.data = data;
 			this._createContent();
+			
+			if(this._tested !== true){
+				var id = this._tested;
+				this._tested = true;
+				this._setValueAttr(id);
+			}
 		},
 		
 		_createAttachPoint: function(propName, tagName, constructor){
