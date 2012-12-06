@@ -6,10 +6,11 @@
 //		Stephen Simpson <me@simpo.org>, <http://simpo.org>
 define([
 	"dojo/_base/declare",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"dojo/dom-attr"
 ], function(
-	declare, lang
-) {
+	declare, lang, domAttr
+){
 	"use strict";
 	
 	var construct = declare(null, {
@@ -79,17 +80,21 @@ define([
 				return true;
 			}
 			
-			if(toString.call(value) === '[object String]'){
-				if(lang.trim(value.replace(/\&nbsp\;/g," ")) === ""){
-					return true;
-				}
-			}else if(Object.prototype.toString.call(value) === '[object Object]'){
-				return (this._isEmptyObject(value) || this._isBlankObject(value));
+			if(Object.prototype.toString.call(value) === '[object String]'){
+				return (lang.trim(value.replace(/\&nbsp\;/g," ")) === "");
 			}else if(Object.prototype.toString.call(value) === '[object Array]'){
 				if(value.length == 0){
 					return true;
 				}else{
 					return this._isBlankArray(value);
+				}
+			}else if(Object.prototype.toString.call(value) === '[object Number]'){
+				return (value === 0);
+			}else if((Object.prototype.toString.call(value) === '[object Object]') || (typeof value === "object")){
+				if(this._isElement(value)){
+					return this._isBlank(domAttr.get(value, "innerHTML"));
+				}else{
+					return (this._isEmptyObject(value) || this._isBlankObject(value));	
 				}
 			}
 			
@@ -123,6 +128,14 @@ define([
 			}
 			
 			return true;
+		},
+		
+		_isElement: function(o){
+			return (
+				(typeof HTMLElement === "object") ?
+					(o instanceof HTMLElement) :
+					(o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string")
+			);
 		}
 	});
 	
