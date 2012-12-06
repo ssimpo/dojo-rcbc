@@ -118,7 +118,7 @@ define([
 			}else if((this._isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
 				try{
 					for(var key in constructor){
-						this[propName][key] = constructor[key];
+						this[propName].set(key, constructor[key]);
 					}
 				}catch(e){}
 			}
