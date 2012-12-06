@@ -14,10 +14,13 @@ define([
 	"dojo/i18n!./nls/serviceDisplayer",
 	"dojo/text!./views/serviceDisplayer.html",
 	"dojo/request",
+	"dojo/hash",
+	"dojo/topic",
 	"dojo/_base/lang",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/_base/array",
+	"dojo/io-query",
 	"./serviceDisplayer/contactsTable",
 	"./serviceDisplayer/venueDisplayer",
 	"./serviceDisplayer/costTable",
@@ -27,7 +30,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	request, lang, domConstr, domAttr, array,
+	request, hash, topic, lang, domConstr, domAttr, array, ioQuery,
 	
 	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
 ){
@@ -66,6 +69,23 @@ define([
 		"_updateUrl": "/test/stephen/pin.nsf/getService?openagent",
 		"_tested": "DD0C5C64625A045380257A48002B0D32",
 		
+		postCreate: function(){
+			topic.subscribe(
+				"/dojo/hashchange",
+				lang.hitch(this, this._hashChange)
+			);
+			this._hashChange();
+		},
+		
+		_hashChange: function(cHash){
+			cHash = ((cHash == undefined) ? hash() : cHash);
+			var query = ioQuery.queryToObject(cHash);
+			
+			if(query.hasOwnProperty("id")){
+				this._setValueAttr(query.id);
+			}
+		},
+		
 		_loadServiceJson: function(id){
 			if(!this._isBlank(id)){
 				if(id.length == 32){
@@ -90,14 +110,15 @@ define([
 		},
 		
 		_jsonLoaded: function(data){
-			console.log(data);
 			this.data = data;
 			this._createContent();
 			
 			if(this._tested !== true){
 				var id = this._tested;
 				this._tested = true;
-				this._setValueAttr(id);
+				hash(ioQuery.objectToQuery({
+					"id": id
+				}));
 			}
 		},
 		
