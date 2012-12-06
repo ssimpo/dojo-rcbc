@@ -108,6 +108,12 @@ define([
 						domConstr.place(this[propName].domNode, this.domNode);
 					}
 				}
+			}else if((this._isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
+				try{
+					for(var key in constructor){
+						this[propName][key] = constructor[key];
+					}
+				}catch(e){}
 			}
 		},
 		
