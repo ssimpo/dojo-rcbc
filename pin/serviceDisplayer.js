@@ -43,8 +43,7 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
-		"id": "",
-		"data": {},
+		"value": {},
 		
 		"titleNode": null,
 		"keyFeaturesNode": null,
@@ -64,9 +63,9 @@ define([
 			["referralOnly", "referralOnlyDetails"]
 		],
 		
-		_setDataAttr: function(data){
-			this.data = data;
-			this._createContent();
+		_setValueAttr: function(value){
+			this.value = value;
+			this._createContent(value);
 		},
 		
 		_createAttachPoint: function(propName, tagName, constructor){
@@ -92,24 +91,24 @@ define([
 			}
 		},
 		
-		_createContent: function(){
-			this._createTitle();
-			this._createServiceList();
-			this._createDescription();
-			this._createKeyFeatures();
-			this._createContactsTable();
-			this._createVenues();
-			this._createCostTable();
-			this._createAccessTable();
-			this._createServiceHoursTable();
+		_createContent: function(value){
+			this._createTitle(value);
+			this._createServiceList(value);
+			this._createDescription(value);
+			this._createKeyFeatures(value);
+			this._createContactsTable(value);
+			this._createVenues(value);
+			this._createCostTable(value);
+			this._createAccessTable(value);
+			this._createServiceHoursTable(value);
 		},
 		
-		_createServiceList: function(){
+		_createServiceList: function(value){
 			this._createAttachPoint("serviceListNode", "ul");
 			domConstr.empty(this.serviceListNode);
 			
-			if(!this._isBlank(this.data.services)){
-				array.forEach(this.data.services, function(service){
+			if(!this._isBlank(value.services)){
+				array.forEach(value.services, function(service){
 					var li = domConstr.create("li", {}, this.serviceListNode);
 					domConstr.create("a", {
 						"innerHTML": service.title,
@@ -119,22 +118,22 @@ define([
 			}
 		},
 		
-		_createTitle: function(){
+		_createTitle: function(value){
 			this._createAttachPoint("titleNode", "h1");
 			domConstr.empty(this.titleNode);
 			
-			var title = this._getTitle();
+			var title = this._getTitle(value);
 			title = ((title === "") ? "Unknown Service": title);
 			domAttr.set(this.titleNode, "innerHTML", title);
 			
 			return this.titleNode;
 		},
 		
-		_createKeyFeatures: function(){
+		_createKeyFeatures: function(value){
 			this._createAttachPoint("keyFeaturesNode", "div");
 			domConstr.empty(this.keyFeaturesNode);
 			
-			var ol = this._createFeaturesOl();
+			var ol = this._createFeaturesOl(value);
 			if(!this._isBlank(ol)){
 				domConstr.create("h2", {
 					"innerHTML": "Key Features:"
@@ -145,11 +144,11 @@ define([
 			return this.keyFeaturesNode;
 		},
 		
-		_createFeaturesOl: function(){
+		_createFeaturesOl: function(value){
 			var ol = domConstr.create("ol");
 			
 			array.forEach([1,2,3,4,5,6], function(key){
-				var feature = this._getField("keyFeature"+key);
+				var feature = this._getField(value,"keyFeature"+key);
 				if(!this._isBlank(feature)){
 					domConstr.create("li", {
 						"innerHTML": feature
@@ -160,11 +159,11 @@ define([
 			return ol;
 		},
 		
-		_createDescription: function(){
+		_createDescription: function(value){
 			this._createAttachPoint("descriptionNode", "div");
 			domConstr.empty(this.descriptionNode);
 			
-			var description = this._getField("description");
+			var description = this._getField(value, "description");
 			this._createParagraphNodesFromText(
 				this.descriptionNode, description
 			);
@@ -183,20 +182,25 @@ define([
 			return parentNode;
 		},
 		
-		_getField: function(fieldName){
+		_getField: function(data, fieldName){
+			if(fieldName == undefined){
+				fieldName = data;
+				data = this.value;
+			}
+			
 			var value = ""
 			
-			if(this.data.hasOwnProperty(fieldName)){
-				value = this.data[fieldName];
+			if(data.hasOwnProperty(fieldName)){
+				value = data[fieldName];
 			}
 			
 			return lang.trim(value);
 		},
 		
-		_getTitle: function(){
+		_getTitle: function(value){
 			var title = "";
-			var serviceTitle = this._getField("serviceName");
-			var orgTitle = this._getField("orgName");
+			var serviceTitle = this._getField(value, "serviceName");
+			var orgTitle = this._getField(value, "orgName");
 			
 			if((serviceTitle === "") && (orgTitle !== "")){
 				title = orgTitle;
@@ -213,8 +217,8 @@ define([
 			return title;
 		},
 		
-		_createServiceHoursTable: function(){
-			this._getTableWidgetDom({
+		_createServiceHoursTable: function(value){
+			this._getTableWidgetDom(value, {
 				"propertyNode": "serviceHoursWidget",
 				"constructor": serviceHoursTable,
 				"field": "servicePeriods",
@@ -223,9 +227,9 @@ define([
 			return this.serviceHoursWidget.domNode;
 		},
 		
-		_createAccessTable: function(){
+		_createAccessTable: function(value){
 			if(this._hasAccessDetails()){
-				this._getTableWidgetDom({
+				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
 					"constructor": accessTable,
 					"title": strings.accessDetails
@@ -236,8 +240,8 @@ define([
 			return domConstr.create("div");
 		},
 		
-		_createCostTable: function(){
-			this._getTableWidgetDom({
+		_createCostTable: function(value){
+			this._getTableWidgetDom(value, {
 				"propertyNode": "costsWidget",
 				"constructor": costTable,
 				"field": "costs",
@@ -246,8 +250,8 @@ define([
 			return this.costsWidget.domNode;
 		},
 		
-		_createContactsTable: function(){
-			this._getTableWidgetDom({
+		_createContactsTable: function(value){
+			this._getTableWidgetDom(value, {
 				"propertyNode": "contactsWidget",
 				"constructor": contactsTable,
 				"field": "contacts",
@@ -256,8 +260,8 @@ define([
 			return this.contactsWidget.domNode;
 		},
 		
-		_getTableWidgetDom: function(args){
-			args = this._getTableWidgetSetDataArgument(args);
+		_getTableWidgetDom: function(value, args){
+			args = this._getTableWidgetSetDataArgument(value, args);
 			
 			var node;
 			if(args.hasOwnProperty("data")){
@@ -298,11 +302,11 @@ define([
 			});
 		},
 		
-		_getTableWidgetSetDataArgument: function(args){
+		_getTableWidgetSetDataArgument: function(value, args){
 			if(args.hasOwnProperty("field")){
-				args.data = this.data[args.field];
+				args.data = value[args.field];
 			}else{
-				args.data = this.data;	
+				args.data = value;	
 			}
 			
 			return args;
@@ -322,15 +326,15 @@ define([
 				return true;
 			}
 			
-			if(this._isBlank(this.data.accessDetails)){
+			if(this._isBlank(this.value.accessDetails)){
 				return true;
 			}
 			return false;
 		},
 		
 		_hasAccessCheck: function(enableField, contentField){
-			if(this._isTrue(this.data[enableField])){
-				if(this._isBlank(this.data[contentField])){
+			if(this._isTrue(this.value[enableField])){
+				if(this._isBlank(this.value[contentField])){
 					return true;
 				}
 			}
@@ -339,11 +343,11 @@ define([
 		},
 		
 		_hasAccessCheckAge: function(){
-			if(this._isTrue(this.data.ageTarget)){
-				if((this._isBlank(this.data.age1)) || (this._isBlank(this.data.age2))){
+			if(this._isTrue(this.value.ageTarget)){
+				if((this._isBlank(this.value.age1)) || (this._isBlank(this.value.age2))){
 					return true;
 				}
-				if((this._isBlank(this.data.age1Months)) || (this._isBlank(this.data.age2Months))){
+				if((this._isBlank(this.value.age1Months)) || (this._isBlank(this.value.age2Months))){
 					return true;
 				}
 			}
@@ -351,12 +355,12 @@ define([
 			return false;
 		},
 		
-		_createVenues: function(){
+		_createVenues: function(value){
 			this._createAttachPoint("venuesNode", "div");
 			domConstr.empty(this.venuesNode);
 			
-			if(!this._isBlank(this.data.venues)){
-				array.forEach(this.data.venues, function(venue){
+			if(!this._isBlank(value.venues)){
+				array.forEach(value.venues, function(venue){
 					var venueDom = this._createVenue(venue);
 					if(venueDom !== null){
 						domConstr.place(venueDom, this.venuesNode);
