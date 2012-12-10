@@ -58,6 +58,7 @@ define([
 		"accessWidget": null,
 		"serviceHoursWidget": null,
 		"venuesNode": null,
+		"serviceListNode": null,
 		
 		"_accessTesters": [
 			["appointmentOnly", "appointmentOnlyDetails"],
@@ -91,6 +92,7 @@ define([
 				if(id.length == 32){
 					request(
 						this._updateUrl + "&id=" + id, {
+							//"handleAs": "text",
 							"handleAs": "json",
 							"preventCache": true
 						}
@@ -105,20 +107,25 @@ define([
 		},
 		
 		_setValueAttr: function (id){
-			this._loadServiceJson(id);
+			topic.publish("rcbc/pin/serviceChange", {
+				"idFrom": this.value,
+				"idTo": id
+			});
 			this.value = id;
+			this._loadServiceJson(id);
 		},
 		
 		_jsonLoaded: function(data){
+			console.log(data);
 			this.data = data;
 			this._createContent();
 			
 			if(this._tested !== true){
 				var id = this._tested;
 				this._tested = true;
-				hash(ioQuery.objectToQuery({
-					"id": id
-				}));
+				//hash(ioQuery.objectToQuery({
+					//"id": id
+				//}));
 			}
 		},
 		
@@ -147,6 +154,7 @@ define([
 		
 		_createContent: function(){
 			this._createTitle();
+			this._createServiceList();
 			this._createDescription();
 			this._createKeyFeatures();
 			this._createContactsTable();
@@ -154,6 +162,21 @@ define([
 			this._createCostTable();
 			this._createAccessTable();
 			this._createServiceHoursTable();
+		},
+		
+		_createServiceList: function(){
+			this._createAttachPoint("serviceListNode", "ul");
+			domConstr.empty(this.serviceListNode);
+			
+			if(!this._isBlank(this.data.services)){
+				array.forEach(this.data.services, function(service){
+					var li = domConstr.create("li", {}, this.serviceListNode);
+					domConstr.create("a", {
+						"innerHTML": service.title,
+						"href": service.href
+					}, li);
+				}, this);
+			}
 		},
 		
 		_createTitle: function(){
@@ -241,6 +264,10 @@ define([
 				title = serviceTitle + " ("+orgTitle+")";
 			}else{
 				title = serviceTitle;
+			}
+			
+			if(this._isBlank(title)){
+				title = this._getField("title");
 			}
 			
 			return title;
