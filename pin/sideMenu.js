@@ -13,9 +13,7 @@ define([
 	"dojo/i18n",
 	"dojo/i18n!./nls/sideMenu",
 	"dojo/text!./views/sideMenu.html",
-	"dojo/topic",
 	"dojo/_base/lang",
-	"dojo/request",
 	"dojo/_base/array",
 	"dojo/dom-construct",
 	"dojo/dom-class"
@@ -23,7 +21,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	topic, lang, request, array, domConstr, domClass
+	lang, array, domConstr, domClass
 ){
 	"use strict";
 	
@@ -43,40 +41,6 @@ define([
 		
 		"_updateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
 		
-		
-		postCreate: function(){
-			topic.subscribe(
-				"rcbc/pin/serviceChange",
-				lang.hitch(this, this._serviceChange)
-			);
-		},
-		
-		_serviceChange: function(event){
-			if(!this._isBlank(event.idTo)){
-				if(event.idTo.length == 32){
-					this._loadServiceJson(event.idTo);
-				}
-			}
-		},
-		
-		_loadServiceJson: function(id){
-			if(!this._isBlank(id)){
-				if(id.length == 32){
-					request(
-						this._updateUrl + "&id=" + id, {
-							"handleAs": "json",
-							"preventCache": true
-						}
-					).then(
-						lang.hitch(this, this._jsonLoaded),
-						function(err){
-							console.error(err);
-						}
-					);
-				}
-			}
-		},
-		
 		_setDataAttr: function(data){
 			domConstr.empty(this.domNode);
 			this._parseMenuData(data);
@@ -91,22 +55,12 @@ define([
 			this.section = section;
 		},
 		
-		_jsonLoaded: function(data){
-			this.set("section", data.section);
-			this.set("data", data.items);
-		},
-		
 		_updateClass: function(nClass, oldClass){
 			if(nClass !== oldClass){
 				if(!this._isBlank(nClass)){
 					if(!this._isBlank(oldClass)){
 						domClass.remove(this.domNode, oldClass);
 					}
-					
-					topic.publish("rcbc/pin/sideMenuClassUpdate", {
-						"classFrom": oldClass,
-						"classTo": nClass
-					});
 					
 					domClass.add(this.domNode, nClass);
 				}
@@ -121,11 +75,6 @@ define([
 						domConstr.place(listitem, this.domNode);
 					}
 				}, this);
-				
-				topic.publish("rcbc/pin/sideMenuUpdate", {
-					"dataFrom": this.data,
-					"dataTo": data
-				});
 			}
 		},
 		
