@@ -105,12 +105,12 @@ define([
 		
 		_jsonMenuLoaded: function(data){
 			this.sideMenu.set("section", data.section);
-			this.sideMenu.set("data", data.items);
+			this.sideMenu.set("value", data.items);
 		},
 		
 		_jsonServiceLoaded: function(data){
 			console.log(data);
-			this.serviceDisplayer.set("data", data);
+			this.serviceDisplayer.set("value", data);
 			
 		},
 	});

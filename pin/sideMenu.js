@@ -36,15 +36,15 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
-		"data": [],
+		"value": [],
 		"section": "",
 		
 		"_updateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
 		
-		_setDataAttr: function(data){
+		_setValueAttr: function(value){
 			domConstr.empty(this.domNode);
-			this._parseMenuData(data);
-			this.data = data;
+			this._parseMenuData(value);
+			this.value = value;
 		},
 		
 		_setSectionAttr: function(section){
@@ -67,9 +67,9 @@ define([
 			}
 		},
 		
-		_parseMenuData: function(data){
-			if(!this._isBlank(data)){
-				array.forEach(data, function(item){
+		_parseMenuData: function(value){
+			if(!this._isBlank(value)){
+				array.forEach(value, function(item){
 					var listitem = this._createItem(item);
 					if(!this._isBlank(listitem)){
 						domConstr.place(listitem, this.domNode);
