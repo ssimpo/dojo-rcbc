@@ -41,7 +41,7 @@ define([
 		"columnWidths": [30],
 		
 		_setDataAttr: function(data){
-			this.data = data;
+			this.data = ((data == undefined) ? [] : data);
 			this._processContacts();
 		},
 		
