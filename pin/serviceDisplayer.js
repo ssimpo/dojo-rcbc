@@ -103,6 +103,17 @@ define([
 			this._createServiceHoursTable(value);
 		},
 		
+		_createTitle: function(value){
+			this._createAttachPoint("titleNode", "h1");
+			domConstr.empty(this.titleNode);
+			
+			var title = this._getTitle(value);
+			title = ((title === "") ? "Unknown Service": title);
+			domAttr.set(this.titleNode, "innerHTML", title);
+			
+			return this.titleNode;
+		},
+		
 		_createServiceList: function(value){
 			this._createAttachPoint("serviceListNode", "ul");
 			domConstr.empty(this.serviceListNode);
@@ -118,15 +129,27 @@ define([
 			}
 		},
 		
-		_createTitle: function(value){
-			this._createAttachPoint("titleNode", "h1");
-			domConstr.empty(this.titleNode);
+		_createDescription: function(value){
+			this._createAttachPoint("descriptionNode", "div");
+			domConstr.empty(this.descriptionNode);
 			
-			var title = this._getTitle(value);
-			title = ((title === "") ? "Unknown Service": title);
-			domAttr.set(this.titleNode, "innerHTML", title);
+			var description = this._getField(value, "description");
+			this._createParagraphNodesFromText(
+				this.descriptionNode, description
+			);
 			
-			return this.titleNode;
+			return this.descriptionNode;
+		},
+		
+		_createParagraphNodesFromText: function(parentNode, text){
+			var paras = text.split("\n\n");
+			array.forEach(paras, function(para){
+				domConstr.create("p", {
+					"innerHTML": para.replace(/\n/g, "<br />")
+				}, parentNode);
+			}, this);
+			
+			return parentNode;
 		},
 		
 		_createKeyFeatures: function(value){
@@ -159,42 +182,74 @@ define([
 			return ol;
 		},
 		
-		_createDescription: function(value){
-			this._createAttachPoint("descriptionNode", "div");
-			domConstr.empty(this.descriptionNode);
-			
-			var description = this._getField(value, "description");
-			this._createParagraphNodesFromText(
-				this.descriptionNode, description
-			);
-			
-			return this.descriptionNode;
+		_createContactsTable: function(value){
+			this._getTableWidgetDom(value, {
+				"propertyNode": "contactsWidget",
+				"constructor": contactsTable,
+				"field": "contacts",
+				"title": strings.contactsTitle
+			});
+			return this.contactsWidget.domNode;
 		},
 		
-		_createParagraphNodesFromText: function(parentNode, text){
-			var paras = text.split("\n\n");
-			array.forEach(paras, function(para){
-				domConstr.create("p", {
-					"innerHTML": para.replace(/\n/g, "<br />")
-				}, parentNode);
-			}, this);
+		_createVenues: function(value){
+			this._createAttachPoint("venuesNode", "div");
+			domConstr.empty(this.venuesNode);
 			
-			return parentNode;
+			if(!this._isBlank(value.venues)){
+				array.forEach(value.venues, function(venue){
+					var venueDom = this._createVenue(venue);
+					if(venueDom !== null){
+						domConstr.place(venueDom, this.venuesNode);
+					}
+				},this);
+			}
+			
+			return this.venuesNode;
 		},
 		
-		_getField: function(data, fieldName){
-			if(fieldName == undefined){
-				fieldName = data;
-				data = this.value;
+		_createVenue: function(venue){
+			var venueDom = null;
+			
+			if(venue.venueId != ""){
+				var venueWidget = new venueDisplayer(venue);
+				venueDom = venueWidget.domNode;
 			}
 			
-			var value = ""
-			
-			if(data.hasOwnProperty(fieldName)){
-				value = data[fieldName];
+			return venueDom;
+		},
+		
+		_createCostTable: function(value){
+			this._getTableWidgetDom(value, {
+				"propertyNode": "costsWidget",
+				"constructor": costTable,
+				"field": "costs",
+				"title": strings.costDetails
+			});
+			return this.costsWidget.domNode;
+		},
+		
+		_createAccessTable: function(value){
+			if(this._hasAccessDetails()){
+				this._getTableWidgetDom(value, {
+					"propertyNode": "accessWidget",
+					"constructor": accessTable,
+					"title": strings.accessDetails
+				});
+				return this.accessWidget.domNode;
 			}
 			
-			return lang.trim(value);
+			return domConstr.create("div");
+		},
+		
+		_createServiceHoursTable: function(value){
+			this._getTableWidgetDom(value, {
+				"propertyNode": "serviceHoursWidget",
+				"constructor": serviceHoursTable,
+				"field": "servicePeriods",
+				"title": strings.serviceHours
+			});
+			return this.serviceHoursWidget.domNode;
 		},
 		
 		_getTitle: function(value){
@@ -217,47 +272,19 @@ define([
 			return title;
 		},
 		
-		_createServiceHoursTable: function(value){
-			this._getTableWidgetDom(value, {
-				"propertyNode": "serviceHoursWidget",
-				"constructor": serviceHoursTable,
-				"field": "servicePeriods",
-				"title": strings.serviceHours
-			});
-			return this.serviceHoursWidget.domNode;
-		},
-		
-		_createAccessTable: function(value){
-			if(this._hasAccessDetails()){
-				this._getTableWidgetDom(value, {
-					"propertyNode": "accessWidget",
-					"constructor": accessTable,
-					"title": strings.accessDetails
-				});
-				return this.accessWidget.domNode;
+		_getField: function(data, fieldName){
+			if(fieldName == undefined){
+				fieldName = data;
+				data = this.value;
 			}
 			
-			return domConstr.create("div");
-		},
-		
-		_createCostTable: function(value){
-			this._getTableWidgetDom(value, {
-				"propertyNode": "costsWidget",
-				"constructor": costTable,
-				"field": "costs",
-				"title": strings.costDetails
-			});
-			return this.costsWidget.domNode;
-		},
-		
-		_createContactsTable: function(value){
-			this._getTableWidgetDom(value, {
-				"propertyNode": "contactsWidget",
-				"constructor": contactsTable,
-				"field": "contacts",
-				"title": strings.contactsTitle
-			});
-			return this.contactsWidget.domNode;
+			var value = ""
+			
+			if(data.hasOwnProperty(fieldName)){
+				value = data[fieldName];
+			}
+			
+			return lang.trim(value);
 		},
 		
 		_getTableWidgetDom: function(value, args){
@@ -353,33 +380,6 @@ define([
 			}
 			
 			return false;
-		},
-		
-		_createVenues: function(value){
-			this._createAttachPoint("venuesNode", "div");
-			domConstr.empty(this.venuesNode);
-			
-			if(!this._isBlank(value.venues)){
-				array.forEach(value.venues, function(venue){
-					var venueDom = this._createVenue(venue);
-					if(venueDom !== null){
-						domConstr.place(venueDom, this.venuesNode);
-					}
-				},this);
-			}
-			
-			return this.venuesNode;
-		},
-		
-		_createVenue: function(venue){
-			var venueDom = null;
-			
-			if(venue.venueId != ""){
-				var venueWidget = new venueDisplayer(venue);
-				venueDom = venueWidget.domNode;
-			}
-			
-			return venueDom;
 		}
 	});
 	
