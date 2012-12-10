@@ -121,8 +121,10 @@ define([
 			if(!this._isBlank(value.services)){
 				array.forEach(value.services, function(service){
 					var li = domConstr.create("li", {}, this.serviceListNode);
+					var title = this._getTitle(service);
+					
 					domConstr.create("a", {
-						"innerHTML": service.title,
+						"innerHTML": title,
 						"href": service.href
 					}, li);
 				}, this);

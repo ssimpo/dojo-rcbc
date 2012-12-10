@@ -102,6 +102,14 @@ define([
 			return false;
 		},
 		
+		_isObject: function(value){
+			return ((Object.prototype.toString.call(value) === '[object Object]') || (typeof value === "object"));
+		},
+		
+		_isArray: function(value){
+			return (Object.prototype.toString.call(value) === '[object Array]');
+		},
+		
 		_isBlankArray: function(ary){
 			for(var i = 0; i < ary.length; i++){
 				if(!this._isBlank(ary[i])){
