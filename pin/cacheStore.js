@@ -14,10 +14,12 @@ define([
 	"dojo/on",
 	"dojo/_base/array",
 	"dojo/request",
-	"dojo/topic"
+	"dojo/topic",
+	"simpo/webworker",
+	"dojo/json"
 ], function(
 	declare, _variableTestMixin, store, aspect, lang, has, on, array,
-	request, topic
+	request, topic, webworker, JSON
 ){
 	"use strict";
 	
@@ -29,11 +31,45 @@ define([
 		
 		"_menuUpdateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
 		"_serviceUpdateUrl": "/test/stephen/pin.nsf/getService?openagent",
-		
+		"_worker":{},
 		
 		constructor: function(args){
 			aspect.around(this, "get", lang.hitch(this, this._localGet));
-			this._updateStubs();
+			this._initWorker();
+			//this._updateStubs();
+			
+			this._worker.postMessage({
+				"type": "command",
+				"command": "updateStubs"
+			});
+		},
+		
+		_initWorker: function(){
+			this._worker = new webworker({
+				"src":"/scripts/rcbc/pin/workers/getData"
+			});
+			
+			on(
+			   this._worker,
+			   "message",
+			   lang.hitch(this, this._handleWorkerMessage)
+			);
+		},
+		
+		_handleWorkerMessage: function(e){
+			var message = e.message.message;
+			var type = e.message.type;
+			
+			if(this._isEqual(type, "updateStubs")){
+				this._updateStubsSuccess(message);
+			}else if(this._isEqual(type, "updateCache")){
+				try{
+					var data = JSON.parse(message);
+					this._updateCacheSuccess(data);
+				}catch(e){
+					
+				}
+			}
 		},
 		
 		updateService: function(id){
@@ -66,33 +102,36 @@ define([
 			}	
 		},
 		
-		_updateStubs: function(){
-			request(
-				"/servicesStub.json", {
-					"handleAs": "json",
-					"preventCache": true
-				}
-			).then(
-				lang.hitch(this, this._updateStubsSuccess),
-				function(e){
-					console.error(e);
-				}
-			);
+		_updateCacheSuccess: function(data){
+			console.log("UPDATING CACHE", data);
+			array.forEach(data.services, function(service){
+				this._updateServiceById(service);
+			}, this);
 		},
 		
 		_updateStubsSuccess: function(data){
+			var servicesToCache = new Array();
+			
 			array.forEach(data.services, function(service, n){
 				if(service.hasOwnProperty("id")){
 					var lookup = this.getService(service.id.toLowerCase());
 					if(!this._isBlank(lookup)){
 						if(lookup.isStub){
 							this._updateServiceById(service);
+							servicesToCache.push(service.id);
 						}
 					}else{
 						this._updateServiceById(service);
+						servicesToCache.push(service.id);
 					}
 				}
 			}, this);
+			
+			this._worker.postMessage({
+				"type": "command",
+				"command": "updateCache",
+				"data": servicesToCache
+			});
 		},
 		
 		_updateServiceById: function(service){
