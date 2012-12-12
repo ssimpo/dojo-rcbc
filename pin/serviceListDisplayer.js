@@ -38,15 +38,9 @@ define([
 		
 		"value": [],
 		
-		_setTitleAttr: function(value){
-			this.title = value;
-			this._createTitle(value);
-		},
-		
 		_setValueAttr: function(value){
 			this.value = value;
 			if(this._isBlank(this.value)){
-				this.set("title", "");
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
 					domConstr.empty(this.serviceListNode);
 				}
@@ -60,7 +54,6 @@ define([
 		},
 		
 		_clear: function(){
-			this._ifHasClear("titleNode", true);
 			this._ifHasClear("serviceListNode");
 		},
 		
@@ -107,25 +100,6 @@ define([
 			this._createServiceList(value);
 		},
 		
-		_createTitle: function(value){
-			if(this._isBlank(value)){
-				if(this._isElement(this.titleNode) || this._isWidget(this.titleNode)){
-					domConstr.destroy(this.titleNode);
-				}
-				return null;
-			}else{
-				this._createAttachPoint("titleNode", "h1");
-				domConstr.place(this.titleNode, this.domNode, "first");
-				domConstr.empty(this.titleNode);
-			
-				var title = this._getTitle(value);
-				domAttr.set(this.titleNode, "innerHTML", this.title);
-			
-				return this.titleNode;
-			}
-			
-		},
-		
 		_createServiceList: function(value){
 			this._createAttachPoint("serviceListNode", "ul");
 			domConstr.empty(this.serviceListNode);
@@ -154,10 +128,6 @@ define([
 				title = serviceTitle + " ("+orgTitle+")";
 			}else{
 				title = serviceTitle;
-			}
-			
-			if(this._isBlank(title)){
-				title = this._getField("title");
 			}
 			
 			return title;
