@@ -53,7 +53,6 @@ define([
 		"accessWidget": null,
 		"serviceHoursWidget": null,
 		"venuesNode": null,
-		"serviceListNode": null,
 		
 		"_accessTesters": [
 			["appointmentOnly", "appointmentOnlyDetails"],
@@ -65,7 +64,38 @@ define([
 		
 		_setValueAttr: function(value){
 			this.value = value;
-			this._createContent(value);
+			if(this._isBlank(this.value)){
+				this._clear();
+			}else{
+				this._createContent(value);
+			}
+		},
+		
+		clear: function(){
+			this.set("value",{});
+		},
+		
+		_clear: function(){
+			this._ifHasClear("titleNode", true);
+			this._ifHasClear("descriptionNode");
+			this._ifHasClear("keyFeaturesNode");
+			this._ifHasClear("contactsWidget");
+			this._ifHasClear("costsWidget");
+			this._ifHasClear("accessWidget");
+			this._ifHasClear("serviceHoursWidget");
+			this._ifHasClear("venuesNode");
+		},
+		
+		_ifHasClear: function(nodeName, destroy){
+			destroy = ((destroy === undefined) ? false: destroy);
+			if(this._isElement(this[nodeName]) || this._isWidget(this[nodeName])){
+				if(destroy){
+					domConstr.destroy(this[nodeName]);
+					this[nodeName] = null;
+				}else{
+					domConstr.empty(this[nodeName]);
+				}
+			}
 		},
 		
 		_createAttachPoint: function(propName, tagName, constructor){
@@ -93,7 +123,6 @@ define([
 		
 		_createContent: function(value){
 			this._createTitle(value);
-			this._createServiceList(value);
 			this._createDescription(value);
 			this._createKeyFeatures(value);
 			this._createContactsTable(value);
@@ -105,30 +134,14 @@ define([
 		
 		_createTitle: function(value){
 			this._createAttachPoint("titleNode", "h1");
+			domConstr.place(this.titleNode, this.domNode, "first");
 			domConstr.empty(this.titleNode);
 			
 			var title = this._getTitle(value);
-			title = ((title === "") ? "Unknown Service": title);
+			title = ((title === "") ? "&nbsp;": title);
 			domAttr.set(this.titleNode, "innerHTML", title);
 			
 			return this.titleNode;
-		},
-		
-		_createServiceList: function(value){
-			this._createAttachPoint("serviceListNode", "ul");
-			domConstr.empty(this.serviceListNode);
-			
-			if(!this._isBlank(value.services)){
-				array.forEach(value.services, function(service){
-					var li = domConstr.create("li", {}, this.serviceListNode);
-					var title = this._getTitle(service);
-					
-					domConstr.create("a", {
-						"innerHTML": title,
-						"href": service.href
-					}, li);
-				}, this);
-			}
 		},
 		
 		_createDescription: function(value){
