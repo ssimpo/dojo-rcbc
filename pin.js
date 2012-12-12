@@ -60,8 +60,11 @@ define([
 		_init: function(){
 			this._store = new store();
 			//this._store.clear(true);
-			//this._store._updateStubs();
-			
+			this._initTopicSubscriptions();
+			this._hashChange();
+		},
+		
+		_initTopicSubscriptions: function(){
 			topic.subscribe(
 				"/dojo/hashchange",
 				lang.hitch(this, this._hashChange)
@@ -70,7 +73,6 @@ define([
 				"/rcbc/pin/updateService",
 				lang.hitch(this, this._serviceDataUpdate)
 			);
-			this._hashChange();
 		},
 		
 		_hashChange: function(cHash){
