@@ -25,10 +25,44 @@ define([
 		"compress": true,
 		"encrypt": false,
 		
+		"_menuUpdateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
+		"_serviceUpdateUrl": "/test/stephen/pin.nsf/getService?openagent",
+		
 		
 		constructor: function(args){
 			aspect.around(this, "get", lang.hitch(this, this._localGet));
 			this._updateStubs();
+		},
+		
+		updateService: function(id){
+			if(!this._isBlank(id)){
+				if(id.length == 32){
+					request(
+						this._serviceUpdateUrl + "&id=" + id, {
+							"handleAs": "json",
+							"preventCache": true
+						}
+					).then(
+						lang.hitch(this, this._updateServiceSuccess),
+						function(err){
+							console.error(err);
+						}
+					);
+				}
+			}
+		},
+		
+		_updateServiceSuccess: function(data){
+			if(this._isObject(data)){
+				if(data.hasOwnProperty("services")){
+					if(this._isArray(data.services)){
+						array.forEach(data.services, function(service){
+							var data = this._convertServiceToDataItem(service);
+							this.put(data);
+						}, this);
+					}
+				}
+			}	
 		},
 		
 		_updateStubs: function(){
@@ -48,18 +82,49 @@ define([
 		_updateStubsSuccess: function(data){
 			array.forEach(data.services, function(service, n){
 				if(service.hasOwnProperty("id")){
-					data.services[n].id = data.services[n].id.toLowerCase();
-					data.services[n].category1 = this._parseCategory(service, 1);
-					data.services[n].category2 = this._parseCategory(service, 2);
-					
-					this.put({
-						"id": data.services[n].id,
-						"type": "service",
-						"data": data.services[n],
-						"isStub": true
-					});
+					var lookup = this.getService(service.id.toLowerCase());
+					if(!this._isBlank(lookup)){
+						if(lookup.isStub){
+							this._updateServiceById(service);
+						}
+					}else{
+						this._updateServiceById(service);
+					}
 				}
 			}, this);
+		},
+		
+		_updateServiceById: function(service){
+			var data = this._convertServiceToDataItem(service);
+			this.put(data);
+		},
+		
+		_convertServiceToDataItem: function(service){
+			service.id = service.id.toLowerCase();
+			service.category1 = this._parseCategory(service, 1);
+			service.category2 = this._parseCategory(service, 2);
+			service.isStub = ((service.hasOwnProperty("isStub")) ? service.isStub : true);
+			
+			return {
+				"id": service.id,
+				"type": "service",
+				"data": service,
+				"isStub": service.isStub
+			}
+		},
+		
+		getService: function(id){
+			var service = this.query({"id":id});
+			if(!this._isBlank(service)){
+				service = service[0];
+				if(service.hasOwnProperty("type")){
+					if(service.type == "service"){
+						return service;
+					}
+				}
+			}
+			
+			return null;
 		},
 		
 		getCategory: function(section, category){
