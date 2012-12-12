@@ -13,9 +13,11 @@ define([
 	"dojo/has",
 	"dojo/on",
 	"dojo/_base/array",
-	"dojo/request"
+	"dojo/request",
+	"dojo/topic"
 ], function(
-	declare, _variableTestMixin, store, aspect, lang, has, on, array, request
+	declare, _variableTestMixin, store, aspect, lang, has, on, array,
+	request, topic
 ){
 	"use strict";
 	
@@ -57,8 +59,7 @@ define([
 				if(data.hasOwnProperty("services")){
 					if(this._isArray(data.services)){
 						array.forEach(data.services, function(service){
-							var data = this._convertServiceToDataItem(service);
-							this.put(data);
+							this._updateServiceById(service);
 						}, this);
 					}
 				}
@@ -97,6 +98,7 @@ define([
 		_updateServiceById: function(service){
 			var data = this._convertServiceToDataItem(service);
 			this.put(data);
+			topic.publish("/rcbc/pin/updateService", data.id);
 		},
 		
 		_convertServiceToDataItem: function(service){

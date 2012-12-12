@@ -48,6 +48,8 @@ define([
 		
 		"_store": {},
 		
+		"id": "",
+		
 		
 		postCreate: function(){
 			this._init();
@@ -62,6 +64,10 @@ define([
 				"/dojo/hashchange",
 				lang.hitch(this, this._hashChange)
 			);
+			topic.subscribe(
+				"/rcbc/pin/updateService",
+				lang.hitch(this, this._serviceDataUpdate)
+			);
 			this._hashChange();
 		},
 		
@@ -72,15 +78,18 @@ define([
 			if(query.hasOwnProperty("id")){
 				console.log("Changing to service: ", query.id);
 				this.serviceListDisplayer.clear();
+				this.set("id", query.id.toLowerCase());
 				this._displayService(query.id.toLowerCase());
 			}else if(query.hasOwnProperty("section") && query.hasOwnProperty("category")){
 				console.log("Changing to category: ", query.category, " in: ", query.section);
 				this.serviceDisplayer.clear();
+				this.set("id", "");
 				this._displayCategoryList(query.section, query.category);
 			}else{
 				console.log("CLEARING ALL");
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
+				this.set("id", "");
 			}
 		},
 		
@@ -105,6 +114,14 @@ define([
 			}
 			
 			this._loadMenuJson(id);
+		},
+		
+		_serviceDataUpdate: function(id){
+			if(!this._isBlank(id)){
+				if(this._isEqual(id, this.id)){
+					this._displayService(id)
+				}
+			}
 		},
 		
 		_loadMenuJson: function(id){
