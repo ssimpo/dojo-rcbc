@@ -20,6 +20,8 @@ define([
 	"dojo/io-query",
 	"dojo/request",
 	"dojo/_base/array",
+	"dojo/dom-construct",
+	"dojo/dom-attr",
 	
 	"./pin/sideMenu",
 	"./pin/serviceDisplayer",
@@ -28,7 +30,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	store, hash, topic, lang, ioQuery, request, array
+	store, hash, topic, lang, ioQuery, request, array, domConstr, domAttr
 ){
 	"use strict";
 	
@@ -93,10 +95,35 @@ define([
 			}
 		},
 		
+		_setTitleAttr: function(title){
+			this.title = title;
+			if(this._isBlank(this.title)){
+				domConstr.empty(this.titleNode);
+			}else{
+				domAttr.set(this.titleNode, "innerHTML", this.title);
+			}
+		},
+		
+		_getTitle: function(value){
+			var title = "";
+			var serviceTitle = this._getField(value, "serviceName");
+			var orgTitle = this._getField(value, "orgName");
+			
+			if((serviceTitle === "") && (orgTitle !== "")){
+				title = orgTitle;
+			}else if((serviceTitle !== "") && (orgTitle !== "")){
+				title = serviceTitle + " ("+orgTitle+")";
+			}else{
+				title = serviceTitle;
+			}
+			
+			return title;
+		},
+		
 		_displayCategoryList: function(section, category){
 			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
 			var services = this._store.getCategory(section, category);
-			this.serviceListDisplayer.set("title", category);
+			this.set("title", category);
 			this.serviceListDisplayer.set("value", services);
 		},
 		
@@ -105,6 +132,7 @@ define([
 			console.log("*service: "+id, service);
 			
 			if(!this._isBlank(service)){
+				this.set("title", this._getTitle(service.data));
 				this.serviceDisplayer.set("value", service.data);
 				if(service.isStub){
 					this._store.updateService(id);
@@ -193,6 +221,16 @@ define([
 			if(!this._isBlank(getUpdate)){
 				//this._store.updateCache(getUpdate);
 			}
+		},
+		
+		_getField: function(data, fieldName){
+			var value = ""
+			
+			if(data.hasOwnProperty(fieldName)){
+				value = data[fieldName];
+			}
+			
+			return lang.trim(value);
 		}
 	});
 	

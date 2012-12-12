@@ -76,7 +76,6 @@ define([
 		},
 		
 		_clear: function(){
-			this._ifHasClear("titleNode", true);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
 			this._ifHasClear("contactsWidget");
@@ -126,7 +125,6 @@ define([
 		},
 		
 		_createContent: function(value){
-			this._createTitle(value);
 			this._createDescription(value);
 			this._createKeyFeatures(value);
 			this._createContactsTable(value);
@@ -134,18 +132,6 @@ define([
 			this._createCostTable(value);
 			this._createAccessTable(value);
 			this._createServiceHoursTable(value);
-		},
-		
-		_createTitle: function(value){
-			this._createAttachPoint("titleNode", "h1");
-			domConstr.place(this.titleNode, this.domNode, "first");
-			domConstr.empty(this.titleNode);
-			
-			var title = this._getTitle(value);
-			title = ((title === "") ? "&nbsp;": title);
-			domAttr.set(this.titleNode, "innerHTML", title);
-			
-			return this.titleNode;
 		},
 		
 		_createDescription: function(value){
@@ -269,26 +255,6 @@ define([
 				"title": strings.serviceHours
 			});
 			return this.serviceHoursWidget.domNode;
-		},
-		
-		_getTitle: function(value){
-			var title = "";
-			var serviceTitle = this._getField(value, "serviceName");
-			var orgTitle = this._getField(value, "orgName");
-			
-			if((serviceTitle === "") && (orgTitle !== "")){
-				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")){
-				title = serviceTitle + " ("+orgTitle+")";
-			}else{
-				title = serviceTitle;
-			}
-			
-			if(this._isBlank(title)){
-				title = this._getField("title");
-			}
-			
-			return title;
 		},
 		
 		_getField: function(data, fieldName){
