@@ -34,7 +34,6 @@ define([
 		"_worker":{},
 		
 		constructor: function(args){
-			aspect.around(this, "get", lang.hitch(this, this._localGet));
 			this._initWorker();
 			//this._updateStubs();
 			
@@ -207,15 +206,6 @@ define([
 			}
 			
 			return new Array();
-		},
-		
-		_localGet: function(orginalGet){
-			orginalGet = lang.hitch(this, orginalGet);
-			
-			return function(id){
-				var result = orginalGet(id);
-				return result;
-			};
 		}
 	});
 	
