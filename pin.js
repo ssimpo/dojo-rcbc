@@ -22,7 +22,8 @@ define([
 	"dojo/_base/array",
 	
 	"./pin/sideMenu",
-	"./pin/serviceDisplayer"
+	"./pin/serviceDisplayer",
+	"./pin/serviceListDisplayer"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
@@ -55,6 +56,7 @@ define([
 		_init: function(){
 			this._store = new store();
 			//this._store.clear(true);
+			//this._store._updateStubs();
 			
 			topic.subscribe(
 				"/dojo/hashchange",
@@ -68,10 +70,26 @@ define([
 			var query = ioQuery.queryToObject(cHash);
 			
 			if(query.hasOwnProperty("id")){
+				console.log("Changing to service: ", query.id);
 				this._loadServiceData(query.id);
 				this._loadMenuJson(query.id);
-				
+				this.serviceListDisplayer.clear();
+			}else if(query.hasOwnProperty("section") && query.hasOwnProperty("category")){
+				console.log("Changing to category: ", query.category, " in: ", query.section);
+				this.serviceDisplayer.clear();
+				this._displayCategoryList(query.section, query.category);
+			}else{
+				console.log("CLEARING ALL");
+				this.serviceDisplayer.clear();
+				this.serviceListDisplayer.clear();
 			}
+		},
+		
+		_displayCategoryList: function(section, category){
+			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			var services = this._store.getCategory(section, category);
+			this.serviceListDisplayer.set("title", category);
+			this.serviceListDisplayer.set("value", services);
 		},
 		
 		_loadMenuJson: function(id){
@@ -97,7 +115,7 @@ define([
 			if(this._isBlank(data)){
 				this._loadServiceJson(id);
 			}else{
-				console.log("GETTING '"+id+"' FROM CACHE");
+				//console.log("GETTING '"+id+"' FROM CACHE");
 				this._jsonServiceLoaded(id, data.data);
 				if(data.isStub){
 					this._loadServiceJson(id);
@@ -129,7 +147,6 @@ define([
 		},
 		
 		_jsonServiceLoaded: function(id, data){
-			console.log(id, data);
 			if(this._isObject(data)){
 				if(data.hasOwnProperty("services")){
 					if(this._isArray(data.services)){
@@ -146,14 +163,35 @@ define([
 		},
 		
 		_parseServices: function(services){
+			var getUpdate = new Array();
+			
 			array.forEach(services, function(service){
-				this._store.put({
-					"id": service.id,
-					"type": "service",
-					"data": service,
-					"isStub": service.isStub
-				});
+				if(service.isStub){
+					var currentData = this._store.get(service.id);
+					if(!this._isBlank(currentData)){
+						if(currentData.isStub){
+							this._store.put({
+								"id": service.id,
+								"type": "service",
+								"data": service,
+								"isStub": service.isStub
+							});
+							getUpdate.push(service.id);
+						}
+					}
+				}else{
+					this._store.put({
+						"id": service.id,
+						"type": "service",
+						"data": service,
+						"isStub": service.isStub
+					});
+				}
 			}, this);
+			
+			if(!this._isBlank(getUpdate)){
+				//this._store.updateCache(getUpdate);
+			}
 		}
 	});
 	
