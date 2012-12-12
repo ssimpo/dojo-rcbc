@@ -71,9 +71,8 @@ define([
 			
 			if(query.hasOwnProperty("id")){
 				console.log("Changing to service: ", query.id);
-				this._loadServiceData(query.id);
-				this._loadMenuJson(query.id);
 				this.serviceListDisplayer.clear();
+				this._displayService(query.id.toLowerCase());
 			}else if(query.hasOwnProperty("section") && query.hasOwnProperty("category")){
 				console.log("Changing to category: ", query.category, " in: ", query.section);
 				this.serviceDisplayer.clear();
@@ -92,6 +91,22 @@ define([
 			this.serviceListDisplayer.set("value", services);
 		},
 		
+		_displayService: function(id){
+			var service = this._store.getService(id);
+			console.log("*service: "+id, service);
+			
+			if(!this._isBlank(service)){
+				this.serviceDisplayer.set("value", service.data);
+				if(service.isStub){
+					this._store.updateService(id);
+				}
+			}else{
+				this._store.updateService(id);
+			}
+			
+			this._loadMenuJson(id);
+		},
+		
 		_loadMenuJson: function(id){
 			if(!this._isBlank(id)){
 				if(id.length == 32){
@@ -102,37 +117,6 @@ define([
 						}
 					).then(
 						lang.hitch(this, this._jsonMenuLoaded),
-						function(err){
-							console.error(err);
-						}
-					);
-				}
-			}
-		},
-		
-		_loadServiceData: function(id){
-			var data = this._store.get(id);
-			if(this._isBlank(data)){
-				this._loadServiceJson(id);
-			}else{
-				//console.log("GETTING '"+id+"' FROM CACHE");
-				this._jsonServiceLoaded(id, data.data);
-				if(data.isStub){
-					this._loadServiceJson(id);
-				}
-			}
-		},
-		
-		_loadServiceJson: function(id){
-			if(!this._isBlank(id)){
-				if(id.length == 32){
-					request(
-						this._serviceUpdateUrl + "&id=" + id, {
-							"handleAs": "json",
-							"preventCache": true
-						}
-					).then(
-						lang.hitch(this, this._jsonServiceLoaded, id),
 						function(err){
 							console.error(err);
 						}
