@@ -71,7 +71,11 @@ define([
 					domConstr.destroy(this[nodeName]);
 					this[nodeName] = null;
 				}else{
-					domConstr.empty(this[nodeName]);
+					if(this._isElement(this[nodeName])){
+						domConstr.empty(this[nodeName]);
+					}else{
+						domConstr.empty(this[nodeName].domNode);
+					}
 				}
 			}
 		},
