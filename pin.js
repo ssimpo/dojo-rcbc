@@ -22,6 +22,7 @@ define([
 	"dojo/_base/array",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
+	"dojo/query",
 	
 	"./pin/sectionMenu",
 	"./pin/sideMenu",
@@ -32,7 +33,7 @@ define([
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr
+	domConstr, domAttr, $
 ){
 	"use strict";
 	
@@ -50,6 +51,7 @@ define([
 		"store": {},
 		
 		"id": "",
+		"shortlistCounterNode": {},
 		
 		
 		postCreate: function(){
@@ -61,6 +63,12 @@ define([
 			//this.store.clear(true);
 			this._initTopicSubscriptions();
 			this._hashChange();
+			
+			var qry = $("#shortlistCounter");
+			if(qry.length > 0){
+				this.shortlistCounterNode = qry[0];
+				this._shortlistUpdate(this.store.getShortlist());
+			}
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -71,6 +79,10 @@ define([
 			topic.subscribe(
 				"/rcbc/pin/updateService",
 				lang.hitch(this, this._serviceDataUpdate)
+			);
+			topic.subscribe(
+				"/rcbc/pin/changeShortlist",
+				lang.hitch(this, this._shortlistUpdate)
 			);
 		},
 		
@@ -289,6 +301,17 @@ define([
 			}, this);
 			
 			return newAry;
+		},
+		
+		_shortlistUpdate: function(shortlist){
+			if(this._isElement(this.shortlistCounterNode)){
+				var counter = shortlist.services.length;
+				domAttr.set(
+					this.shortlistCounterNode,
+					"innerHTML",
+					counter.toString()
+				);
+			}
 		},
 		
 		_serviceDataUpdate: function(id, data){

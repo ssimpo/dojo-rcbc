@@ -54,6 +54,59 @@ define([
 			);
 		},
 		
+		getShortlist: function(){
+			var shortlist = this.query({"type":"shortlist"});
+			if(this._isBlank(shortlist)){
+				shortlist = {
+					"type": "shortlist",
+					"id": "shortlist",
+					"services": []
+				};
+				this.put(shortlist);
+				topic.publish("/rcbc/pin/changeShortlist", shortlist);
+			}
+			
+			return shortlist;
+		},
+		
+		addToShortlist: function(id){
+			var shortlist = this.getShortlist();
+			
+			var found = false;
+			array.every(shortlist.services, function(service){
+				if(this.isEqual(service.id, id)){
+					found = true;
+					return false;
+				}
+				return true;
+			}, this);
+			
+			if(!found){
+				shortlist.services.push(id);
+				this._updateShortlist(shortlist.services);
+			}
+		},
+		
+		removeFromShortlist: function(id){
+			var shortlist = this.getShortlist();
+			
+			var newList = new Array();
+			array.forEach(shortlist.services, function(service){
+				if(!this.isEqual(service.id, id)){
+					newList.push(service.id);
+				}
+			}, this);
+			
+			this._updateShortlist(newList);
+		},
+		
+		_updateShortlist: function(ary){
+			var shortlist = this.getShortlist();
+			shortlist.services = ary;
+			this.put(shortlist);
+			topic.publish("/rcbc/pin/changeShortlist", shortlist);
+		},
+		
 		getService: function(id){
 			var service = this.query({"id":id});
 			if(!this._isBlank(service)){
