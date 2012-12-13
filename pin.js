@@ -74,11 +74,7 @@ define([
 		},
 		
 		_hashChange: function(cHash){
-			var query = this._sanitizeHashObject(
-				ioQuery.queryToObject(
-					((cHash == undefined) ? hash() : cHash)
-				)
-			);
+			var query = this._getHashObj(cHash);
 			
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
@@ -104,6 +100,14 @@ define([
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
 			}
+		},
+		
+		_getHashObj: function(cHash){
+			return this._sanitizeHashObject(
+				ioQuery.queryToObject(
+					((cHash == undefined) ? hash() : cHash)
+				)
+			);
 		},
 		
 		_sanitizeHashObject: function(hashQuery){
@@ -191,10 +195,7 @@ define([
 		},
 		
 		_setServiceHash: function(service){
-			var query = this._sanitizeHashObject(
-				ioQuery.queryToObject(hash())
-			);
-			
+			var query = this._getHashObj();
 			var ASD = this._getCategorySize(service, "category1");
 			var FSD = this._getCategorySize(service, "category2");
 			
@@ -239,10 +240,57 @@ define([
 			hash(ioQuery.objectToQuery(newQuery));
 		},
 		
-		_serviceDataUpdate: function(id){
+		_parseCategory: function(service, section){
+			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			var fieldName = "category" + section.toString();
+			
+			if(service.hasOwnProperty(fieldName)){
+				if(!this._isArray(service[fieldName])){
+					if(this._isBlank(service[fieldName])){
+						return new Array();
+					}else{
+						return this._trimArray(new Array(service[fieldName]));
+					}
+				}else{
+					return this._trimArray(service[fieldName]);
+				}
+			}
+			
+			return new Array();
+		},
+		
+		_trimArray: function(ary){
+			var newAry = new Array();
+			
+			array.forEach(ary, function(item){
+				item = lang.trim(item);
+				if(!this._isBlank(item)){
+					newAry.push(item);
+				}
+			}, this);
+			
+			return newAry;
+		},
+		
+		_serviceDataUpdate: function(id, data){
 			if(!this._isBlank(id)){
-				if(this._isEqual(id, this.id)){
+				var query = this._getHashObj();
+				
+				if(this._isEqual(query.id, this.id)){
 					this._displayService(id)
+				}
+				
+				if(!this._isBlank(query.category) && !this._isBlank(query.section) && this._isBlank(query.id)){
+					if(data.hasOwnProperty("data")){
+						data = data.data;
+					}
+					
+					var categories = this._parseCategory(data, query.section);
+					array.forEach(categories, function(category){
+						if(this._isEqual(category, query.category)){
+							this._displayCategoryList(query.section, query.category, query.tag);
+						}
+					}, this);
 				}
 			}
 		},
