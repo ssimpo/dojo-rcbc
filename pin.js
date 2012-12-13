@@ -98,6 +98,7 @@ define([
 				if(!this._isEqual(query.id, this.get("id"))){
 					this.serviceListDisplayer.clear();
 					this.sectionMenu.clear();
+					this.shortlist.clear();
 					this._displayService(query.id.toLowerCase());
 					this.set("id", query.id.toLowerCase());
 				}
@@ -109,6 +110,7 @@ define([
 					//console.log("Changing to category: ", query.category, " in: ", query.section);
 					this.serviceDisplayer.clear();
 					this.sectionMenu.clear();
+					this.shortlist.clear();
 					this._displayCategoryList(
 						query.section, query.category, query.tag
 					);
@@ -116,12 +118,25 @@ define([
 					this.serviceDisplayer.clear();
 					this.serviceListDisplayer.clear();
 					this.sideMenu.clear();
-					this._displaySectionMenu(query.section);
+					this.sectionMenu.clear();
+					
+					if(this._isEqual(query.section,"shortlist")){
+						this.serviceListDisplayer.clear();
+						this.set("title", "");
+						var shortlist = this.store.getShortlist();
+						if(shortlist.hasOwnProperty("services")){
+							this.shortlist.set("value", shortlist.services);
+						}
+					}else{
+						this.shortlist.clear();
+						this._displaySectionMenu(query.section);
+					}
 				}
 			}else{
 				//console.log("CLEARING ALL");
 				this.sideMenu.clear();
 				this.sectionMenu.clear();
+				this.shortlist.clear();
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
 			}
@@ -136,7 +151,7 @@ define([
 		},
 		
 		_sanitizeHashObject: function(hashQuery){
-			array.forEach(["id","section","category","tag"], function(propName){
+			array.forEach(["id", "section", "category", "tag"], function(propName){
 				hashQuery = this._addPropertyToObject(hashQuery, propName);
 			}, this);
 			hashQuery.id = hashQuery.id.toLowerCase();
