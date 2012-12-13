@@ -92,7 +92,11 @@ define([
 			destroy = ((destroy === undefined) ? false: destroy);
 			if(this._isElement(this[nodeName]) || this._isWidget(this[nodeName])){
 				if(destroy){
-					domConstr.destroy(this[nodeName]);
+					if(this._isElement(this[nodeName])){
+						domConstr.destroy(this[nodeName]);
+					}else{
+						this[nodeName].destroy();
+					}
 					this[nodeName] = null;
 				}else{
 					if(this._isElement(this[nodeName])){
@@ -146,6 +150,9 @@ define([
 					this.application.store.addToShortlist(id);
 				})
 			});
+			domConstr.place(
+				this.shortlistButtonNode.domNode, this.domNode, "first"
+			);
 		},
 		
 		_createDescription: function(value){
