@@ -168,7 +168,14 @@ define([
 					var data = JSON.parse(message);
 					this._updateCacheSuccess(data);
 				}catch(e){
-					
+					//console.error(e, message);
+				}
+			}else if(this._isEqual(type, "updateVenueCache")){
+				try{
+					var data = JSON.parse(message);
+					this._updateVenueCacheSuccess(data);
+				}catch(e){
+					//console.error(e, message);
 				}
 			}
 		},
@@ -179,11 +186,64 @@ define([
 			topic.publish("/rcbc/pin/updateService", data.id, data);
 		},
 		
+		_updateVenueById: function(venue){
+			var data = this._convertVenueToDataItem(venue);
+			this.put(data);
+			topic.publish("/rcbc/pin/updateVenue", data.id, data);
+		},
+		
 		_updateCacheSuccess: function(data){
 			console.log("UPDATING CACHE", data);
 			array.forEach(data.services, function(service){
 				this._updateServiceById(service);
 			}, this);
+			
+			var venueLookup = this._getUpdateVenueCacheArray(data);
+			if(!this._isBlank(venueLookup)){
+				this._worker.postMessage({
+					"type": "command",
+					"command": "updateVenueCache",
+					"data": venueLookup
+				});
+			}
+		},
+		
+		_updateVenueCacheSuccess: function(data){
+			console.log("UPDATING VENUE CACHE", data);
+			array.forEach(data.venues, function(venue){
+				this._updateVenueById(venue);
+			}, this);
+		},
+		
+		_getUpdateVenueCacheArray: function(data){
+			var venues = new Array();
+			array.forEach(data.services, function(service){
+				if(service.hasOwnProperty("venues")){
+					if(this._isArray(service.venues)){
+						array.forEach(service.venues, function(venue){
+							if(venue.hasOwnProperty("venueId")){
+								venues.push(venue.venueId);
+							}
+						}, this);
+					}
+				}
+			}, this);
+			
+			var lookup = new Array();
+			array.forEach(venues, function(venueId){
+				var venueItem = this.get(venueId);
+				if(!this._isBlank(venueItem)){
+					if(venueItem.hasOwnProperty("isStub")){
+						if(venueItem.isStub){
+							lookup.push(venueId);
+						}
+					}
+				}else{
+					lookup.push(venueId);
+				}
+			}, this);
+			
+			return lookup;
 		},
 		
 		_updateStubsSuccess: function(data){
@@ -204,11 +264,13 @@ define([
 				}
 			}, this);
 			
-			this._worker.postMessage({
-				"type": "command",
-				"command": "updateCache",
-				"data": servicesToCache
-			});
+			if(!this._isBlank(servicesToCache)){
+				this._worker.postMessage({
+					"type": "command",
+					"command": "updateCache",
+					"data": servicesToCache
+				});
+			}
 		},
 		
 		_convertServiceToDataItem: function(service){
@@ -223,6 +285,17 @@ define([
 				"type": "service",
 				"data": service,
 				"isStub": service.isStub
+			}
+		},
+		
+		_convertVenueToDataItem: function(venue){
+			venue.id = venue.id.toLowerCase();
+			
+			return {
+				"id": venue.id,
+				"type": "venue",
+				"data": venue,
+				"isStub": venue.isStub
 			}
 		},
 		

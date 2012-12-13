@@ -280,7 +280,7 @@ define([
 					this._displayService(id)
 				}
 				
-				if(!this._isBlank(query.category) && !this._isBlank(query.section) && this._isBlank(query.id)){
+				/*if(!this._isBlank(query.category) && !this._isBlank(query.section) && this._isBlank(query.id)){
 					if(data.hasOwnProperty("data")){
 						data = data.data;
 					}
@@ -291,7 +291,7 @@ define([
 							this._displayCategoryList(query.section, query.category, query.tag);
 						}
 					}, this);
-				}
+				}*/
 			}
 		},
 		
