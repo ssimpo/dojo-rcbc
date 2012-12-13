@@ -55,12 +55,12 @@ define([
 		},
 		
 		getShortlist: function(){
-			var shortlist = this.query({"type":"shortlist"});
+			var shortlist = this.get("shortlist");
 			if(this._isBlank(shortlist)){
 				shortlist = {
 					"type": "shortlist",
 					"id": "shortlist",
-					"services": []
+					"services": new Array()
 				};
 				this.put(shortlist);
 				topic.publish("/rcbc/pin/changeShortlist", shortlist);
@@ -73,8 +73,8 @@ define([
 			var shortlist = this.getShortlist();
 			
 			var found = false;
-			array.every(shortlist.services, function(service){
-				if(this.isEqual(service.id, id)){
+			array.every(shortlist.services, function(serviceId){
+				if(this._isEqual(serviceId, id)){
 					found = true;
 					return false;
 				}
@@ -82,7 +82,11 @@ define([
 			}, this);
 			
 			if(!found){
-				shortlist.services.push(id);
+				if(shortlist.hasOwnProperty("services")){
+					shortlist.services.push(id);
+				}else{
+					shortlist.services = new Array(id);
+				}
 				this._updateShortlist(shortlist.services);
 			}
 		},
