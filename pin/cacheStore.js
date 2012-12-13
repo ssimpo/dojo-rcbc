@@ -49,9 +49,9 @@ define([
 			});
 			
 			on(
-			   this._worker,
-			   "message",
-			   lang.hitch(this, this._handleWorkerMessage)
+				this._worker,
+				"message",
+				lang.hitch(this, this._handleWorkerMessage)
 			);
 		},
 		
@@ -144,6 +144,7 @@ define([
 			service.category1 = this._parseCategory(service, 1);
 			service.category2 = this._parseCategory(service, 2);
 			service.isStub = ((service.hasOwnProperty("isStub")) ? service.isStub : true);
+			service.tags = this._parseTags(service);
 			
 			return {
 				"id": service.id,
@@ -167,27 +168,89 @@ define([
 			return null;
 		},
 		
+		getTagsList: function(section, category){
+			var services = this.getCategory(section, category);
+			var tags = {};
+			array.forEach(services, function(service){
+				array.forEach(service.data.tags, function(tag){
+					if(!this._isBlank(tag)){
+						if(tags.hasOwnProperty(tag)){
+							tags[tag]++;
+						}else{
+							tags[tag] = 1; 
+						}
+					}
+				}, this);
+			}, this);
+			
+			return tags;
+		},
+		
+		_isServiceItem: function(item){
+			if(item.hasOwnProperty("type") && item.hasOwnProperty("data")){
+				if(this._isEqual(item.type, "service")){
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
+		getTag: function(section, category, tag){
+			var self = this;
+			//var fieldName = "category" + section.toString();
+			
+			return this.query(function(object){
+				if(self._isServiceItem(object)){
+					if(self._itemHasCategory(object, section, category)){
+						return (self._itemHasTag(object, tag));
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
+			});
+		},
+		
+		_itemHasCategory: function(item, section, category){
+			var found = false;
+			var fieldName = "category" + section.toString();
+			
+			array.every(item.data[fieldName], function(cCat){
+				if(this._isEqual(cCat, category)){
+					found = true;
+					return false;
+				}
+				return true;
+			}, this);
+			
+			return found;
+		},
+		
+		_itemHasTag: function(item, tag){
+			var found = false;
+			
+			array.every(item.data.tags, function(cTag){
+				if(this._isEqual(cTag, tag)){
+					found = true;
+					return false;
+				}
+				return true;
+			}, this);
+			
+			return found;
+		},
+		
 		getCategory: function(section, category){
 			var self = this;
 			
 			return this.query(function(object){
-				var found = false;
-				
-				if(object.hasOwnProperty("type") && object.hasOwnProperty("data")){
-					if(self._isEqual(object.type, "service")){
-						var fieldName = "category" + section.toString();
-						
-						array.every(object.data[fieldName], function(cCat){
-							if(self._isEqual(cCat,category)){
-								found = true;
-								return false;
-							}
-							return true;
-						});
-					}
+				if(self._isServiceItem(object)){
+					return self._itemHasCategory(object, section, category);
+				}else{
+					return false;
 				}
-				
-				return found;
 			});
 		},
 		
@@ -202,6 +265,22 @@ define([
 					}
 				}else{
 					return service[fieldName];
+				}
+			}
+			
+			return new Array();
+		},
+		
+		_parseTags: function(service){
+			if(service.hasOwnProperty("tags")){
+				if(!this._isArray(service.tags)){
+					var tags = service.tags.split(";");
+					array.forEach(tags, function(tag, n){
+						tags[n] = lang.trim(tags[n]);
+					});
+					return tags;
+				}else{
+					return service.tags;
 				}
 			}
 			
