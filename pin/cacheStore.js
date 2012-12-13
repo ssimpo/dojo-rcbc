@@ -138,6 +138,22 @@ define([
 			return categoryList;
 		},
 		
+		updateVenue: function(venueId){
+			this._worker.postMessage({
+				"type": "command",
+				"command": "updateVenueCache",
+				"data": [venueId]
+			});
+		},
+		
+		updateService: function(serviceId){
+			this._worker.postMessage({
+				"type": "command",
+				"command": "updateCache",
+				"data": [serviceId]
+			});
+		},
+		
 		_getCategoryValue: function(service, fieldName){
 			if(this._isObject(service)){
 				if(service.hasOwnProperty("data")){

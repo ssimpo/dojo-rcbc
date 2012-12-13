@@ -44,6 +44,7 @@ define([
 		"templateString": template,
 		
 		"value": {},
+		"application": {},
 		
 		"titleNode": null,
 		"keyFeaturesNode": null,
@@ -217,6 +218,7 @@ define([
 			var venueDom = null;
 			
 			if(venue.venueId != ""){
+				venue.application = this.application;
 				var venueWidget = new venueDisplayer(venue);
 				venueDom = venueWidget.domNode;
 			}
