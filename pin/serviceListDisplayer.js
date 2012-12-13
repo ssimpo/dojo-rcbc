@@ -17,11 +17,13 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/_base/array",
+	"dojo/hash",
+	"dojo/io-query"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	lang, domConstr, domAttr, array
+	lang, domConstr, domAttr, array, hash, ioQuery
 ){
 	"use strict";
 	
@@ -37,6 +39,7 @@ define([
 		"templateString": template,
 		
 		"value": [],
+		"tags": {},
 		
 		_setValueAttr: function(value){
 			this.value = value;
@@ -49,12 +52,25 @@ define([
 			}
 		},
 		
+		_setTagsAttr: function(value){
+			this.tags = value;
+			if(this._isBlank(this.tags)){
+				if(this._isElement(this.tagListNode) || this._isWidget(this.tagListNode)){
+					domConstr.empty(this.tagListNode);
+				}
+			}else{
+				this._createTagList(value);
+			}
+		},
+		
 		clear: function(){
 			this.set("value",[]);
+			this.set("tags",[]);
 		},
 		
 		_clear: function(){
 			this._ifHasClear("serviceListNode");
+			this._ifHasClear("tagListNode");
 		},
 		
 		_ifHasClear: function(nodeName, destroy){
@@ -98,6 +114,33 @@ define([
 		
 		_createContent: function(value){
 			this._createServiceList(value);
+		},
+		
+		_createTagList: function(value){
+			this._createAttachPoint("tagListNode", "ul");
+			domConstr.empty(this.tagListNode);
+			
+			if(!this._isBlank(value)){
+				for(var tag in value){
+					var li = domConstr.create("li", {}, this.tagListNode);
+					var href = "/test/stephen/pin.nsf/page?readform&release=no#section="+""+"&category="+""+"&tag="
+					
+					domConstr.create("a", {
+						"innerHTML": tag + " ("+value[tag].toString()+")",
+						"href": this._createTagHref(tag)
+					}, li);
+				}
+			}
+		},
+		
+		_createTagHref: function(tag){
+			var hashQuery = ioQuery.queryToObject(hash());
+			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
+			
+			hashQuery.tag = tag;
+			href = href[0]+"#"+ioQuery.objectToQuery(hashQuery);
+			
+			return href;
 		},
 		
 		_createServiceList: function(value){

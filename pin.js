@@ -76,25 +76,46 @@ define([
 		},
 		
 		_hashChange: function(cHash){
-			cHash = ((cHash == undefined) ? hash() : cHash);
-			var query = ioQuery.queryToObject(cHash);
+			var query = this._sanitizeHashObject(
+				ioQuery.queryToObject(
+					((cHash == undefined) ? hash() : cHash)
+				)
+			);
 			
-			if(query.hasOwnProperty("id")){
-				console.log("Changing to service: ", query.id);
+			this.set("id", query.id.toLowerCase());
+			if(!this._isBlank(query.id)){
+				//console.log("Changing to service: ", query.id);
 				this.serviceListDisplayer.clear();
-				this.set("id", query.id.toLowerCase());
 				this._displayService(query.id.toLowerCase());
-			}else if(query.hasOwnProperty("section") && query.hasOwnProperty("category")){
-				console.log("Changing to category: ", query.category, " in: ", query.section);
-				this.serviceDisplayer.clear();
-				this.set("id", "");
-				this._displayCategoryList(query.section, query.category);
+			}else if(!this._isBlank(query.section)){
+				if(!this._isBlank(query.category)){
+					//console.log("Changing to category: ", query.category, " in: ", query.section);
+					this.serviceDisplayer.clear();
+					this._displayCategoryList(
+						query.section, query.category, query.tag
+					);
+				}
 			}else{
-				console.log("CLEARING ALL");
+				//console.log("CLEARING ALL");
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
-				this.set("id", "");
 			}
+		},
+		
+		_sanitizeHashObject: function(hashQuery){
+			array.forEach(["id","section","category","tag"], function(propName){
+				hashQuery = this._addPropertyToObject(hashQuery, propName);
+			}, this);
+			return hashQuery;
+		},
+		
+		_addPropertyToObject: function(obj, propName, defaultValue){
+			if(!this._isBlank(propName)){
+				defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
+				obj[propName] = ((obj.hasOwnProperty(propName)) ? obj[propName] : defaultValue);
+			}
+			
+			return obj;
 		},
 		
 		_setTitleAttr: function(title){
@@ -122,11 +143,23 @@ define([
 			return title;
 		},
 		
-		_displayCategoryList: function(section, category){
+		_displayCategoryList: function(section, category, tag){
 			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
-			var services = this._store.getCategory(section, category);
-			this.set("title", category);
-			this.serviceListDisplayer.set("value", services);
+			tag = (tag === undefined) ? "" : tag;
+			
+			var title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
+			this.set("title", title);
+			
+			if(this._isBlank(tag)){
+				var services = this._store.getCategory(section, category);
+				this.serviceListDisplayer.set("value", services);
+				var tags = this._store.getTagsList(section, category);
+				this.serviceListDisplayer.set("tags", tags);
+			}else{
+				var services = this._store.getTag(section, category, tag);
+				this.serviceListDisplayer.set("value", services);
+				this.serviceListDisplayer.set("tags", []);
+			}
 		},
 		
 		_displayService: function(id){
