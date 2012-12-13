@@ -24,6 +24,7 @@ define([
 	"dojo/dom-attr",
 	"dojo/query",
 	
+	"./pin/shortlist",
 	"./pin/sectionMenu",
 	"./pin/sideMenu",
 	"./pin/serviceDisplayer",
@@ -304,8 +305,12 @@ define([
 		},
 		
 		_shortlistUpdate: function(shortlist){
+			console.log(shortlist);
 			if(this._isElement(this.shortlistCounterNode)){
-				var counter = shortlist.services.length;
+				var counter = 0;
+				if(shortlist.hasOwnProperty("services")){
+					counter = shortlist.services.length;
+				}
 				domAttr.set(
 					this.shortlistCounterNode,
 					"innerHTML",
