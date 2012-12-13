@@ -30,7 +30,8 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	store, hash, topic, lang, ioQuery, request, array, domConstr, domAttr
+	store, hash, topic, lang, ioQuery, request, array,
+	domConstr, domAttr
 ){
 	"use strict";
 	
@@ -79,6 +80,10 @@ define([
 				)
 			);
 			
+			if(!this._isBlank(query.section)){
+				this._displayMenu(query.section);
+			}
+			
 			if(!this._isBlank(query.id)){
 				//console.log("Changing to service: ", query.id);
 				if(!this._isEqual(query.id, this.get("id"))){
@@ -98,10 +103,6 @@ define([
 				//console.log("CLEARING ALL");
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
-			}
-			
-			if(!this._isBlank(query.section)){
-				this._displayMenu(query.section);
 			}
 		},
 		
@@ -171,14 +172,13 @@ define([
 			var service = this._store.getService(id);
 			
 			if(!this._isBlank(service)){
+				this._setServiceHash(service);
 				this.set("title", this._getTitle(service.data));
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
 					this._store.updateService(id);
 				}
-				
-				this._setServiceHash(service);
 			}else{
 				this._store.updateService(id);
 			}
