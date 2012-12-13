@@ -23,6 +23,7 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	
+	"./pin/sectionMenu",
 	"./pin/sideMenu",
 	"./pin/serviceDisplayer",
 	"./pin/serviceListDisplayer"
@@ -76,27 +77,38 @@ define([
 		_hashChange: function(cHash){
 			var query = this._getHashObj(cHash);
 			
-			if(!this._isBlank(query.section)){
-				this._displayMenu(query.section);
-			}
-			
 			if(!this._isBlank(query.id)){
 				//console.log("Changing to service: ", query.id);
+				if(!this._isBlank(query.section)){
+					this._displayMenu(query.section);
+				}
 				if(!this._isEqual(query.id, this.get("id"))){
 					this.serviceListDisplayer.clear();
+					this.sectionMenu.clear();
 					this._displayService(query.id.toLowerCase());
 					this.set("id", query.id.toLowerCase());
 				}
 			}else if(!this._isBlank(query.section)){
 				if(!this._isBlank(query.category)){
+					if(!this._isBlank(query.section)){
+						this._displayMenu(query.section);
+					}
 					//console.log("Changing to category: ", query.category, " in: ", query.section);
 					this.serviceDisplayer.clear();
+					this.sectionMenu.clear();
 					this._displayCategoryList(
 						query.section, query.category, query.tag
 					);
+				}else{
+					this.serviceDisplayer.clear();
+					this.serviceListDisplayer.clear();
+					this.sideMenu.clear();
+					this._displaySectionMenu(query.section);
 				}
 			}else{
 				//console.log("CLEARING ALL");
+				this.sideMenu.clear();
+				this.sectionMenu.clear();
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
 			}
@@ -170,6 +182,13 @@ define([
 				this.serviceListDisplayer.set("value", services);
 				this.serviceListDisplayer.set("tags", []);
 			}
+		},
+		
+		_displaySectionMenu: function(section){
+			this.set("title", "");
+			var categories = this.store.getCategoryList(section);
+			this.sectionMenu.set("section", section);
+			this.sectionMenu.set("value", categories);
 		},
 		
 		_displayService: function(id){

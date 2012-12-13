@@ -42,6 +42,10 @@ define([
 		
 		"_updateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
 		
+		clear: function(){
+			domConstr.empty(this.domNode);
+		},
+		
 		_setValueAttr: function(value){
 			domConstr.empty(this.domNode);
 			value = this._parseValue(value);
