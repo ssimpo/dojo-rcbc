@@ -16,12 +16,13 @@ define([
 	"dojo/_base/lang",
 	"dojo/_base/array",
 	"dojo/dom-construct",
-	"dojo/dom-class"
+	"dojo/dom-class",
+	"dojo/io-query"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	lang, array, domConstr, domClass
+	lang, array, domConstr, domClass, ioQuery
 ){
 	"use strict";
 	
@@ -43,6 +44,7 @@ define([
 		
 		_setValueAttr: function(value){
 			domConstr.empty(this.domNode);
+			value = this._parseValue(value);
 			this._parseMenuData(value);
 			this.value = value;
 		},
@@ -53,6 +55,29 @@ define([
 				this._createItemClass(this.section)
 			);
 			this.section = section;
+		},
+		
+		_parseValue: function(value){
+			var menu = new Array();
+			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
+			href = href[0];
+			
+			if(this._isObject(value)){
+				for(var key in value){
+					
+					menu.push({
+						"title": key,
+						"href": href + "#" + ioQuery.objectToQuery({
+							"section": this.section,
+							"category": key
+						})
+					})
+				}
+				
+				return menu;
+			}
+			
+			return value;
 		},
 		
 		_updateClass: function(nClass, oldClass){

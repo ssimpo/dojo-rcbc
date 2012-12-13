@@ -81,17 +81,17 @@ define([
 				return true;
 			}
 			
-			if(Object.prototype.toString.call(value) === '[object String]'){
+			if(this._isString(value)){
 				return (lang.trim(value.replace(/\&nbsp\;/g," ")) === "");
-			}else if(Object.prototype.toString.call(value) === '[object Array]'){
+			}else if(this._isArray(value)){
 				if(value.length == 0){
 					return true;
 				}else{
 					return this._isBlankArray(value);
 				}
-			}else if(Object.prototype.toString.call(value) === '[object Number]'){
+			}else if(this._isNumber(value)){
 				return (value === 0);
-			}else if((Object.prototype.toString.call(value) === '[object Object]') || (typeof value === "object")){
+			}else if(this._isObject(value)){
 				if(this._isElement(value)){
 					return this._isBlank(domAttr.get(value, "innerHTML"));
 				}else{
@@ -108,6 +108,14 @@ define([
 		
 		_isArray: function(value){
 			return (Object.prototype.toString.call(value) === '[object Array]');
+		},
+		
+		_isNumber: function(value){
+			return (Object.prototype.toString.call(value) === '[object Number]');
+		},
+		
+		_isString: function(value){
+			return (Object.prototype.toString.call(value) === '[object String]');
 		},
 		
 		_isBlankArray: function(ary){

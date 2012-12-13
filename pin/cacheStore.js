@@ -114,6 +114,49 @@ define([
 			});
 		},
 		
+		getCategoryList: function(section){
+			var services = this.query({"type":"service"});
+			var categoryList = {};
+			
+			if(!this._isNumber(section)){
+				section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			}
+			var fieldName = "category" + section.toString();
+			
+			array.forEach(services, function(service){
+				var categories = this._getCategoryValue(service, fieldName);
+				
+				array.forEach(categories, function(category){
+					if(!this._isBlank(category)){
+						if(!categoryList.hasOwnProperty(category)){
+							categoryList[category] = true;
+						}
+					}
+				}, this);
+			}, this);
+			
+			return categoryList;
+		},
+		
+		_getCategoryValue: function(service, fieldName){
+			if(this._isObject(service)){
+				if(service.hasOwnProperty("data")){
+					service = service.data;
+				}
+				
+				if(this._isObject(service)){
+					if(service.hasOwnProperty(fieldName)){
+						var categories = service[fieldName];
+						if(this._isArray(categories)){
+							return categories;
+						}
+					}
+				}
+			}
+			
+			return new Array();
+		},
+		
 		_handleWorkerMessage: function(e){
 			var message = e.message.message;
 			var type = e.message.type;

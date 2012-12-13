@@ -45,9 +45,6 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
-		"_menuUpdateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
-		"_serviceUpdateUrl": "/test/stephen/pin.nsf/getService?openagent",
-		
 		"_store": {},
 		
 		"id": "",
@@ -82,11 +79,13 @@ define([
 				)
 			);
 			
-			this.set("id", query.id.toLowerCase());
 			if(!this._isBlank(query.id)){
 				//console.log("Changing to service: ", query.id);
-				this.serviceListDisplayer.clear();
-				this._displayService(query.id.toLowerCase());
+				if(!this._isEqual(query.id, this.get("id"))){
+					this.serviceListDisplayer.clear();
+					this._displayService(query.id.toLowerCase());
+					this.set("id", query.id.toLowerCase());
+				}
 			}else if(!this._isBlank(query.section)){
 				if(!this._isBlank(query.category)){
 					//console.log("Changing to category: ", query.category, " in: ", query.section);
@@ -100,12 +99,18 @@ define([
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
 			}
+			
+			if(!this._isBlank(query.section)){
+				this._displayMenu(query.section);
+			}
 		},
 		
 		_sanitizeHashObject: function(hashQuery){
 			array.forEach(["id","section","category","tag"], function(propName){
 				hashQuery = this._addPropertyToObject(hashQuery, propName);
 			}, this);
+			hashQuery.id = hashQuery.id.toLowerCase();
+			
 			return hashQuery;
 		},
 		
@@ -164,19 +169,74 @@ define([
 		
 		_displayService: function(id){
 			var service = this._store.getService(id);
-			console.log("*service: "+id, service);
 			
 			if(!this._isBlank(service)){
 				this.set("title", this._getTitle(service.data));
 				this.serviceDisplayer.set("value", service.data);
+				
 				if(service.isStub){
 					this._store.updateService(id);
 				}
+				
+				this._setServiceHash(service);
 			}else{
 				this._store.updateService(id);
 			}
+		},
+		
+		_displayMenu: function(section){
+			var categories = this._store.getCategoryList(section);
+			this.sideMenu.set("section", section);
+			this.sideMenu.set("value", categories);
+		},
+		
+		_setServiceHash: function(service){
+			var query = this._sanitizeHashObject(
+				ioQuery.queryToObject(hash())
+			);
 			
-			this._loadMenuJson(id);
+			var ASD = this._getCategorySize(service, "category1");
+			var FSD = this._getCategorySize(service, "category2");
+			
+			if(FSD > ASD){
+				query.section = "Family Services";
+			}else{
+				query.section = "Adult Services";
+			}
+			
+			this._updateHash(query);
+		},
+		
+		_getCategorySize: function(service, section){
+			if(this._isObject(service)){
+				if(service.hasOwnProperty("data")){
+					service = service.data;
+				}
+			}else{
+				return 0;
+			}
+			
+			if(service.hasOwnProperty(section)){
+				if(this._isArray(service[section])){
+					return service[section].length;
+				}else{
+					return 1;
+				}
+			}
+			
+			return 0
+		},
+		
+		_updateHash: function(query){
+			var newQuery = {};
+			
+			for(var key in query){
+				if(!this._isBlank(query[key])){
+					newQuery[key] = query[key];
+				}
+			}
+			
+			hash(ioQuery.objectToQuery(newQuery));
 		},
 		
 		_serviceDataUpdate: function(id){
@@ -184,77 +244,6 @@ define([
 				if(this._isEqual(id, this.id)){
 					this._displayService(id)
 				}
-			}
-		},
-		
-		_loadMenuJson: function(id){
-			if(!this._isBlank(id)){
-				if(id.length == 32){
-					request(
-						this._menuUpdateUrl + "&id=" + id, {
-							"handleAs": "json",
-							"preventCache": true
-						}
-					).then(
-						lang.hitch(this, this._jsonMenuLoaded),
-						function(err){
-							console.error(err);
-						}
-					);
-				}
-			}
-		},
-		
-		_jsonMenuLoaded: function(data){
-			this.sideMenu.set("section", data.section);
-			this.sideMenu.set("value", data.items);
-		},
-		
-		_jsonServiceLoaded: function(id, data){
-			if(this._isObject(data)){
-				if(data.hasOwnProperty("services")){
-					if(this._isArray(data.services)){
-						if(data.services.length == 1){
-							this.serviceDisplayer.set("value", data.services[0]);
-						}else if(data.services.length > 0){
-							this.serviceDisplayer.set("value", data);
-						}
-						
-						this._parseServices(data.services);
-					}
-				}
-			}	
-		},
-		
-		_parseServices: function(services){
-			var getUpdate = new Array();
-			
-			array.forEach(services, function(service){
-				if(service.isStub){
-					var currentData = this._store.get(service.id);
-					if(!this._isBlank(currentData)){
-						if(currentData.isStub){
-							this._store.put({
-								"id": service.id,
-								"type": "service",
-								"data": service,
-								"isStub": service.isStub
-							});
-							getUpdate.push(service.id);
-						}
-					}
-				}else{
-					this._store.put({
-						"id": service.id,
-						"type": "service",
-						"data": service,
-						"isStub": service.isStub
-					});
-				}
-			}, this);
-			
-			if(!this._isBlank(getUpdate)){
-				//this._store.updateCache(getUpdate);
 			}
 		},
 		
