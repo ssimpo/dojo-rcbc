@@ -66,7 +66,7 @@ define([
 				topic.publish("/rcbc/pin/changeShortlist", shortlist);
 			}
 			
-			return shortlist;
+			return shortlist
 		},
 		
 		addToShortlist: function(id){
