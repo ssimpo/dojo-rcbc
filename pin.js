@@ -46,7 +46,7 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
-		"_store": {},
+		"store": {},
 		
 		"id": "",
 		
@@ -56,8 +56,8 @@ define([
 		},
 		
 		_init: function(){
-			this._store = new store();
-			//this._store.clear(true);
+			this.store = new store();
+			//this.store.clear(true);
 			this._initTopicSubscriptions();
 			this._hashChange();
 		},
@@ -161,19 +161,19 @@ define([
 			this.set("title", title);
 			
 			if(this._isBlank(tag)){
-				var services = this._store.getCategory(section, category);
+				var services = this.store.getCategory(section, category);
 				this.serviceListDisplayer.set("value", services);
-				var tags = this._store.getTagsList(section, category);
+				var tags = this.store.getTagsList(section, category);
 				this.serviceListDisplayer.set("tags", tags);
 			}else{
-				var services = this._store.getTag(section, category, tag);
+				var services = this.store.getTag(section, category, tag);
 				this.serviceListDisplayer.set("value", services);
 				this.serviceListDisplayer.set("tags", []);
 			}
 		},
 		
 		_displayService: function(id){
-			var service = this._store.getService(id);
+			var service = this.store.getService(id);
 			
 			if(!this._isBlank(service)){
 				this._setServiceHash(service);
@@ -181,15 +181,15 @@ define([
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
-					this._store.updateService(id);
+					this.store.updateService(id);
 				}
 			}else{
-				this._store.updateService(id);
+				this.store.updateService(id);
 			}
 		},
 		
 		_displayMenu: function(section){
-			var categories = this._store.getCategoryList(section);
+			var categories = this.store.getCategoryList(section);
 			this.sideMenu.set("section", section);
 			this.sideMenu.set("value", categories);
 		},
@@ -276,8 +276,8 @@ define([
 			if(!this._isBlank(id)){
 				var query = this._getHashObj();
 				
-				if(this._isEqual(query.id, this.id)){
-					this._displayService(id)
+				if(this._isEqual(query.id, id)){
+					this._displayService(query.id)
 				}
 				
 				/*if(!this._isBlank(query.category) && !this._isBlank(query.section) && this._isBlank(query.id)){

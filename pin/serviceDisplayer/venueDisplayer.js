@@ -9,18 +9,23 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"../_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/venueDisplayer",
 	"dojo/text!./views/venueDisplayer.html",
 	"dojo/dom-construct",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"dojo/topic"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
-	domConstr, lang
-) {
+	declare, _widget, _templated, _wTemplate, _variableTestMixin,
+	i18n, strings, template,
+	domConstr, lang, topic
+){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _variableTestMixin
+	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -34,6 +39,7 @@ define([
 		"data": null,
 		
 		"_mainDiv": {},
+		"application": {},
 		
 		
 		postCreate: function(){
@@ -41,10 +47,27 @@ define([
 		},
 		
 		_init: function(){
-			this._getData();
+			this._initTopicSubscriptions();
+			this._getData(lang.hitch(this, this._gotVenueData));
+		},
+		
+		_initTopicSubscriptions: function(){
+			topic.subscribe(
+				"/rcbc/pin/updateVenue",
+				lang.hitch(this, this._venueDataUpdate)
+			);
+		},
+		
+		_venueDataUpdate: function(id, data){
+			if(this._isEqual(id, this.venueId)){
+				this.data = data.data;
+				this._gotVenueData();
+			}
+		},
+		
+		_gotVenueData: function(){
 			this._addDescription();
 			this._mainDiv = this.domNode;
-			
 			this._addTitle();
 			this._addAddress();
 		},
@@ -56,10 +79,15 @@ define([
 			}
 		},
 		
-		_getData: function(){
+		_getData: function(callback){
+			console.log("APP", this.application);
 			if(this.venueId !== ""){
-				if(this.hasOwnProperty(this.venueId)){
-					this.data = this[this.venueId];
+				var data = this.application.store.get(this.venueId);
+				if(!this._isBlank(data)){
+					this.data = data.data;
+					callback();
+				}else{
+					this.application.store.updateVenue(this.venueId);
 				}
 			}
 		},
