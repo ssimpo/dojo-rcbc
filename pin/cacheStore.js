@@ -35,7 +35,6 @@ define([
 		
 		constructor: function(args){
 			this._initWorker();
-			//this._updateStubs();
 			
 			this._worker.postMessage({
 				"type": "command",
@@ -55,6 +54,66 @@ define([
 			);
 		},
 		
+		getService: function(id){
+			var service = this.query({"id":id});
+			if(!this._isBlank(service)){
+				service = service[0];
+				if(service.hasOwnProperty("type")){
+					if(service.type == "service"){
+						return service;
+					}
+				}
+			}
+			
+			return null;
+		},
+		
+		getTag: function(section, category, tag){
+			var self = this;
+			
+			return this.query(function(object){
+				if(self._isServiceItem(object)){
+					if(self._itemHasCategory(object, section, category)){
+						return (self._itemHasTag(object, tag));
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
+			});
+		},
+		
+		getTagsList: function(section, category){
+			var services = this.getCategory(section, category);
+			var tags = {};
+			array.forEach(services, function(service){
+				array.forEach(service.data.tags, function(tag){
+					if(!this._isBlank(tag)){
+						if(tags.hasOwnProperty(tag)){
+							tags[tag]++;
+						}else{
+							tags[tag] = 1; 
+						}
+					}
+				}, this);
+			}, this);
+			
+			return tags;
+		},
+		
+		getCategory: function(section, category){
+			var self = this;
+			
+			return this.query(function(object){
+				if(self._isServiceItem(object)){
+					return self._itemHasCategory(object, section, category);
+				}else{
+					return false;
+				}
+			});
+		},
+		
 		_handleWorkerMessage: function(e){
 			var message = e.message.message;
 			var type = e.message.type;
@@ -71,34 +130,10 @@ define([
 			}
 		},
 		
-		updateService: function(id){
-			if(!this._isBlank(id)){
-				if(id.length == 32){
-					request(
-						this._serviceUpdateUrl + "&id=" + id, {
-							"handleAs": "json",
-							"preventCache": true
-						}
-					).then(
-						lang.hitch(this, this._updateServiceSuccess),
-						function(err){
-							console.error(err);
-						}
-					);
-				}
-			}
-		},
-		
-		_updateServiceSuccess: function(data){
-			if(this._isObject(data)){
-				if(data.hasOwnProperty("services")){
-					if(this._isArray(data.services)){
-						array.forEach(data.services, function(service){
-							this._updateServiceById(service);
-						}, this);
-					}
-				}
-			}	
+		_updateServiceById: function(service){
+			var data = this._convertServiceToDataItem(service);
+			this.put(data);
+			topic.publish("/rcbc/pin/updateService", data.id);
 		},
 		
 		_updateCacheSuccess: function(data){
@@ -133,12 +168,6 @@ define([
 			});
 		},
 		
-		_updateServiceById: function(service){
-			var data = this._convertServiceToDataItem(service);
-			this.put(data);
-			topic.publish("/rcbc/pin/updateService", data.id);
-		},
-		
 		_convertServiceToDataItem: function(service){
 			service.id = service.id.toLowerCase();
 			service.category1 = this._parseCategory(service, 1);
@@ -154,38 +183,6 @@ define([
 			}
 		},
 		
-		getService: function(id){
-			var service = this.query({"id":id});
-			if(!this._isBlank(service)){
-				service = service[0];
-				if(service.hasOwnProperty("type")){
-					if(service.type == "service"){
-						return service;
-					}
-				}
-			}
-			
-			return null;
-		},
-		
-		getTagsList: function(section, category){
-			var services = this.getCategory(section, category);
-			var tags = {};
-			array.forEach(services, function(service){
-				array.forEach(service.data.tags, function(tag){
-					if(!this._isBlank(tag)){
-						if(tags.hasOwnProperty(tag)){
-							tags[tag]++;
-						}else{
-							tags[tag] = 1; 
-						}
-					}
-				}, this);
-			}, this);
-			
-			return tags;
-		},
-		
 		_isServiceItem: function(item){
 			if(item.hasOwnProperty("type") && item.hasOwnProperty("data")){
 				if(this._isEqual(item.type, "service")){
@@ -194,23 +191,6 @@ define([
 			}
 			
 			return false;
-		},
-		
-		getTag: function(section, category, tag){
-			var self = this;
-			//var fieldName = "category" + section.toString();
-			
-			return this.query(function(object){
-				if(self._isServiceItem(object)){
-					if(self._itemHasCategory(object, section, category)){
-						return (self._itemHasTag(object, tag));
-					}else{
-						return false;
-					}
-				}else{
-					return false;
-				}
-			});
 		},
 		
 		_itemHasCategory: function(item, section, category){
@@ -242,18 +222,6 @@ define([
 			return found;
 		},
 		
-		getCategory: function(section, category){
-			var self = this;
-			
-			return this.query(function(object){
-				if(self._isServiceItem(object)){
-					return self._itemHasCategory(object, section, category);
-				}else{
-					return false;
-				}
-			});
-		},
-		
 		_parseCategory: function(service, categoryNum){
 			var fieldName = "category" + categoryNum.toString();
 			if(service.hasOwnProperty(fieldName)){
@@ -261,10 +229,10 @@ define([
 					if(this._isBlank(service[fieldName])){
 						return new Array();
 					}else{
-						return new Array(service[fieldName]);
+						return this._trimArray(new Array(service[fieldName]));
 					}
 				}else{
-					return service[fieldName];
+					return this._trimArray(service[fieldName]);
 				}
 			}
 			
@@ -274,17 +242,26 @@ define([
 		_parseTags: function(service){
 			if(service.hasOwnProperty("tags")){
 				if(!this._isArray(service.tags)){
-					var tags = service.tags.split(";");
-					array.forEach(tags, function(tag, n){
-						tags[n] = lang.trim(tags[n]);
-					});
-					return tags;
+					return this._trimArray(service.tags.split(";"));
 				}else{
-					return service.tags;
+					tags = this._trimArray(service.tags);
 				}
 			}
 			
 			return new Array();
+		},
+		
+		_trimArray: function(ary){
+			var newAry = new Array();
+			
+			array.forEach(ary, function(item){
+				item = lang.trim(item);
+				if(!this._isBlank(item)){
+					newAry.push(item);
+				}
+			}, this);
+			
+			return newAry;
 		}
 	});
 	
