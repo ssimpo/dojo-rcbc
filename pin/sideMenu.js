@@ -71,7 +71,8 @@ define([
 							"section": this.section,
 							"category": key
 						})
-					})
+					});
+					
 				}
 				
 				return menu;
