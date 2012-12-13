@@ -176,7 +176,7 @@ define([
 		_updateServiceById: function(service){
 			var data = this._convertServiceToDataItem(service);
 			this.put(data);
-			topic.publish("/rcbc/pin/updateService", data.id);
+			topic.publish("/rcbc/pin/updateService", data.id, data);
 		},
 		
 		_updateCacheSuccess: function(data){
