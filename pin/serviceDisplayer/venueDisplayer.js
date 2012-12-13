@@ -80,7 +80,6 @@ define([
 		},
 		
 		_getData: function(callback){
-			console.log("APP", this.application);
 			if(this.venueId !== ""){
 				var data = this.application.store.get(this.venueId);
 				if(!this._isBlank(data)){
