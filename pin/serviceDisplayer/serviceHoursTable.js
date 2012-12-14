@@ -45,7 +45,7 @@ define([
 		
 		_fixTitleLevel: function(){
 			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
-				this.titleDom = domConstr(
+				this.titleDom = domConstr.create(
 					"h"+this.titleLevel.toString(),
 					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
 					this.titleDom,

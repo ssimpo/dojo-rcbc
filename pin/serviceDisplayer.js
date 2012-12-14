@@ -125,7 +125,7 @@ define([
 		},
 		
 		_clear: function(){
-			this._ifHasClear("titleNodeNode", !this.show.title);
+			this._ifHasClear("titleNode", !this.show.title);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
 			this._ifHasClear("contactsWidget");
@@ -219,7 +219,7 @@ define([
 			}
 			
 			if(this.show.title && !this._isBlank(title)){
-				domAttr.set(titleNode, "innerHTML", title);
+				domAttr.set(this.titleNode, "innerHTML", title);
 			}
 			
 			if(this.titleNotify){
@@ -284,6 +284,7 @@ define([
 		},
 		
 		_createContactsTable: function(value){
+			console.log("_createContactsTable", this.titleLevel);
 			this._getTableWidgetDom(value, {
 				"propertyNode": "contactsWidget",
 				"constructor": contactsTable,
@@ -379,20 +380,22 @@ define([
 			
 			var node;
 			if(args.hasOwnProperty("data")){
+				var obj = {
+					"data": args.data,
+					"title": args.title
+				};
+				if(args.hasOwnProperty("titleLevel")){
+					obj.titleLevel = args.titleLevel;
+				}
+				
 				if(args.hasOwnProperty("propertyNode")){
 					this._createAttachPoint(
 						args.propertyNode,
-						args.constructor, {
-							"data": args.data,
-							"title": args.title
-						}
+						args.constructor, obj
 					);
 					node = this[args.propertyNode].domNode;
 				}else{
-					var widget = new args.constructor({
-						"data": args.data,
-						"title": args.title
-					});
+					var widget = new args.constructor(obj);
 					node = widget.domNode;
 				}
 			}

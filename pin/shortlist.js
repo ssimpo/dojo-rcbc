@@ -44,6 +44,17 @@ define([
 		"hiddenNode": null,
 		"parentPosPlace": "after",
 		
+		"show": {
+			"title": true,
+			"description": true,
+			"keyFeatures": true,
+			"contacts": true,
+			"costs": true,
+			"venues": true,
+			"serviceHours": true,
+			"accessDetails": true
+		},
+		
 		_initNodes: function(){
 			if(this.application !== null){
 				if(this.parentNode === null){
@@ -96,7 +107,9 @@ define([
 			array.forEach(services, function(service){
 				var displayer = new serviceDisplayer({
 					"application": this.application,
-					"parentNode": this.domNode
+					"parentNode": this.domNode,
+					"titleLevel": 2,
+					"show": this.show
 				});
 				this._displayers.push(displayer);
 				domConstr.place(displayer.domNode, this.domNode);
