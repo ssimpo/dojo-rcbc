@@ -60,6 +60,19 @@ define([
 		"hiddenNode": null,
 		"parentPosPlace": "last",
 		
+		"titleNotify": false,
+		
+		"show": {
+			"title": false,
+			"description": true,
+			"keyFeatures": true,
+			"contacts": true,
+			"costs": true,
+			"venues": true,
+			"serviceHours": true,
+			"accessDetails": true
+		},
+		
 		"_accessTesters": [
 			["appointmentOnly", "appointmentOnlyDetails"],
 			["dropIn", "dropInDetails"],
@@ -110,6 +123,7 @@ define([
 		},
 		
 		_clear: function(){
+			this._ifHasClear("titleNodeNode", !this.show.title);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
 			this._ifHasClear("contactsWidget");
@@ -163,17 +177,31 @@ define([
 		},
 		
 		_createContent: function(value){
-			this._createTitle(value);
-			this._createDescription(value);
-			this._createKeyFeatures(value);
-			this._createContactsTable(value);
-			this._createVenues(value);
-			this._createCostTable(value);
-			this._createAccessTable(value);
-			this._createServiceHoursTable(value);
+			if(this.titleNotify || this.show.title){
+				this._createTitle(value);
+			}
+			
+			this._createSection(this.show.description, "_createDescription", value);
+			this._createSection(this.show.keyFeatures, "_createKeyFeatures", value);
+			this._createSection(this.show.contacts, "_createContactsTable", value);
+			this._createSection(this.show.venues, "_createVenues", value);
+			this._createSection(this.show.costs, "_createCostTable", value);
+			this._createSection(this.show.accessDetails, "_createAccessTable", value);
+			this._createSection(this.show.serviceHours, "_createServiceHoursTable", value);
+		},
+		
+		_createSection: function(tester, method, value){
+			if(tester){
+				this[method](value);
+			}
 		},
 		
 		_createTitle: function(value){
+			if(this.show.title){
+				this._createAttachPoint("titleNode", "h2");
+				domConstr.empty(this.titleNode);
+			}
+			
 			var title = "";
 			var serviceTitle = this._getField(value, "serviceName");
 			var orgTitle = this._getField(value, "orgName");
@@ -186,7 +214,14 @@ define([
 				title = serviceTitle;
 			}
 			
-			topic.publish("/rcbc/pin/titleChange", title);
+			if(this.show.title && !this._isBlank(title)){
+				domAttr.set(titleNode, "innerHTML", title);
+			}
+			
+			if(this.titleNotify){
+				topic.publish("/rcbc/pin/titleChange", title);
+			}
+			
 			return title;
 		},
 		
