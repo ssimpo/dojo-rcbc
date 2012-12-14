@@ -53,7 +53,7 @@ define([
 		
 		"store": {},
 		
-		"id": "",
+		"serviceId": "",
 		"section": "",
 		"category": "",
 		"tag": "",
@@ -130,6 +130,55 @@ define([
 			}
 		},
 		
+		_setServiceIdAttr: function(id){
+			var query = this._getHashObj();
+			if(!this._isEqual(query.id, this.get("serviceId"))){
+				this.serviceId = id;
+				query.id = id.toLowerCase();
+				this._updateHash(query);
+			}
+		},
+		
+		_setSectionAttr: function(section){
+			var query = this._getHashObj();
+			if(!this._isEqual(query.section, this.get("section"))){
+				this.section = section;
+				query.section = section;
+				this._updateHash(query);
+			}
+		},
+		
+		_setCategoryAttr: function(category){
+			var query = this._getHashObj();
+			if(!this._isEqual(query.category, this.get("category"))){
+				this.category = category;
+				query.category = category;
+				this._updateHash(query);
+			}
+		},
+		
+		_setTagAttr: function(tag){
+			var query = this._getHashObj();
+			if(!this._isEqual(query.tag, this.get("tag"))){
+				this.tag = tag;
+				query.tag = tag;
+				this._updateHash(query);
+			}
+		},
+		
+		_setTitleAttr: function(title){
+			try{
+				this.title = title;
+				if(this._isBlank(this.title)){
+					domConstr.empty(this.titleNode);
+				}else{
+					domAttr.set(this.titleNode, "innerHTML", this.title);
+				}
+			}catch(e){
+				console.warn("Could not change the title");
+			}
+		},
+		
 		_hashChange: function(cHash){
 			var query = this._getHashObj(cHash);
 			
@@ -150,17 +199,21 @@ define([
 				this._displayMenu(query.section);
 			}
 			
-			if(!this._isEqual(query.id, this.get("id"))){
+			if(!this._isEqual(query.id, this.get("serviceId"))){
 				this.serviceListDisplayer.clear();
 				this.sectionMenu.clear();
 				this.shortlist.clear();
+				
 				this._displayService(query.id.toLowerCase());
-				this.set("id", query.id.toLowerCase());
+				this.set("serviceId", query.id.toLowerCase());
 			}
 		},
 		
 		_hashChangeNewSection: function(query){
-			this.set("section", query.section);
+			if(!this._isEqual(query.section, this.get("section"))){
+				this.set("section", query.section);
+			}
+			
 			this.hideButtonPanel();
 			this.serviceDisplayer.clear();
 			
@@ -172,7 +225,7 @@ define([
 				this.sectionMenu.clear();
 					
 				if(this._isEqual(query.section,"shortlist")){
-					this._hashChangeNewSectionIsShortlist(query);
+					this._hashChangeNewSectionIsShortlist();
 				}else{
 					this.shortlist.clear();
 					this._displaySectionMenu(query.section);
@@ -181,7 +234,13 @@ define([
 		},
 		
 		_hashChangeNewCategory: function(query){
-			this.set("category", query.category);
+			if(!this._isEqual(query.category, this.get("category"))){
+				this.set("category", query.category);
+			}
+			if(!this._isEqual(query.tag, this.get("tag"))){
+				this.set("tag", query.tag);
+			}
+			
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
 			}
@@ -300,19 +359,6 @@ define([
 			}
 			
 			return obj;
-		},
-		
-		_setTitleAttr: function(title){
-			try{
-				this.title = title;
-				if(this._isBlank(this.title)){
-					domConstr.empty(this.titleNode);
-				}else{
-					domAttr.set(this.titleNode, "innerHTML", this.title);
-				}
-			}catch(e){
-				console.warn("Could not change the title");
-			}
 		},
 		
 		_displayCategoryList: function(section, category, tag){
