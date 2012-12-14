@@ -44,13 +44,28 @@ define([
 		"parentPosPlace": "after",
 		
 		_initNodes: function(){
-			if(this.parentNode === null){
-				this.parentNode = this.application.hiddenDiv;
+			if(this.application !== null){
+				if(this.parentNode === null){
+					this.parentNode = this.application.hiddenDiv;
+				}
+				if(this.hiddenNode === null){
+					this.hiddenNode = this.application.hiddenDiv;
+				}
 			}
-			if(this.hiddenNode === null){
-				this.hiddenNode = this.application.hiddenDiv;
+		},
+		
+		_hideWidget: function(){
+			if(this.hiddenNode !== null){
+				domConstr.place(this.domNode, this.hiddenNode);
 			}
-			
+		},
+		
+		_showWidget: function(){
+			if(this.parentNode !== null){
+				domConstr.place(
+					this.domNode, this.parentNode, this.parentPosPlace
+				);
+			}
 		},
 		
 		clear: function(){
@@ -61,20 +76,13 @@ define([
 			this._initNodes();
 			
 			if(this._isBlank(value)){
-				domConstr.place(
-					this.domNode,
-					this.hiddenNode
-				);
+				this._hideWidget();
 				array.forEach(this._displayers, function(displayer){
 					displayer.destroy();
 				}, this);
 				this._displayers = new Array();
 			}else{
-				domConstr.place(
-					this.domNode,
-					this.parentNode,
-					this.parentPosPlace
-				);
+				this._showWidget();
 				this._displayShortlist(value);
 			}
 			this.value = value;

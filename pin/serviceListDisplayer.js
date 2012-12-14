@@ -47,11 +47,27 @@ define([
 		"parentPosPlace": "last",
 		
 		_initNodes: function(){
-			if(this.parentNode === null){
-				this.parentNode = this.application.articleContentNode;
+			if(this.application !== null){
+				if(this.parentNode === null){
+					this.parentNode = this.application.articleContentNode;
+				}
+				if(this.hiddenNode === null){
+					this.hiddenNode = this.application.hiddenDiv;
+				}
 			}
-			if(this.hiddenNode === null){
-				this.hiddenNode = this.application.hiddenDiv;
+		},
+		
+		_hideWidget: function(){
+			if(this.hiddenNode !== null){
+				domConstr.place(this.domNode, this.hiddenNode);
+			}
+		},
+		
+		_showWidget: function(){
+			if(this.parentNode !== null){
+				domConstr.place(
+					this.domNode, this.parentNode, this.parentPosPlace
+				);
 			}
 		},
 		
@@ -63,16 +79,9 @@ define([
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
 					domConstr.empty(this.serviceListNode);
 				}
-				domConstr.place(
-					this.domNode,
-					this.hiddenNode
-				);
+				this._hideWidget();
 			}else{
-				domConstr.place(
-					this.domNode,
-					this.parentNode,
-					this.parentPosPlace
-				);
+				this._showWidget();
 				this._createContent(value);
 			}
 		},

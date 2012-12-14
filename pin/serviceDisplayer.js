@@ -69,13 +69,28 @@ define([
 		],
 		
 		_initNodes: function(){
-			if(this.parentNode === null){
-				this.parentNode = this.application.articleContentNode;
+			if(this.application !== null){
+				if(this.parentNode === null){
+					this.parentNode = this.application.articleContentNode;
+				}
+				if(this.hiddenNode === null){
+					this.hiddenNode = this.application.hiddenDiv;
+				}
 			}
-			if(this.hiddenNode === null){
-				this.hiddenNode = this.application.hiddenDiv;
+		},
+		
+		_hideWidget: function(){
+			if(this.hiddenNode !== null){
+				domConstr.place(this.domNode, this.hiddenNode);
 			}
-			
+		},
+		
+		_showWidget: function(){
+			if(this.parentNode !== null){
+				domConstr.place(
+					this.domNode, this.parentNode, this.parentPosPlace
+				);
+			}
 		},
 		
 		_setValueAttr: function(value){
@@ -83,17 +98,9 @@ define([
 			
 			this.value = value;
 			if(this._isBlank(this.value)){
-				this._clear();
-				domConstr.place(
-					this.domNode,
-					this.hiddenNode
-				);
+				this._hideWidget();
 			}else{
-				domConstr.place(
-					this.domNode,
-					this.parentNode,
-					this.parentPosPlace
-				);
+				this._showWidget();
 				this._createContent(value);
 			}
 		},

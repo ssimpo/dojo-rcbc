@@ -46,13 +46,28 @@ define([
 		"parentPosPlace": "last",
 		
 		_initNodes: function(){
-			if(this.parentNode === null){
-				this.parentNode = this.application.asideNode;
+			if(this.application !== null){
+				if(this.parentNode === null){
+					this.parentNode = this.application.asideNode;
+				}
+				if(this.hiddenNode === null){
+					this.hiddenNode = this.application.hiddenDiv;
+				}
 			}
-			if(this.hiddenNode === null){
-				this.hiddenNode = this.application.hiddenDiv;
+		},
+		
+		_hideWidget: function(){
+			if(this.hiddenNode !== null){
+				domConstr.place(this.domNode, this.hiddenNode);
 			}
-			
+		},
+		
+		_showWidget: function(){
+			if(this.parentNode !== null){
+				domConstr.place(
+					this.domNode, this.parentNode, this.parentPosPlace
+				);
+			}
 		},
 		
 		clear: function(){
@@ -64,16 +79,9 @@ define([
 			
 			domConstr.empty(this.domNode);
 			if(this._isBlank(value)){
-				domConstr.place(
-					this.domNode,
-					this.hiddenNode
-				);
+				this._hideWidget();
 			}else{
-				domConstr.place(
-					this.domNode,
-					this.parentNode,
-					this.parentPosPlace
-				);
+				this._showWidget();
 				value = this._parseValue(value);
 				this._parseMenuData(value);
 			}
