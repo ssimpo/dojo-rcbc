@@ -14,12 +14,13 @@ define([
 	"dojo/i18n!./nls/costTable",
 	"dojo/text!./views/costTable.html",
 	"dojo/dom-construct",
+	"dojo/dom-attr",
 	"dojo/_base/array"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _tableMixin,
 	i18n, strings, template,
-	domConstr, array
+	domConstr, domAttr, array
 ){
 	"use strict";
 	
@@ -37,6 +38,18 @@ define([
 		"data": [],
 		"title": "",
 		"columnWidths": [30],
+		"titleLevel": 2,
+		
+		_fixTitleLevel: function(){
+			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+				this.titleDom = domConstr(
+					"h"+this.titleLevel.toString(),
+					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
+					this.titleDom,
+					"replace"
+				);
+			}
+		},
 		
 		_setDataAttr: function(data){
 			this.data = data;
@@ -50,6 +63,7 @@ define([
 		},
 		
 		_init: function(){
+			this._fixTitleLevel();
 			domConstr.empty(this.tableNode);
 			if(!this._isBlank(this.data)){
 				this._createRows();

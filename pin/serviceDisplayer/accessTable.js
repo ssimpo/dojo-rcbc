@@ -39,6 +39,18 @@ define([
 		"data": {},
 		"title": "",
 		"columnWidths": [30],
+		"titleLevel": 2,
+		
+		_fixTitleLevel: function(){
+			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+				this.titleDom = domConstr(
+					"h"+this.titleLevel.toString(),
+					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
+					this.titleDom,
+					"replace"
+				);
+			}
+		},
 		
 		_setDataAttr: function(data){
 			this.data = data;
@@ -52,6 +64,7 @@ define([
 		},
 		
 		_init: function(){
+			this._fixTitleLevel();
 			domConstr.empty(this.tableNode);
 			domConstr.empty(this.detailsNode);
 			

@@ -15,13 +15,14 @@ define([
 	"dojo/text!./views/contactsTable.html",
 	"dojo/_base/array",
 	"dojo/dom-construct",
+	"dojo/dom-attr",
 	"dojo/_base/lang",
 	"require"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _tableMixin,
 	i18n, strings, template,
-	array, domConstr, lang, require
+	array, domConstr, domAttr, lang, require
 ){
 	"use strict";
 	
@@ -39,9 +40,22 @@ define([
 		"data": [],
 		"title": "",
 		"columnWidths": [30],
+		"titleLevel": 2,
+		
+		_fixTitleLevel: function(){
+			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+				this.titleDom = domConstr(
+					"h"+this.titleLevel.toString(),
+					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
+					this.titleDom,
+					"replace"
+				);
+			}
+		},
 		
 		_setDataAttr: function(data){
 			this.data = ((data == undefined) ? [] : data);
+			this._init();
 			this._processContacts();
 		},
 		
@@ -49,6 +63,10 @@ define([
 			this.title = title;
 			this._addTitle();
 			this._showTitleNode();
+		},
+		
+		_init: function(){
+			this._fixTitleLevel();
 		},
 		
 		_processContacts: function(){

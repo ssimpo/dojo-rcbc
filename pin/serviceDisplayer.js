@@ -62,6 +62,8 @@ define([
 		
 		"titleNotify": false,
 		
+		"titleLevel": 1,
+		
 		"show": {
 			"title": false,
 			"description": true,
@@ -198,7 +200,9 @@ define([
 		
 		_createTitle: function(value){
 			if(this.show.title){
-				this._createAttachPoint("titleNode", "h2");
+				this._createAttachPoint(
+					"titleNode", "h" + this.titleLevel.toString()
+				);
 				domConstr.empty(this.titleNode);
 			}
 			
@@ -252,9 +256,10 @@ define([
 			this._createAttachPoint("keyFeaturesNode", "div");
 			domConstr.empty(this.keyFeaturesNode);
 			
+			var subTitleLevel = this.titleLevel + 1;
 			var ol = this._createFeaturesOl(value);
 			if(!this._isBlank(ol)){
-				domConstr.create("h2", {
+				domConstr.create("h"+subTitleLevel.toString(), {
 					"innerHTML": "Key Features:"
 				}, this.keyFeaturesNode);
 				domConstr.place(ol, this.keyFeaturesNode);
@@ -283,7 +288,8 @@ define([
 				"propertyNode": "contactsWidget",
 				"constructor": contactsTable,
 				"field": "contacts",
-				"title": strings.contactsTitle
+				"title": strings.contactsTitle,
+				"titleLevel": this.titleLevel+1
 			});
 			return this.contactsWidget.domNode;
 		},
@@ -309,6 +315,7 @@ define([
 			
 			if(venue.venueId != ""){
 				venue.application = this.application;
+				venue.titleLevel = this.titleLevel+1;
 				var venueWidget = new venueDisplayer(venue);
 				venueDom = venueWidget.domNode;
 			}
@@ -321,7 +328,8 @@ define([
 				"propertyNode": "costsWidget",
 				"constructor": costTable,
 				"field": "costs",
-				"title": strings.costDetails
+				"title": strings.costDetails,
+				"titleLevel": this.titleLevel+1
 			});
 			return this.costsWidget.domNode;
 		},
@@ -331,7 +339,8 @@ define([
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
 					"constructor": accessTable,
-					"title": strings.accessDetails
+					"title": strings.accessDetails,
+					"titleLevel": this.titleLevel+1
 				});
 				return this.accessWidget.domNode;
 			}
@@ -344,7 +353,8 @@ define([
 				"propertyNode": "serviceHoursWidget",
 				"constructor": serviceHoursTable,
 				"field": "servicePeriods",
-				"title": strings.serviceHours
+				"title": strings.serviceHours,
+				"titleLevel": this.titleLevel+1
 			});
 			return this.serviceHoursWidget.domNode;
 		},

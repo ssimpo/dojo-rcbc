@@ -14,13 +14,14 @@ define([
 	"dojo/i18n!./nls/serviceHoursTable",
 	"dojo/text!./views/serviceHoursTable.html",
 	"dojo/dom-construct",
+	"dojo/dom-attr",
 	"dojo/_base/array",
 	"dojo/_base/lang"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _tableMixin,
 	i18n, strings, template,
-	domConstr, array, lang
+	domConstr, domAttr, array, lang
 ){
 	"use strict";
 	
@@ -38,8 +39,20 @@ define([
 		"title": "",
 		"data": [],
 		"columnWidths": [10, 20],
+		"titleLevel": 2,
 		
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+		
+		_fixTitleLevel: function(){
+			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+				this.titleDom = domConstr(
+					"h"+this.titleLevel.toString(),
+					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
+					this.titleDom,
+					"replace"
+				);
+			}
+		},
 		
 		_setDataAttr: function(data){
 			this.data = data;
@@ -53,6 +66,7 @@ define([
 		},
 		
 		_init: function(){
+			this._fixTitleLevel();
 			domConstr.empty(this.tableNode);
 			if(!this._isBlank(this.data)){
 				this._createTableRows();
