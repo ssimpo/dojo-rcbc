@@ -117,29 +117,6 @@ define([
 			this._displayers = new Array();
 		},
 		
-		_testForNewValues: function(value){
-			var newValues = new Array();
-			var compare = this.value;
-			
-			if(this._isArray(compare) && this._isArray(value)){
-				var lookup = new Object();
-				
-				array.forEach(compare, function(id){
-					lookup[id] = true;
-				}, this);
-				
-				array.forEach(value, function(id){
-					if(!lookup.hasOwnProperty(id)){
-						newValues.push(id);
-					}
-				}, this);
-			}else{
-				return value;
-			}
-			
-			return newValues;
-		},
-		
 		_addHr: function(){
 			domConstr.create("br", null, this.domNode);
 			domConstr.create("hr", null, this.domNode);
