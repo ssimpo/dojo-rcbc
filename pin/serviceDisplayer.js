@@ -18,6 +18,7 @@ define([
 	"dojo/dom-attr",
 	"dojo/_base/array",
 	"dijit/form/Button",
+	"dojo/topic",
 	"./serviceDisplayer/contactsTable",
 	"./serviceDisplayer/venueDisplayer",
 	"./serviceDisplayer/costTable",
@@ -27,7 +28,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	lang, domConstr, domAttr, array, Button,
+	lang, domConstr, domAttr, array, Button, topic,
 	
 	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
 ){
@@ -46,7 +47,6 @@ define([
 		
 		"value": {},
 		
-		"titleNode": null,
 		"keyFeaturesNode": null,
 		"descriptionNode": null,
 		"contactsWidget": null,
@@ -163,6 +163,7 @@ define([
 		},
 		
 		_createContent: function(value){
+			this._createTitle(value);
 			this._createDescription(value);
 			this._createKeyFeatures(value);
 			this._createContactsTable(value);
@@ -170,6 +171,23 @@ define([
 			this._createCostTable(value);
 			this._createAccessTable(value);
 			this._createServiceHoursTable(value);
+		},
+		
+		_createTitle: function(value){
+			var title = "";
+			var serviceTitle = this._getField(value, "serviceName");
+			var orgTitle = this._getField(value, "orgName");
+			
+			if((serviceTitle === "") && (orgTitle !== "")){
+				title = orgTitle;
+			}else if((serviceTitle !== "") && (orgTitle !== "")){
+				title = serviceTitle + " ("+orgTitle+")";
+			}else{
+				title = serviceTitle;
+			}
+			
+			topic.publish("/rcbc/pin/titleChange", title);
+			return title;
 		},
 		
 		_createDescription: function(value){

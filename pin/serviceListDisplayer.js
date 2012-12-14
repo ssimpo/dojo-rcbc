@@ -18,12 +18,13 @@ define([
 	"dojo/dom-attr",
 	"dojo/_base/array",
 	"dojo/hash",
-	"dojo/io-query"
+	"dojo/io-query",
+	"dojo/topic"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	lang, domConstr, domAttr, array, hash, ioQuery
+	lang, domConstr, domAttr, array, hash, ioQuery, topic
 ){
 	"use strict";
 	
@@ -40,6 +41,9 @@ define([
 		
 		"value": [],
 		"tags": {},
+		"section": "",
+		"category": "",
+		"tag": "",
 		
 		"application": null,
 		"parentNode": null,
@@ -98,8 +102,11 @@ define([
 		},
 		
 		clear: function(){
-			this.set("value",[]);
-			this.set("tags",[]);
+			this.set("value", []);
+			this.set("tags", []);
+			this.set("section", "");
+			this.set("category", "");
+			this.set("tag", "");
 		},
 		
 		_clear: function(){
@@ -146,11 +153,32 @@ define([
 			}
 		},
 		
+		_createTitle: function(){
+			try{
+				var category = this.get("category");
+				var tag = this.get("tag");
+				var title = "";
+			
+				if(!this._isBlank(category)){
+					title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
+					topic.publish("/rcbc/pin/titleChange", title);
+				}
+			
+				
+			}catch(e){
+				console.warn("Could not create a title for the current category/tag");
+			}
+			
+			return title;
+		},
+		
 		_createContent: function(value){
+			this._createTitle();
 			this._createServiceList(value);
 		},
 		
 		_createTagList: function(value){
+			this._createTitle();
 			this._createAttachPoint("tagListNode", "ul");
 			domConstr.empty(this.tagListNode);
 			

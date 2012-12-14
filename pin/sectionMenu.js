@@ -16,11 +16,12 @@ define([
 	"dojo/dom-construct",
 	"dojo/io-query",
 	"dojo/_base/array",
-	"dojo/dom-class"
+	"dojo/dom-class",
+	"dojo/topic"
 ], function(
 	declare, _widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	domConstr, ioQuery, array, domClass
+	domConstr, ioQuery, array, domClass, topic
 ){
 	"use strict";
 	
@@ -82,6 +83,7 @@ define([
 				this._showWidget();
 				value = this._parseValue(value);
 				this._parseMenuData(value);
+				this._createTitle();
 			}
 			
 			this.value = value;
@@ -93,6 +95,17 @@ define([
 				this._createItemClass(this.section)
 			);
 			this.section = section;
+		},
+		
+		_createTitle: function(){
+			try{
+				var title = "";
+				topic.publish("/rcbc/pin/titleChange", title);
+			}catch(e){
+				console.warn("Could not create a title for the current section");
+			}
+			
+			return title;
 		},
 		
 		_parseMenuData: function(value){

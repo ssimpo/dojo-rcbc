@@ -56,6 +56,13 @@ define([
 		"id": "",
 		"shortlistCounterNode": {},
 		
+		"_blankHashValue": {
+			"id": "",
+			"section": "",
+			"category": "",
+			"tag": ""
+		},
+		
 		
 		postCreate: function(){
 			this._init();
@@ -63,36 +70,61 @@ define([
 		
 		_init: function(){
 			this.store = new store();
+			//uncomment to clear the localstorage.
 			//this.store.clear(true);
+			
 			this._initTopicSubscriptions();
+			this._initShortlist();
+			this._initEvents()
 			this._hashChange();
-			
-			var qry = $("#shortlistCounter");
-			if(qry.length > 0){
-				this.shortlistCounterNode = qry[0];
-				this._shortlistUpdate(this.store.getShortlist());
-			}
-			
-			on(
-				this.manageShortlistButton,
-				"click",
-				lang.hitch(this, this._shortlistClick)
-			);
 		},
 		
 		_initTopicSubscriptions: function(){
-			topic.subscribe(
-				"/dojo/hashchange",
-				lang.hitch(this, this._hashChange)
-			);
-			topic.subscribe(
-				"/rcbc/pin/updateService",
-				lang.hitch(this, this._serviceDataUpdate)
-			);
-			topic.subscribe(
-				"/rcbc/pin/changeShortlist",
-				lang.hitch(this, this._shortlistUpdate)
-			);
+			try{
+				topic.subscribe(
+					"/dojo/hashchange",
+					lang.hitch(this, this._hashChange)
+				);
+				topic.subscribe(
+					"/rcbc/pin/updateService",
+					lang.hitch(this, this._serviceDataUpdate)
+				);
+				topic.subscribe(
+					"/rcbc/pin/changeShortlist",
+					lang.hitch(this, this._shortlistUpdate)
+				);
+				topic.subscribe(
+					"/rcbc/pin/titleChange",
+					lang.hitch(this, this._changeTitle)
+				);
+			}catch(e){
+				console.warn("Could not initiate PIN subscriptions");
+			}
+		},
+		
+		_initEvents: function(){
+			try{
+				on(
+					this.manageShortlistButton,
+					"click",
+					lang.hitch(this, this._shortlistClick)
+				);
+			}catch(e){
+				console.warn("Could not initiate PIN events");
+			}
+		},
+		
+		_initShortlist: function(){
+			try{
+				var shortlist = this.store.getShortlist();
+				var qry = $("#shortlistCounter");
+				if(qry.length > 0){
+					this.shortlistCounterNode = qry[0];
+					this._shortlistUpdate(shortlist);
+				}
+			}catch(e){
+				console.warn("Shortlist could not be loaded.")
+			}
 		},
 		
 		_hashChange: function(cHash){
@@ -208,62 +240,69 @@ define([
 		},
 		
 		_getHashObj: function(cHash){
-			return this._sanitizeHashObject(
-				ioQuery.queryToObject(
-					((cHash == undefined) ? hash() : cHash)
-				)
-			);
+			try{
+				return this._sanitizeHashObject(
+					ioQuery.queryToObject(
+						((cHash == undefined) ? hash() : cHash)
+					)
+				);
+			}catch(e){
+				console.warn("Could not get the hash object");
+				return this._blankHashValue;
+			}
 		},
 		
 		_sanitizeHashObject: function(hashQuery){
-			array.forEach(["id", "section", "category", "tag"], function(propName){
-				hashQuery = this._addPropertyToObject(hashQuery, propName);
-			}, this);
-			hashQuery.id = hashQuery.id.toLowerCase();
-			
-			return hashQuery;
+			try{
+				for(var propName in this._blankHashValue){
+					hashQuery = this._addPropertyToObject(hashQuery, propName);
+				}
+				hashQuery.id = hashQuery.id.toLowerCase();
+				
+				return hashQuery;
+			}catch(e){
+				console.warn("Could not sanitize the hash object");
+				return this._blankHashValue;
+			}
 		},
 		
 		_addPropertyToObject: function(obj, propName, defaultValue){
-			if(!this._isBlank(propName)){
-				defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
-				obj[propName] = ((obj.hasOwnProperty(propName)) ? obj[propName] : defaultValue);
+			try{
+				if(!this._isBlank(propName)){
+					defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
+					obj[propName] = ((obj.hasOwnProperty(propName)) ? obj[propName] : defaultValue);
+				}
+			}catch(e){
+				console.error("Failed to add property to object");
 			}
 			
 			return obj;
 		},
 		
-		_setTitleAttr: function(title){
-			this.title = title;
-			if(this._isBlank(this.title)){
-				domConstr.empty(this.titleNode);
-			}else{
-				domAttr.set(this.titleNode, "innerHTML", this.title);
-			}
+		_changeTitle: function(title){
+			this._setTitleAttr(title);
 		},
 		
-		_getTitle: function(value){
-			var title = "";
-			var serviceTitle = this._getField(value, "serviceName");
-			var orgTitle = this._getField(value, "orgName");
-			
-			if((serviceTitle === "") && (orgTitle !== "")){
-				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")){
-				title = serviceTitle + " ("+orgTitle+")";
-			}else{
-				title = serviceTitle;
+		_setTitleAttr: function(title){
+			try{
+				this.title = title;
+				if(this._isBlank(this.title)){
+					domConstr.empty(this.titleNode);
+				}else{
+					domAttr.set(this.titleNode, "innerHTML", this.title);
+				}
+			}catch(e){
+				console.warn("Could not change the title");
 			}
-			
-			return title;
 		},
 		
 		_displayCategoryList: function(section, category, tag){
 			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
 			tag = (tag === undefined) ? "" : tag;
 			
-			var title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
-			this.set("title", title);
+			this.serviceListDisplayer.set("section", section);
+			this.serviceListDisplayer.set("category", category);
+			this.serviceListDisplayer.set("tag", tag);
 			
 			if(this._isBlank(tag)){
 				var services = this.store.getCategory(section, category);
@@ -278,7 +317,6 @@ define([
 		},
 		
 		_displaySectionMenu: function(section){
-			this.set("title", "");
 			var categories = this.store.getCategoryList(section);
 			this.sectionMenu.set("section", section);
 			this.sectionMenu.set("value", categories);
@@ -289,7 +327,6 @@ define([
 			
 			if(!this._isBlank(service)){
 				this._setServiceHash(service);
-				this.set("title", this._getTitle(service.data));
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
@@ -385,7 +422,6 @@ define([
 		},
 		
 		_shortlistUpdate: function(shortlist){
-			console.log(shortlist);
 			if(this._isElement(this.shortlistCounterNode)){
 				var counter = 0;
 				if(shortlist.hasOwnProperty("services")){
