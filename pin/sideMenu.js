@@ -27,7 +27,7 @@ define([
 	"use strict";
 	
 	var construct = declare([
-		_widget, _templated, _wTemplate,  _variableTestMixin
+		_widget, _templated, _wTemplate, _variableTestMixin
 	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
@@ -40,23 +40,39 @@ define([
 		"value": [],
 		"section": "",
 		
-		"_updateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
+		"application": null,
+		"parentNode": null,
+		"hiddenNode": null,
+		"parentPosPlace": "last",
+		
+		_initNodes: function(){
+			if(this.parentNode === null){
+				this.parentNode = this.application.asideNode;
+			}
+			if(this.hiddenNode === null){
+				this.hiddenNode = this.application.hiddenDiv;
+			}
+			
+		},
 		
 		clear: function(){
 			this.set("value",[]);
 		},
 		
 		_setValueAttr: function(value){
+			this._initNodes();
+			
 			domConstr.empty(this.domNode);
 			if(this._isBlank(value)){
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv
+					this.hiddenNode
 				);
 			}else{
 				domConstr.place(
 					this.domNode,
-					this.application.asideNode
+					this.parentNode,
+					this.parentPosPlace
 				);
 				value = this._parseValue(value);
 				this._parseMenuData(value);

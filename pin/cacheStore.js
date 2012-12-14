@@ -66,7 +66,19 @@ define([
 				topic.publish("/rcbc/pin/changeShortlist", shortlist);
 			}
 			
-			return shortlist
+			return shortlist;
+		},
+		
+		emptyShortlist: function(){
+			var shortlist = {
+				"type": "shortlist",
+				"id": "shortlist",
+				"services": new Array()
+			};
+			this.put(shortlist);
+			topic.publish("/rcbc/pin/changeShortlist", shortlist);
+			
+			return shortlist;
 		},
 		
 		addToShortlist: function(id){

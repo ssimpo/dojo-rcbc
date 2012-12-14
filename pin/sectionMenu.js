@@ -38,22 +38,39 @@ define([
 		"value": [],
 		"section": "",
 		
+		"application": null,
+		"parentNode": null,
+		"hiddenNode": null,
+		"parentPosPlace": "after",
+		
+		_initNodes: function(){
+			if(this.parentNode === null){
+				this.parentNode = this.application.hiddenDiv;
+			}
+			if(this.hiddenNode === null){
+				this.hiddenNode = this.application.hiddenDiv;
+			}
+			
+		},
+		
 		clear: function(){
 			this.set("value",[]);
 		},
 		
 		_setValueAttr: function(value){
+			this._initNodes();
+			
 			domConstr.empty(this.domNode);
 			if(this._isBlank(value)){
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv
+					this.hiddenNode
 				);
 			}else{
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv,
-					"after"
+					this.parentNode,
+					this.parentPosPlace
 				);
 				value = this._parseValue(value);
 				this._parseMenuData(value);

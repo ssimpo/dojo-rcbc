@@ -41,7 +41,23 @@ define([
 		"value": [],
 		"tags": {},
 		
+		"application": null,
+		"parentNode": null,
+		"hiddenNode": null,
+		"parentPosPlace": "last",
+		
+		_initNodes: function(){
+			if(this.parentNode === null){
+				this.parentNode = this.application.articleContentNode;
+			}
+			if(this.hiddenNode === null){
+				this.hiddenNode = this.application.hiddenDiv;
+			}
+		},
+		
 		_setValueAttr: function(value){
+			this._initNodes();
+			
 			this.value = value;
 			if(this._isBlank(this.value)){
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
@@ -49,12 +65,13 @@ define([
 				}
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv
+					this.hiddenNode
 				);
 			}else{
 				domConstr.place(
 					this.domNode,
-					this.application.articleContentNode
+					this.parentNode,
+					this.parentPosPlace
 				);
 				this._createContent(value);
 			}

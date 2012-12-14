@@ -38,22 +38,42 @@ define([
 		"value": [],
 		"_displayers": [],
 		
+		"application": null,
+		"parentNode": null,
+		"hiddenNode": null,
+		"parentPosPlace": "after",
+		
+		_initNodes: function(){
+			if(this.parentNode === null){
+				this.parentNode = this.application.hiddenDiv;
+			}
+			if(this.hiddenNode === null){
+				this.hiddenNode = this.application.hiddenDiv;
+			}
+			
+		},
+		
 		clear: function(){
 			this.set("value",[]);
-			this._displayers = new Array();
 		},
 		
 		_setValueAttr: function(value){
+			this._initNodes();
+			
 			if(this._isBlank(value)){
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv
+					this.hiddenNode
 				);
+				array.forEach(this._displayers, function(displayer){
+					displayer.destroy();
+				}, this);
+				this._displayers = new Array();
 			}else{
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv,
-					"after"
+					this.parentNode,
+					this.parentPosPlace
 				);
 				this._displayShortlist(value);
 			}
@@ -65,7 +85,8 @@ define([
 			var services = this._getServices(ids);
 			array.forEach(services, function(service){
 				var displayer = new serviceDisplayer({
-					"application": this.application
+					"application": this.application,
+					"parentNode": this.domNode
 				});
 				this._displayers.push(displayer);
 				domConstr.place(displayer.domNode, this.domNode);

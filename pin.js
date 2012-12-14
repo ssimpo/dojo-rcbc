@@ -137,6 +137,10 @@ define([
 						var shortlist = this.store.getShortlist();
 						if(shortlist.hasOwnProperty("services")){
 							this.shortlist.set("value", shortlist.services);
+							if(shortlist.services.length > 0){
+								this.showButtonPanel();
+								this._setShortlistLabel();
+							}
 						}
 					}else{
 						this.shortlist.clear();
@@ -167,24 +171,39 @@ define([
 		},
 		
 		_setShortlistLabel: function(){
-			var id = this.get("id");
+			var hash = this._getHashObj();
 			
-			if(this.store.inShortlist(id)){
-				this.manageShortlistButton.set("label", "Remove from shortlist");
+			if(!this._isBlank(hash.id)){
+				if(this.store.inShortlist(hash.id)){
+					this.manageShortlistButton.set("label", "Remove from shortlist");
+				}else{
+					this.manageShortlistButton.set("label", "Add to shortlist");
+				}
 			}else{
-				this.manageShortlistButton.set("label", "Add to shortlist");
+				if(this._isEqual(hash.section, "shortlist")){
+					this.manageShortlistButton.set("label", "Empty shortlist");
+				}
 			}
+			
 			this.manageShortlistButton.startup();
 		},
 		
 		_shortlistClick: function(){
-			var id = this.get("id");
-			if(this.store.inShortlist(this.get("id"))){
-				this.store.removeFromShortlist(id);
-				this._setShortlistLabel();
+			var hash = this._getHashObj();
+			
+			if(!this._isBlank(hash.id)){
+				if(this.store.inShortlist(hash.id)){
+					this.store.removeFromShortlist(hash.id);
+					this._setShortlistLabel();
+				}else{
+					this.store.addToShortlist(hash.id);
+					this._setShortlistLabel();
+				}
 			}else{
-				this.store.addToShortlist(id);
-				this._setShortlistLabel();
+				if(this._isEqual(hash.section, "shortlist")){
+					this.emptyShortlist();
+					this.hideButtonPanel();
+				}
 			}
 		},
 		
