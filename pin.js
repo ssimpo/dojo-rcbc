@@ -57,7 +57,10 @@ define([
 		"section": "",
 		"category": "",
 		"tag": "",
+		"pageTitle": "",
+		
 		"shortlistCounterNode": {},
+		"headTitleNode": null,
 		
 		"_blankHashValue": {
 			"id": "",
@@ -78,6 +81,7 @@ define([
 			
 			this._initTopicSubscriptions();
 			this._initShortlist();
+			this._initTitle();
 			this._initEvents()
 			this._hashChange();
 		},
@@ -98,7 +102,7 @@ define([
 				);
 				topic.subscribe(
 					"/rcbc/pin/titleChange",
-					lang.hitch(this, this._setTitleAttr)
+					lang.hitch(this, this._setPageTitleAttr)
 				);
 			}catch(e){
 				console.warn("Could not initiate PIN subscriptions");
@@ -127,6 +131,13 @@ define([
 				}
 			}catch(e){
 				console.warn("Shortlist could not be loaded.")
+			}
+		},
+		
+		_initTitle: function(){
+			var qry = $("head title");
+			if(qry.length > 0){
+				this.headTitleNode = qry[0];
 			}
 		},
 		
@@ -166,16 +177,49 @@ define([
 			}
 		},
 		
-		_setTitleAttr: function(title){
+		_setPageTitleAttr: function(title){
 			try{
-				this.title = title;
-				if(this._isBlank(this.title)){
+				this.pageTitle = title;
+				if(this._isBlank(this.pageTitle)){
 					domConstr.empty(this.titleNode);
 				}else{
-					domAttr.set(this.titleNode, "innerHTML", this.title);
+					domAttr.set(this.titleNode, "innerHTML", this.pageTitle);
+				}
+				
+				this._changeHeadTitle(title);
+			}catch(e){
+				console.warn("Could not change the page heading");
+			}
+		},
+		
+		_changeHeadTitle: function(title){
+			try{
+				if(this.headTitleNode !== null){
+					if(!this._isBlank(title)){
+						domAttr.set(this.headTitleNode, "innerHTML", title);
+					}else{
+						var query = this._getHashObj();
+						if(!this._isBlank(query.section)){
+							title = query.section;
+							if(!this._isBlank(query.category)){
+								title += " > " + query.category;
+								if(!this._isBlank(query.tag)){
+									title += " > " + query.tag;
+								}
+							}
+							
+							domAttr.set(this.headTitleNode, "innerHTML", title);
+						}else{
+							domAttr.set(
+								this.headTitleNode,
+								"innerHTML",
+								"Peoples Information Network"
+							);
+						}
+					}
 				}
 			}catch(e){
-				console.warn("Could not change the title");
+				console.warn("Could not change the page title");
 			}
 		},
 		
@@ -252,7 +296,6 @@ define([
 		},
 		
 		_hashChangeNewSectionIsShortlist: function(){
-			this.set("title", "");
 			var shortlist = this.store.getShortlist();
 			if(shortlist.hasOwnProperty("services")){
 				this.shortlist.set("value", shortlist.services);

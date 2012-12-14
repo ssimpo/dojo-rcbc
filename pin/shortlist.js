@@ -15,12 +15,13 @@ define([
 	"dojo/text!./views/shortlist.html",
 	"./serviceDisplayer",
 	"dojo/dom-construct",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"dojo/topic"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	serviceDisplayer, domConstr, array
+	serviceDisplayer, domConstr, array, topic
 ){
 	"use strict";
 	
@@ -82,6 +83,7 @@ define([
 				}, this);
 				this._displayers = new Array();
 			}else{
+				topic.publish("/rcbc/pin/titleChange", "");
 				this._showWidget();
 				this._displayShortlist(value);
 			}
