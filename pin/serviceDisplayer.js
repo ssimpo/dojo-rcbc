@@ -45,7 +45,6 @@ define([
 		"templateString": template,
 		
 		"value": {},
-		"application": {},
 		
 		"titleNode": null,
 		"keyFeaturesNode": null,
@@ -56,6 +55,11 @@ define([
 		"serviceHoursWidget": null,
 		"venuesNode": null,
 		
+		"application": null,
+		"parentNode": null,
+		"hiddenNode": null,
+		"parentPosPlace": "last",
+		
 		"_accessTesters": [
 			["appointmentOnly", "appointmentOnlyDetails"],
 			["dropIn", "dropInDetails"],
@@ -64,18 +68,31 @@ define([
 			["referralOnly", "referralOnlyDetails"]
 		],
 		
+		_initNodes: function(){
+			if(this.parentNode === null){
+				this.parentNode = this.application.articleContentNode;
+			}
+			if(this.hiddenNode === null){
+				this.hiddenNode = this.application.hiddenDiv;
+			}
+			
+		},
+		
 		_setValueAttr: function(value){
+			this._initNodes();
+			
 			this.value = value;
 			if(this._isBlank(this.value)){
 				this._clear();
 				domConstr.place(
 					this.domNode,
-					this.application.hiddenDiv
+					this.hiddenNode
 				);
 			}else{
 				domConstr.place(
 					this.domNode,
-					this.application.articleContentNode
+					this.parentNode,
+					this.parentPosPlace
 				);
 				this._createContent(value);
 			}
