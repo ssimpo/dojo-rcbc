@@ -47,7 +47,15 @@ define([
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
 					domConstr.empty(this.serviceListNode);
 				}
+				domConstr.place(
+					this.domNode,
+					this.application.hiddenDiv
+				);
 			}else{
+				domConstr.place(
+					this.domNode,
+					this.application.articleContentNode
+				);
 				this._createContent(value);
 			}
 		},
