@@ -298,6 +298,7 @@ define([
 		_hashChangeNewSectionIsShortlist: function(){
 			var shortlist = this.store.getShortlist();
 			if(shortlist.hasOwnProperty("services")){
+				//articleContentNode
 				this.shortlist.set("value", shortlist.services);
 				if(shortlist.services.length > 0){
 					this.showButtonPanel();
@@ -358,7 +359,7 @@ define([
 				}
 			}else{
 				if(this._isEqual(hash.section, "shortlist")){
-					this.emptyShortlist();
+					this.store.emptyShortlist();
 					this.hideButtonPanel();
 				}
 			}
@@ -540,6 +541,11 @@ define([
 					"innerHTML",
 					counter.toString()
 				);
+			}
+			
+			var query = this._getHashObj();
+			if(this._isEqual(query.section, "shortlist")){
+				this.shortlist.set("value", shortlist.services);
 			}
 		},
 		
