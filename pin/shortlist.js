@@ -55,7 +55,6 @@ define([
 			this._displayers = new Array();
 			var services = this._getServices(ids);
 			array.forEach(services, function(service){
-				//console.log(service);
 				var displayer = new serviceDisplayer({
 					"application": this.application
 				});

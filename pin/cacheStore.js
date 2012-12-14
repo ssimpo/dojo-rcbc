@@ -95,13 +95,30 @@ define([
 			var shortlist = this.getShortlist();
 			
 			var newList = new Array();
-			array.forEach(shortlist.services, function(service){
-				if(!this.isEqual(service.id, id)){
-					newList.push(service.id);
+			array.forEach(shortlist.services, function(serviceId){
+				if(!this._isEqual(serviceId, id)){
+					newList.push(serviceId);
 				}
 			}, this);
 			
 			this._updateShortlist(newList);
+		},
+		
+		inShortlist: function(id){
+			var shortlist = this.getShortlist();
+			var found = false;
+			
+			if(shortlist.hasOwnProperty("services")){
+				array.every(shortlist.services, function(serviceId){
+					if(this._isEqual(serviceId, id)){
+						found = true;
+						return false;
+					}
+					return true;
+				}, this);
+			}
+			
+			return found;
 		},
 		
 		_updateShortlist: function(ary){
