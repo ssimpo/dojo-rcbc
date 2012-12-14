@@ -23,7 +23,9 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/query",
+	"dojo/on",
 	
+	"dijit/form/Button",
 	"./pin/shortlist",
 	"./pin/sectionMenu",
 	"./pin/sideMenu",
@@ -34,7 +36,7 @@ define([
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, $
+	domConstr, domAttr, $, on
 ){
 	"use strict";
 	
@@ -70,6 +72,12 @@ define([
 				this.shortlistCounterNode = qry[0];
 				this._shortlistUpdate(this.store.getShortlist());
 			}
+			
+			on(
+				this.manageShortlistButton,
+				"click",
+				lang.hitch(this, this._shortlistClick)
+			);
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -92,6 +100,9 @@ define([
 			
 			if(!this._isBlank(query.id)){
 				//console.log("Changing to service: ", query.id);
+				this.showButtonPanel();
+				this._setShortlistLabel();
+				
 				if(!this._isBlank(query.section)){
 					this._displayMenu(query.section);
 				}
@@ -103,25 +114,25 @@ define([
 					this.set("id", query.id.toLowerCase());
 				}
 			}else if(!this._isBlank(query.section)){
+				this.hideButtonPanel();
+				this.serviceDisplayer.clear();
+				
 				if(!this._isBlank(query.category)){
 					if(!this._isBlank(query.section)){
 						this._displayMenu(query.section);
 					}
 					//console.log("Changing to category: ", query.category, " in: ", query.section);
-					this.serviceDisplayer.clear();
 					this.sectionMenu.clear();
 					this.shortlist.clear();
 					this._displayCategoryList(
 						query.section, query.category, query.tag
 					);
 				}else{
-					this.serviceDisplayer.clear();
 					this.serviceListDisplayer.clear();
 					this.sideMenu.clear();
 					this.sectionMenu.clear();
 					
 					if(this._isEqual(query.section,"shortlist")){
-						this.serviceListDisplayer.clear();
 						this.set("title", "");
 						var shortlist = this.store.getShortlist();
 						if(shortlist.hasOwnProperty("services")){
@@ -134,11 +145,46 @@ define([
 				}
 			}else{
 				//console.log("CLEARING ALL");
+				this.hideButtonPanel();
 				this.sideMenu.clear();
 				this.sectionMenu.clear();
 				this.shortlist.clear();
 				this.serviceDisplayer.clear();
 				this.serviceListDisplayer.clear();
+			}
+		},
+		
+		hideButtonPanel: function(){
+			domConstr.place(
+				this.buttonsPanelNode, this.hiddenDiv
+			);
+		},
+		
+		showButtonPanel: function(){
+			domConstr.place(
+				this.buttonsPanelNode, this.articleContentNode, "first"
+			);
+		},
+		
+		_setShortlistLabel: function(){
+			var id = this.get("id");
+			
+			if(this.store.inShortlist(id)){
+				this.manageShortlistButton.set("label", "Remove from shortlist");
+			}else{
+				this.manageShortlistButton.set("label", "Add to shortlist");
+			}
+			this.manageShortlistButton.startup();
+		},
+		
+		_shortlistClick: function(){
+			var id = this.get("id");
+			if(this.store.inShortlist(this.get("id"))){
+				this.store.removeFromShortlist(id);
+				this._setShortlistLabel();
+			}else{
+				this.store.addToShortlist(id);
+				this._setShortlistLabel();
 			}
 		},
 		

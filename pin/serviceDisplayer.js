@@ -78,7 +78,6 @@ define([
 		},
 		
 		_clear: function(){
-			this._ifHasClear("shortlistButtonNode", true);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
 			this._ifHasClear("contactsWidget");
@@ -132,7 +131,6 @@ define([
 		},
 		
 		_createContent: function(value){
-			this._createShortListButton(value);
 			this._createDescription(value);
 			this._createKeyFeatures(value);
 			this._createContactsTable(value);
@@ -140,19 +138,6 @@ define([
 			this._createCostTable(value);
 			this._createAccessTable(value);
 			this._createServiceHoursTable(value);
-		},
-		
-		_createShortListButton: function(value){
-			var id = value.id;
-			this._createAttachPoint("shortlistButtonNode", Button, {
-				"label": "Add to shortlist",
-				"onClick": lang.hitch(this, function(){
-					this.application.store.addToShortlist(id);
-				})
-			});
-			domConstr.place(
-				this.shortlistButtonNode.domNode, this.domNode, "first"
-			);
 		},
 		
 		_createDescription: function(value){
