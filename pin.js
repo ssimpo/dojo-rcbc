@@ -54,6 +54,9 @@ define([
 		"store": {},
 		
 		"id": "",
+		"section": "",
+		"category": "",
+		"tag": "",
 		"shortlistCounterNode": {},
 		
 		"_blankHashValue": {
@@ -131,63 +134,83 @@ define([
 			var query = this._getHashObj(cHash);
 			
 			if(!this._isBlank(query.id)){
-				//console.log("Changing to service: ", query.id);
-				this.showButtonPanel();
-				this._setShortlistLabel();
-				
-				if(!this._isBlank(query.section)){
-					this._displayMenu(query.section);
-				}
-				if(!this._isEqual(query.id, this.get("id"))){
-					this.serviceListDisplayer.clear();
-					this.sectionMenu.clear();
-					this.shortlist.clear();
-					this._displayService(query.id.toLowerCase());
-					this.set("id", query.id.toLowerCase());
-				}
+				this._hashChangeNewId(query);
 			}else if(!this._isBlank(query.section)){
-				this.hideButtonPanel();
-				this.serviceDisplayer.clear();
-				
-				if(!this._isBlank(query.category)){
-					if(!this._isBlank(query.section)){
-						this._displayMenu(query.section);
-					}
-					//console.log("Changing to category: ", query.category, " in: ", query.section);
-					this.sectionMenu.clear();
-					this.shortlist.clear();
-					this._displayCategoryList(
-						query.section, query.category, query.tag
-					);
-				}else{
-					this.serviceListDisplayer.clear();
-					this.sideMenu.clear();
-					this.sectionMenu.clear();
-					
-					if(this._isEqual(query.section,"shortlist")){
-						this.set("title", "");
-						var shortlist = this.store.getShortlist();
-						if(shortlist.hasOwnProperty("services")){
-							this.shortlist.set("value", shortlist.services);
-							if(shortlist.services.length > 0){
-								this.showButtonPanel();
-								this._setShortlistLabel();
-							}
-						}
-					}else{
-						this.shortlist.clear();
-						this._displaySectionMenu(query.section);
-					}
-				}
+				this._hashChangeNewSection(query);
 			}else{
-				//console.log("CLEARING ALL");
-				this.hideButtonPanel();
-				this.sideMenu.clear();
+				this._hashChangeDefaultFallback(query);
+			}
+		},
+		
+		_hashChangeNewId: function(query){
+			this.showButtonPanel();
+			this._setShortlistLabel();
+				
+			if(!this._isBlank(query.section)){
+				this._displayMenu(query.section);
+			}
+			
+			if(!this._isEqual(query.id, this.get("id"))){
+				this.serviceListDisplayer.clear();
 				this.sectionMenu.clear();
 				this.shortlist.clear();
-				this.serviceDisplayer.clear();
-				this.serviceListDisplayer.clear();
+				this._displayService(query.id.toLowerCase());
+				this.set("id", query.id.toLowerCase());
 			}
+		},
+		
+		_hashChangeNewSection: function(query){
+			this.set("section", query.section);
+			this.hideButtonPanel();
+			this.serviceDisplayer.clear();
+			
+			if(!this._isBlank(query.category)){
+				this._hashChangeNewCategory(query);
+			}else{
+				this.serviceListDisplayer.clear();
+				this.sideMenu.clear();
+				this.sectionMenu.clear();
+					
+				if(this._isEqual(query.section,"shortlist")){
+					this._hashChangeNewSectionIsShortlist(query);
+				}else{
+					this.shortlist.clear();
+					this._displaySectionMenu(query.section);
+				}
+			}
+		},
+		
+		_hashChangeNewCategory: function(query){
+			this.set("category", query.category);
+			if(!this._isBlank(query.section)){
+				this._displayMenu(query.section);
+			}
+			this.sectionMenu.clear();
+			this.shortlist.clear();
+			this._displayCategoryList(
+				query.section, query.category, query.tag
+			);
+		},
+		
+		_hashChangeNewSectionIsShortlist: function(){
+			this.set("title", "");
+			var shortlist = this.store.getShortlist();
+			if(shortlist.hasOwnProperty("services")){
+				this.shortlist.set("value", shortlist.services);
+				if(shortlist.services.length > 0){
+					this.showButtonPanel();
+					this._setShortlistLabel();
+				}
+			}
+		},
+		
+		_hashChangeDefaultFallback: function(){
+			this.hideButtonPanel();
+			this.sideMenu.clear();
+			this.sectionMenu.clear();
+			this.shortlist.clear();
+			this.serviceDisplayer.clear();
+			this.serviceListDisplayer.clear();
 		},
 		
 		hideButtonPanel: function(){
