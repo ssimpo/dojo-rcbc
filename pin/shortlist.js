@@ -98,18 +98,46 @@ define([
 		_setValueAttr: function(value){
 			this._initNodes();
 			
+			this._destroyDisplayers();
+			domConstr.empty(this.domNode);
 			if(this._isBlank(value)){
 				this._hideWidget();
-				array.forEach(this._displayers, function(displayer){
-					displayer.destroy();
-				}, this);
-				this._displayers = new Array();
 			}else{
 				topic.publish("/rcbc/pin/titleChange", "");
 				this._showWidget();
 				this._displayShortlist(value);
 			}
 			this.value = value;
+		},
+		
+		_destroyDisplayers: function(){
+			array.forEach(this._displayers, function(displayer){
+				displayer.destroy();
+			}, this);
+			this._displayers = new Array();
+		},
+		
+		_testForNewValues: function(value){
+			var newValues = new Array();
+			var compare = this.value;
+			
+			if(this._isArray(compare) && this._isArray(value)){
+				var lookup = new Object();
+				
+				array.forEach(compare, function(id){
+					lookup[id] = true;
+				}, this);
+				
+				array.forEach(value, function(id){
+					if(!lookup.hasOwnProperty(id)){
+						newValues.push(id);
+					}
+				}, this);
+			}else{
+				return value;
+			}
+			
+			return newValues;
 		},
 		
 		_addHr: function(){
@@ -121,6 +149,7 @@ define([
 		_displayShortlist: function(ids){
 			this._displayers = new Array();
 			var services = this._getServices(ids);
+			
 			array.forEach(services, function(service, n){
 				var displayer = new serviceDisplayer({
 					"application": this.application,
