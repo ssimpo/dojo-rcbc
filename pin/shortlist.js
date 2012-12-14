@@ -201,9 +201,9 @@ define([
 		
 		_addHr: function(){
 			try{
-				domConstr.create("br", null, this.domNode);
-				domConstr.create("hr", null, this.domNode);
-				domConstr.create("br", null, this.domNode);
+				domConstr.create("br", null, this.displayerNode);
+				domConstr.create("hr", null, this.displayerNode);
+				domConstr.create("br", null, this.displayerNode);
 			}catch(e){
 				console.info("Could not add shortlist divider");
 			}
@@ -215,11 +215,8 @@ define([
 				var services = this._getServices(ids);
 			
 				array.forEach(services, function(service, n){
+					this._addHr();
 					this._createDisplayer(service.data);
-				
-					if(n < (services.length-1)){
-						this._addHr();
-					}
 				}, this);
 			}catch(e){
 				console.info("Could not display shortlist.");
@@ -230,7 +227,7 @@ define([
 			try{
 				var displayer = new serviceDisplayer({
 					"application": this.application,
-					"parentNode": this.domNode,
+					"parentNode": this.displayerNode,
 					"titleLevel": 2,
 					"show": this.show
 				});
