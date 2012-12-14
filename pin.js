@@ -95,7 +95,7 @@ define([
 				);
 				topic.subscribe(
 					"/rcbc/pin/titleChange",
-					lang.hitch(this, this._changeTitle)
+					lang.hitch(this, this._setTitleAttr)
 				);
 			}catch(e){
 				console.warn("Could not initiate PIN subscriptions");
@@ -277,10 +277,6 @@ define([
 			}
 			
 			return obj;
-		},
-		
-		_changeTitle: function(title){
-			this._setTitleAttr(title);
 		},
 		
 		_setTitleAttr: function(title){
