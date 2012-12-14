@@ -15,13 +15,14 @@ define([
 	"dojo/text!./views/shortlist.html",
 	"./serviceDisplayer",
 	"dojo/dom-construct",
+	"dojo/dom-class",
 	"dojo/_base/array",
 	"dojo/topic"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	serviceDisplayer, domConstr, array, topic
+	serviceDisplayer, domConstr, domClass, array, topic
 ){
 	"use strict";
 	
@@ -42,7 +43,7 @@ define([
 		"application": null,
 		"parentNode": null,
 		"hiddenNode": null,
-		"parentPosPlace": "after",
+		"parentPosPlace": "last",
 		
 		"show": {
 			"title": true,
@@ -58,7 +59,7 @@ define([
 		_initNodes: function(){
 			if(this.application !== null){
 				if(this.parentNode === null){
-					this.parentNode = this.application.hiddenDiv;
+					this.parentNode = this.application.articleContentNode;
 				}
 				if(this.hiddenNode === null){
 					this.hiddenNode = this.application.hiddenDiv;
@@ -69,6 +70,11 @@ define([
 		_hideWidget: function(){
 			if(this.hiddenNode !== null){
 				domConstr.place(this.domNode, this.hiddenNode);
+				domClass.replace(
+					this.parentNode,
+					"articleContent",
+					"articleContent-wide"
+				);
 			}
 		},
 		
@@ -76,6 +82,11 @@ define([
 			if(this.parentNode !== null){
 				domConstr.place(
 					this.domNode, this.parentNode, this.parentPosPlace
+				);
+				domClass.replace(
+					this.parentNode,
+					"articleContent-wide",
+					"articleContent"
 				);
 			}
 		},
@@ -101,10 +112,16 @@ define([
 			this.value = value;
 		},
 		
+		_addHr: function(){
+			domConstr.create("br", null, this.domNode);
+			domConstr.create("hr", null, this.domNode);
+			domConstr.create("br", null, this.domNode);
+		},
+		
 		_displayShortlist: function(ids){
 			this._displayers = new Array();
 			var services = this._getServices(ids);
-			array.forEach(services, function(service){
+			array.forEach(services, function(service, n){
 				var displayer = new serviceDisplayer({
 					"application": this.application,
 					"parentNode": this.domNode,
@@ -114,6 +131,10 @@ define([
 				this._displayers.push(displayer);
 				domConstr.place(displayer.domNode, this.domNode);
 				displayer.set("value", service.data);
+				
+				if(n < (services.length-1)){
+					this._addHr();
+				}
 			}, this);
 		},
 		

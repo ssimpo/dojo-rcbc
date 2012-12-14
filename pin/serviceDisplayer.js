@@ -284,7 +284,6 @@ define([
 		},
 		
 		_createContactsTable: function(value){
-			console.log("_createContactsTable", this.titleLevel);
 			this._getTableWidgetDom(value, {
 				"propertyNode": "contactsWidget",
 				"constructor": contactsTable,
