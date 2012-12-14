@@ -40,6 +40,7 @@ define([
 		
 		"_mainDiv": {},
 		"application": {},
+		"titleLevel": 2,
 		
 		
 		postCreate: function(){
@@ -93,8 +94,9 @@ define([
 		
 		_addTitle: function(){
 			if(this.description != ""){
+				var subTitleLevel = this.titleLevel + 1;
 				var div = domConstr.create("div", {}, this._mainDiv);
-				var h3 = domConstr.create("h3", {
+				var h3 = domConstr.create("h"+subTitleLevel.toString(), {
 					"innerHTML": this.description
 				}, div);
 				var indent = domConstr.create("div", {
