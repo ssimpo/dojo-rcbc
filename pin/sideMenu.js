@@ -43,13 +43,25 @@ define([
 		"_updateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
 		
 		clear: function(){
-			domConstr.empty(this.domNode);
+			this.set("value",[]);
 		},
 		
 		_setValueAttr: function(value){
 			domConstr.empty(this.domNode);
-			value = this._parseValue(value);
-			this._parseMenuData(value);
+			if(this._isBlank(value)){
+				domConstr.place(
+					this.domNode,
+					this.application.hiddenDiv
+				);
+			}else{
+				domConstr.place(
+					this.domNode,
+					this.application.asideNode
+				);
+				value = this._parseValue(value);
+				this._parseMenuData(value);
+			}
+			
 			this.value = value;
 		},
 		

@@ -68,7 +68,15 @@ define([
 			this.value = value;
 			if(this._isBlank(this.value)){
 				this._clear();
+				domConstr.place(
+					this.domNode,
+					this.application.hiddenDiv
+				);
 			}else{
+				domConstr.place(
+					this.domNode,
+					this.application.articleContentNode
+				);
 				this._createContent(value);
 			}
 		},

@@ -39,13 +39,22 @@ define([
 		"_displayers": [],
 		
 		clear: function(){
-			domConstr.empty(this.domNode);
+			this.set("value",[]);
+			this._displayers = new Array();
 		},
 		
 		_setValueAttr: function(value){
 			if(this._isBlank(value)){
-				this.clear();
+				domConstr.place(
+					this.domNode,
+					this.application.hiddenDiv
+				);
 			}else{
+				domConstr.place(
+					this.domNode,
+					this.application.hiddenDiv,
+					"after"
+				);
 				this._displayShortlist(value);
 			}
 			this.value = value;
