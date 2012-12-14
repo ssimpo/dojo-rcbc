@@ -22,104 +22,154 @@ define([
 		"titleDom": null,
 		
 		_tableIsEmpty: function(tableDom){
+			var isBlank = true;
 			tableDom = this._getTableDom(tableDom);
 			
-			var trs = $("tr", tableDom);
-			if(trs.length == 0){
-				return true;
-			}
+			if(this._isElement(tableDom)){
+				try{
+					var trs = $("tr", tableDom);
+					if(trs.length == 0){
+						return true;
+					}
 			
-			var cells = $("td,th", tableDom);
-			var isBlank = true;
-			array.every(cells, function(cell){
-				if(!this._isBlank(domAttr.get(cell, "innerHTML"))){
-					isBlank = false;
-					return false;
+					var cells = $("td,th", tableDom);
+			
+					array.every(cells, function(cell){
+						if(!this._isBlank(domAttr.get(cell, "innerHTML"))){
+							isBlank = false;
+							return false;
+						}
+						return true;
+					}, this);
+				}catch(e){
+					console.info("Could not test if table is empty.");
 				}
-				return true;
-			}, this);
-			
+			}
 			
 			return isBlank;
 		},
 		
 		_hasTitle: function(tableDom){
-			return this._isElement(this.titleDom);
+			var hasTable = false;
+			
+			try{
+				hasTable = this._isElement(this.titleDom);
+			}catch(e){
+				console.info("Could not check for table");
+			}
+			
+			return hasTable;
 		},
 		
 		_getTableDom: function(tableDom){
-			if(tableDom === undefined){
-				if(this.tableNode !== undefined){
-					tableDom = this.tableNode;
-				}else{
-					return true;
+			try{
+				if(tableDom === undefined){
+					if(this.tableNode !== null){
+						tableDom = this.tableNode;
+					}else{
+						return true;
+					}
 				}
+			}catch(e){
+				console.info("Could not get table Dom");
 			}
 			
 			return tableDom;
 		},
 		
 		_hideTable: function(){
-			if(this._isElement(this.hiddenNode)){
-				this._hideTitleNode();
-				this._hideDetailsNode();
-				this._hideTableNode();
+			try{
+				if(this._isElement(this.hiddenNode)){
+					this._hideTitleNode();
+					this._hideDetailsNode();
+					this._hideTableNode();
+				}
+			}catch(e){
+				console.info("Could not hide table unit.");
 			}
 		},
 		
 		_hideTitleNode: function(){
-			if(this._isElement(this.titleDom)){
-				domConstr.place(this.titleDom, this.hiddenNode);
+			try{
+				if(this._isElement(this.titleDom)){
+					domConstr.place(this.titleDom, this.hiddenNode);
+				}
+			}catch(e){
+				console.info("Could not hide table title.");
 			}
 		},
 		
 		_hideDetailsNode: function(){
-			if(this._isElement(this.detailsNode)){
-				domConstr.place(this.detailsNode, this.hiddenNode);
+			try{
+				if(this._isElement(this.detailsNode)){
+					domConstr.place(this.detailsNode, this.hiddenNode);
+				}
+			}catch(e){
+				console.info("Could not hide table details.");
 			}
 		},
 		
 		_hideTableNode: function(){
-			if(this._isElement(this.tableNode)){
-				domConstr.place(this.tableNode, this.hiddenNode);
+			try{
+				if(this._isElement(this.tableNode)){
+					domConstr.place(this.tableNode, this.hiddenNode);
+				}
+			}catch(e){
+				console.info("Could not hide table node.");
 			}
 		},
 		
 		_showTable: function(){
-			if(this._isElement(this.hiddenNode)){
-				this._showTitleNode();
-				this._showDetailsNode();
-				this._showTableNode();
+			try{
+				if(this._isElement(this.hiddenNode)){
+					this._showTitleNode();
+					this._showDetailsNode();
+					this._showTableNode();
+				}
+			}catch(e){
+				console.info("Could not show table unit.");
 			}
 		},
 		
 		_showTitleNode: function(){
-			if(this._isElement(this.titleDom)){
-				if((!this._isBlank(this.titleDom)) && (!this._tableIsEmpty() || !this._isBlank(this.detailsNode))){
-					domConstr.place(this.titleDom, this.domNode, "first");
-				}else{
+			try{
+				if(this._isElement(this.titleDom)){
+					if((!this._isBlank(this.titleDom)) && (!this._tableIsEmpty() || !this._isBlank(this.detailsNode))){
+						domConstr.place(this.titleDom, this.domNode, "first");
+					}else{
 					this._hideTitleNode();
+					}
 				}
+			}catch(e){
+				console.info("Could not show table title.");
 			}
 		},
 		
 		_showDetailsNode: function(){
-			if(this._isElement(this.detailsNode)){
-				if(!this._isBlank(this.detailsNode)){
-					domConstr.place(this.detailsNode, this.domNode);
-				}else{
-					this._hideDetailsNode();
+			try{
+				if(this._isElement(this.detailsNode)){
+					if(!this._isBlank(this.detailsNode)){
+						domConstr.place(this.detailsNode, this.domNode);
+					}else{
+						this._hideDetailsNode();
+					}
 				}
+			}catch(e){
+				console.info("Could not show table details.");
 			}
 		},
 		
 		_showTableNode: function(){
-			if(this._isElement(this.tableNode)){
-				if(!this._isBlank(this.tableNode)){
-					domConstr.place(this.tableNode, this.domNode);
-				}else{
-					this._hideTableNode();
+			try{
+				if(this._isElement(this.tableNode)){
+					if(!this._isBlank(this.tableNode)){
+						domConstr.place(this.tableNode, this.domNode);
+					}else{
+						this._hideTableNode();
+					}
 				}
+			}catch(e){
+				console.info("Could not show table.");
 			}
 		},
 		

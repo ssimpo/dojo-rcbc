@@ -49,7 +49,7 @@ define([
 			"title": true,
 			"description": true,
 			"keyFeatures": true,
-			"contacts": false,
+			"contacts": true,
 			"costs": true,
 			"venues": true,
 			"serviceHours": true,

@@ -43,84 +43,123 @@ define([
 		"titleLevel": 2,
 		
 		_fixTitleLevel: function(){
-			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
-				this.titleDom = domConstr.create(
-					"h"+this.titleLevel.toString(),
-					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
-					this.titleDom,
-					"replace"
-				);
+			try{
+				if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+					this.titleDom = domConstr.create(
+						"h"+this.titleLevel.toString(),
+						{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
+						this.titleDom,
+						"replace"
+					);
+				}
+			}catch(e){
+				console.info("Could not fix title-level for contact table.");
 			}
 		},
 		
 		_setDataAttr: function(data){
-			this.data = ((data == undefined) ? [] : data);
-			this._init();
-			this._processContacts();
+			try{
+				this.data = ((data == undefined) ? [] : data);
+				this._init();
+				this._processContacts();
+			}catch(e){
+				console.info("Could not set data attribute for contact table.");
+			}
 		},
 		
 		_setTitleAttr: function(title){
-			this.title = title;
-			this._addTitle();
-			this._showTitleNode();
+			try{
+				this.title = title;
+				this._addTitle();
+				this._showTitleNode();
+			}catch(e){
+				console.info("Could not set title attribute for contact table.");
+			}
 		},
 		
 		_init: function(){
-			this._fixTitleLevel();
+			try{
+				this._fixTitleLevel();
+			}catch(e){
+				console.info("Could not set inititate contact table.");
+			}
 		},
 		
 		_processContacts: function(){
 			var self = this;
-			var count = this.data.length;
+			var count = ((this._isArray(this.data)) ? this.data.length : 0);
+			
 			var callback = function(){
-				count--;
-				if(count <= 0){
-					if(!self._tableIsEmpty()){
-						self._showTable();
-						self._writeLastRow();
-					}else{
-						self._hideTable();
+				try{
+					count--;
+					if(count <= 0){
+						if(!self._tableIsEmpty()){
+							self._showTable();
+							self._writeLastRow();
+						}else{
+							self._hideTable();
+						}
 					}
+				}catch(e){
+					console.info("Could not handle show/hide in contact table.");
 				}
 			};
 			
-			domConstr.empty(this.tableNode);
-			array.forEach(this.data, function(contact, n){
-				var tr = domConstr.create("tr", {}, this.tableNode);
-				this._processContact(contact, tr, callback);
-			}, this);
+			try{
+				domConstr.empty(this.tableNode);
+				array.forEach(this.data, function(contact, n){
+					var tr = domConstr.create("tr", {}, this.tableNode);
+					this._processContact(contact, tr, callback);
+				}, this);
+			}catch(e){
+				console.info("Could not process contacts in contact table.");
+			}
 		},
 		
 		_writeLastRow: function(){
-			domConstr.place(this._createLastTr(2), this.tableNode);
+			try{
+				domConstr.place(this._createLastTr(2), this.tableNode);
+			}catch(e){
+				console.info("Could not write the last row of contact table.");
+			}
 		},
 		
 		_processContact: function(contact, tr, callback){
 			var type = lang.trim(contact.type);
 			
 			require.on("error", function(e){
+				console.info("Load failure in contact table.");
 				callback();
 			});
 			
 			if(type !== ""){
 				var dojoId = "./contactsTable/"+this._camelize(type);
 				require([dojoId], lang.hitch(this, function(construct){
-					if(!this._isBlank(tr.parentNode)){
-						var rowWidget = new construct(contact);
-						domConstr.place(rowWidget.domNode, tr, "replace");
-						callback();
+					try{
+						if(!this._isBlank(tr.parentNode)){
+							var rowWidget = new construct(contact);
+							domConstr.place(rowWidget.domNode, tr, "replace");
+							callback();
+						}
+					}catch(e){
+						console.info("Could not run require callback.");
 					}
 				}));
 			}
 		},
 		
 		_camelize: function(str){
-			return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index){
-				if(+match === 0){
-					return ""; // or if (/\s+/.test(match)) for white spaces
-				}
-				return index == 0 ? match.toLowerCase() : match.toUpperCase();
-			});
+			try{
+				return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index){
+					if(+match === 0){
+						return ""; // or if (/\s+/.test(match)) for white spaces
+					}
+					return index == 0 ? match.toLowerCase() : match.toUpperCase();
+				});
+			}catch(e){
+				console.info("Could not camelize text in contact table.");
+				return str;
+			}
 		}
 	});
 	
