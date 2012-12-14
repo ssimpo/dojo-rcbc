@@ -1,4 +1,59 @@
 <div
 	class="rcbcShortlist"
 	data-dojo-attach-point="ContainerNode"
-></div>
+>
+	<table summary="" class="rcbcShortlistSelector">
+		<caption>Show:</caption>
+		<tr>
+			<td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showDescription"
+					/>Descriptions</label>
+			</td><td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showKeyFeatures"
+				/>Key Features</label>
+			</td><td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showCosts"
+				/>Costs</label>
+			</td><td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showContacts"
+				/>Contacts</label>
+			</td>
+		</tr><tr>
+			<td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showVenues"
+				/>Venues</label>
+			</td><td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showServiceHours"
+				/>Service Hours</label>
+			</td><td>
+				<label><input
+					type="checkbox"
+					data-dojo-type="dijit/form/CheckBox"
+					data-dojo-attach-point="showAccessDetails"
+				/>Access Details</label>
+			</td><td>
+				&nbsp;
+			</td>
+		</tr>
+	</table>
+	
+	<div data-dojo-attach-point="displayerNode"></div>
+</div>

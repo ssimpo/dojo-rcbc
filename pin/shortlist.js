@@ -17,12 +17,15 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-class",
 	"dojo/_base/array",
-	"dojo/topic"
+	"dojo/topic",
+	"dijit/form/CheckBox",
+	"dojo/on",
+	"dojo/_base/lang"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	serviceDisplayer, domConstr, domClass, array, topic
+	serviceDisplayer, domConstr, domClass, array, topic, CheckBox, on, lang
 ){
 	"use strict";
 	
@@ -47,20 +50,53 @@ define([
 		
 		"show": {
 			"title": true,
-			"description": true,
+			"description": false,
 			"keyFeatures": true,
 			"contacts": true,
 			"costs": true,
-			"venues": true,
-			"serviceHours": true,
+			"venues": false,
+			"serviceHours": false,
 			"accessDetails": true
+		},
+		
+		postCreate: function(){
+			this._initEvents();
+			this._initCheckboxes();
+		},
+		
+		_initEvents: function(){
+			try{
+				on(this.showDescription, "change", lang.hitch(this, this._showChange));
+				on(this.showKeyFeatures, "change", lang.hitch(this, this._showChange));
+				on(this.showCosts, "change", lang.hitch(this, this._showChange));
+				on(this.showContacts, "change", lang.hitch(this, this._showChange));
+				on(this.showVenues, "change", lang.hitch(this, this._showChange));
+				on(this.showServiceHours, "change", lang.hitch(this, this._showChange));
+				on(this.showAccessDetails, "change", lang.hitch(this, this._showChange));
+			}catch(e){
+				console.info("Could not inititate events.");
+			}
+		},
+		
+		_initCheckboxes: function(){
+			try{
+				this.showDescription.set("value", this.show.description);
+				this.showKeyFeatures.set("value", this.show.keyFeatures);
+				this.showCosts.set("value", this.show.costs);
+				this.showContacts.set("value", this.show.contacts);
+				this.showVenues.set("value", this.show.venues);
+				this.showServiceHours.set("value", this.show.serviceHours);
+				this.showAccessDetails.set("value", this.show.accessDetails);
+			}catch(e){
+				console.info("Could not set initial checkbox values.");
+			}
 		},
 		
 		_init: function(){
 			try{
 				this._initNodes();
 				this._destroyDisplayers();
-				domConstr.empty(this.domNode);
+				domConstr.empty(this.displayerNode);
 			}catch(e){
 				console.info("Could not ininitate shortlist displayer.");
 			}
@@ -115,6 +151,24 @@ define([
 		
 		clear: function(){
 			this.set("value",[]);
+		},
+		
+		_showChange: function(evt){
+			try{
+				this.show = {
+					"title": true,
+					"description": this.showDescription.get("value"),
+					"keyFeatures": this.showKeyFeatures.get("value"),
+					"contacts": this.showContacts.get("value"),
+					"costs": this.showCosts.get("value"),
+					"venues": this.showVenues.get("value"),
+					"serviceHours": this.showServiceHours.get("value"),
+					"accessDetails": this.showAccessDetails.get("value")
+				}
+				this.set("value", this.get("value"));
+			}catch(e){
+				console.info("Could not set show values.");
+			}
 		},
 		
 		_setValueAttr: function(value){
@@ -181,7 +235,7 @@ define([
 					"show": this.show
 				});
 				this._displayers.push(displayer);
-				domConstr.place(displayer.domNode, this.domNode);
+				domConstr.place(displayer.domNode, this.displayerNode);
 				displayer.set("value", data);
 			}catch(e){
 				console.info("Could not create displayer.");
