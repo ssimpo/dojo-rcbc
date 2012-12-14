@@ -6,6 +6,8 @@
 @import url("./dialog.css");
 @import url("./serviceListDisplayer.css");
 
+@grey1: #efefef;
+
 div.dojoRcbcDijitLinkedIdListItem:hover {
     cursor: pointer;
 }
@@ -18,5 +20,23 @@ div.hiddenDiv {
     height: 1px;
     width: 1px;
 	overflow: hidden;
+}
+
+.rcbcShortlist{
+	table.rcbcShortlistSelector {
+		width: 60%;
+		background-color: @grey1;
+		padding: 5px;
+		margin: 5px;
+		margin-top: 0px;
+		margin-bottom: 15px;
+		font-size: 0.8em;
+		
+		caption {
+			font-weight: bold;
+			text-align: left;
+			margin-bottom: 5px;
+		}
+	}
 }
 
