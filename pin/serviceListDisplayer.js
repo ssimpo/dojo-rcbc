@@ -16,6 +16,7 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
+	"dojo/dom-class",
 	"dojo/_base/array",
 	"dojo/hash",
 	"dojo/io-query",
@@ -24,7 +25,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	lang, domConstr, domAttr, array, hash, ioQuery, topic
+	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic
 ){
 	"use strict";
 	
@@ -72,6 +73,15 @@ define([
 				domConstr.place(
 					this.domNode, this.parentNode, this.parentPosPlace
 				);
+			}
+		},
+		
+		_setCategoryAttr: function(category){
+			var oldCategory = this._createItemClass(this.category);
+			this.category = category;
+			domClass.add(this.domNode, this._createItemClass(category));
+			if(!this._isBlank(oldCategory)){
+				domClass.add(this.domNode, oldCategory);
 			}
 		},
 		
@@ -185,7 +195,7 @@ define([
 			if(!this._isBlank(value)){
 				for(var tag in value){
 					var li = domConstr.create("li", {}, this.tagListNode);
-					var href = "/test/stephen/pin.nsf/page?readform&release=no#section="+""+"&category="+""+"&tag="
+					var href = "/pin.nsf/page?readform&release=no#section="+""+"&category="+""+"&tag="
 					
 					domConstr.create("a", {
 						"innerHTML": tag + " ("+value[tag].toString()+")",
@@ -251,6 +261,13 @@ define([
 			}
 			
 			return lang.trim(value);
+		},
+		
+		_createItemClass: function(category){
+			category = category.replace(/ \& | and /g," ");
+			category = category.replace(/ /g,"-");
+			
+			return category.toLowerCase();
 		}
 	});
 	

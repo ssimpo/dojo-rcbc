@@ -23,14 +23,16 @@ define([
 	"./serviceDisplayer/venueDisplayer",
 	"./serviceDisplayer/costTable",
 	"./serviceDisplayer/accessTable",
-	"./serviceDisplayer/serviceHoursTable"
+	"./serviceDisplayer/serviceHoursTable",
+	"simpo/maps/google/canvas"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	lang, domConstr, domAttr, array, Button, topic,
 	
-	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable
+	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable,
+	googleMap
 ){
 	"use strict";
 	
@@ -54,6 +56,7 @@ define([
 		"accessWidget": null,
 		"serviceHoursWidget": null,
 		"venuesNode": null,
+		"mapNode": null,
 		
 		"application": null,
 		"parentNode": null,
@@ -72,7 +75,8 @@ define([
 			"costs": true,
 			"venues": true,
 			"serviceHours": true,
-			"accessDetails": true
+			"accessDetails": true,
+			"map": true
 		},
 		
 		"_accessTesters": [
@@ -133,6 +137,7 @@ define([
 			this._ifHasClear("accessWidget");
 			this._ifHasClear("serviceHoursWidget");
 			this._ifHasClear("venuesNode");
+			this._ifHasClear("mapNode");
 		},
 		
 		_ifHasClear: function(nodeName, destroy){
@@ -190,6 +195,7 @@ define([
 			this._createSection(this.show.costs, "_createCostTable", value);
 			this._createSection(this.show.accessDetails, "_createAccessTable", value);
 			this._createSection(this.show.serviceHours, "_createServiceHoursTable", value);
+			this._createSection(this.show.map, "_createMap", value);
 		},
 		
 		_createSection: function(tester, method, value){
@@ -357,6 +363,40 @@ define([
 				"titleLevel": this.titleLevel+1
 			});
 			return this.serviceHoursWidget.domNode;
+		},
+		
+		_createMap: function(value){
+			this._createAttachPoint(
+				"mapNode",
+				googleMap, {
+					"callback": lang.hitch(this, function(canvas){
+						var postcodes = new Array();
+						
+						array.forEach(value.venues, function(venue){
+							var postcode = this._getPostcode(venue.venueId);
+							if(!this._isBlank(postcode)){
+								postcodes.push(postcode);
+								this.mapNode.plot(postcode);
+							}
+						}, this);
+						
+						if(postcodes.length > 0){
+							this.mapNode.centre(postcodes[0]);
+						}
+				})
+			});
+		},
+		
+		_getPostcode: function(venueId){
+			var lookup = this.application.store.get(venueId.toLowerCase());
+			if(lookup !== undefined){
+				var postcode = lookup.data.postcode;
+				if(!this._isBlank(postcode)){
+					return postcode;
+				}
+			}
+			
+			return null;
 		},
 		
 		_getField: function(data, fieldName){
