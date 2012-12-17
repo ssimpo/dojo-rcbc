@@ -6,8 +6,8 @@ require([
 	on, request, lang
 ){
 	var global = Function('return this')() || (42, eval)('this');
-	var updateUrl = "/test/stephen/pin.nsf/getService2?openagent";
-	var updateVenueUrl = "/test/stephen/pin.nsf/getVenue?openagent";
+	var updateUrl = "/pin.nsf/getService2?openagent";
+	var updateVenueUrl = "/pin.nsf/getVenue?openagent";
 	var serviceIds = [];
 	
 	var updateStubs = function(){

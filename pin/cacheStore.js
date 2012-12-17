@@ -29,8 +29,8 @@ define([
 		"compress": true,
 		"encrypt": false,
 		
-		"_menuUpdateUrl": "/test/stephen/pin.nsf/getMenu?openagent",
-		"_serviceUpdateUrl": "/test/stephen/pin.nsf/getService?openagent",
+		"_menuUpdateUrl": "/pin.nsf/getMenu?openagent",
+		"_serviceUpdateUrl": "/pin.nsf/getService?openagent",
 		"_worker":{},
 		
 		constructor: function(args){
@@ -393,6 +393,10 @@ define([
 						if(lookup.isStub){
 							this._updateServiceById(service);
 							servicesToCache.push(service.id);
+						}else{
+							//var newService = lang.mixin(lookup, service);
+							//newService.isStub = lookup.isStub;
+							//this._updateServiceById(newService);
 						}
 					}else{
 						this._updateServiceById(service);
@@ -416,6 +420,13 @@ define([
 			service.category2 = this._parseCategory(service, 2);
 			service.isStub = ((service.hasOwnProperty("isStub")) ? service.isStub : true);
 			service.tags = this._parseTags(service);
+			
+			array.forEach(service.category1, function(category, n){
+				service.category1[n] = category.replace(" & "," and ");
+			}, this);
+			array.forEach(service.category2, function(category, n){
+				service.category2[n] = category.replace(" & "," and ");
+			}, this);
 			
 			return {
 				"id": service.id,

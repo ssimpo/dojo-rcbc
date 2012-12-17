@@ -6,4 +6,3 @@
 @import url("./serviceListDisplayer.css");
 div.dojoRcbcDijitLinkedIdListItem:hover{cursor:pointer;}
 div.hiddenDiv{visibility:hidden;position:absolute;left:0px;top:0px;height:1px;width:1px;overflow:hidden;}
-.rcbcShortlist table.rcbcShortlistSelector{width:60%;background-color:#efefef;padding:5px;margin:5px;margin-top:0px;margin-bottom:15px;font-size:0.8em;}.rcbcShortlist table.rcbcShortlistSelector caption{font-weight:bold;text-align:left;margin-bottom:5px;}
