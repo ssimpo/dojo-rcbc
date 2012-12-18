@@ -303,24 +303,45 @@ define([
 			}else if(this._isEqual(type, "updateCache")){
 				try{
 					var data = JSON.parse(message);
-					this._updateCacheSuccess(data);
+					this._updateCacheSuccess(data, e.message.orginalLookup);
 				}catch(e){
-					//console.error(e, message);
+					console.error(e);
 				}
 			}else if(this._isEqual(type, "updateVenueCache")){
 				try{
 					var data = JSON.parse(message);
-					this._updateVenueCacheSuccess(data);
+					this._updateVenueCacheSuccess(data, e.message.orginalLookup);
 				}catch(e){
-					//console.error(e, message);
+					console.error(e);
 				}
 			}
 		},
 		
 		_updateServiceById: function(service){
-			var data = this._convertServiceToDataItem(service);
-			this.put(data);
-			topic.publish("/rcbc/pin/updateService", data.id, data);
+			var hash = this._getHash(service);
+			var modified = this._getModified(service);
+			
+			if(service.hasOwnProperty("id")){
+				hash = ((hash === false) ? this._getHash(service.id) : hash);
+				modified = ((modified === false) ? this._getModified(service.id) : modified);
+				if(service.isStub){
+					var lookup = this.getService(service.id.toLowerCase());
+					if(!this._isBlank(service)){
+						service = lang.mixin(lookup, service);
+					}
+				}else{
+					if(hash !== false){
+						service.hash = hash;
+					}
+					if(modified !== false){
+						service.modified = modified;
+					}
+				}
+			
+				var data = this._convertServiceToDataItem(service);
+				this.put(data);
+				topic.publish("/rcbc/pin/updateService", data.id, data);
+			}
 		},
 		
 		_updateVenueById: function(venue){
@@ -329,8 +350,9 @@ define([
 			topic.publish("/rcbc/pin/updateVenue", data.id, data);
 		},
 		
-		_updateCacheSuccess: function(data){
+		_updateCacheSuccess: function(data, orginal){
 			console.log("UPDATING CACHE", data);
+			//console.log("COMPARE", data.services.length, orginal.length);
 			array.forEach(data.services, function(service){
 				this._updateServiceById(service);
 			}, this);
@@ -345,8 +367,9 @@ define([
 			}
 		},
 		
-		_updateVenueCacheSuccess: function(data){
+		_updateVenueCacheSuccess: function(data,orginal){
 			console.log("UPDATING VENUE CACHE", data);
+			//console.log("COMPARE", data.venues.length, orginal.length);
 			array.forEach(data.venues, function(venue){
 				this._updateVenueById(venue);
 			}, this);
@@ -391,17 +414,16 @@ define([
 					var lookup = this.getService(service.id.toLowerCase());
 					if(!this._isBlank(lookup)){
 						if(lookup.isStub){
-							this._updateServiceById(service);
 							servicesToCache.push(service.id);
 						}else{
-							//var newService = lang.mixin(lookup, service);
-							//newService.isStub = lookup.isStub;
-							//this._updateServiceById(newService);
+							if(!this._hashIsEqual(service, lookup)){
+								servicesToCache.push(service.id);
+							}
 						}
 					}else{
-						this._updateServiceById(service);
 						servicesToCache.push(service.id);
 					}
+					this._updateServiceById(service);
 				}
 			}, this);
 			
@@ -412,6 +434,51 @@ define([
 					"data": servicesToCache
 				});
 			}
+		},
+		
+		_hashIsEqual: function(service1, service2){
+			var hash1 = this._getHash(service1);
+			var hash2 = this._getHash(service1);
+			
+			return (((hash1 !== false) && (hash2 !== false)) ? (hash1 == hash2) : false);
+		},
+		
+		_getHash: function(service){
+			if(this._isObject(service)){
+				if(service.hasOwnProperty("hash")){
+					return lang.trim(service.hash.toLowerCase());
+				}else{
+					return false;
+				}
+			}else if(this._isString(service)){
+				var lookup = this.getService(service);
+				if(!this._isBlank(lookup)){
+					if(this._isObject(lookup)){
+						return this._getHash(service);
+					}
+				}
+			}
+			
+			return false;
+		},
+		
+		_getModified: function(service){
+			if(this._isObject(service)){
+				if(service.hasOwnProperty("modified")){
+					return service.modified
+				}else{
+					return false;
+				}
+			}else if(this._isString(service)){
+				var lookup = this.getService(service);
+				if(!this._isBlank(lookup)){
+					if(this._isObject(lookup)){
+						return this._getHash(modified);
+					}
+				}
+			}
+			
+			return false;
 		},
 		
 		_convertServiceToDataItem: function(service){
