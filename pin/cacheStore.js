@@ -508,7 +508,7 @@ define([
 				if(!this._isArray(service.tags)){
 					return this._trimArray(service.tags.split(";"));
 				}else{
-					tags = this._trimArray(service.tags);
+					return this._trimArray(service.tags);
 				}
 			}
 			
