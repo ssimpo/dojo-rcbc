@@ -79,9 +79,9 @@ define([
 		_setCategoryAttr: function(category){
 			var oldCategory = this._createItemClass(this.category);
 			this.category = category;
-			domClass.add(this.domNode, this._createItemClass(category));
+			domClass.add(this.domNode, this._createItemClass(this.category));
 			if(!this._isBlank(oldCategory)){
-				domClass.add(this.domNode, oldCategory);
+				domClass.remove(this.domNode, oldCategory);
 			}
 		},
 		
