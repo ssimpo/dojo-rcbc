@@ -9,6 +9,8 @@ require([
 	var updateUrl = "/pin.nsf/getService2?openagent";
 	var updateVenueUrl = "/pin.nsf/getVenue?openagent";
 	var serviceIds = [];
+	var throttle = 800;
+	var currentXhr = 0;
 	
 	var updateStubs = function(){
 		request(
@@ -25,72 +27,106 @@ require([
 						"message": data
 					}
 				});
+				currentXhr--;
 			},
 			function(e){
+				currentXhr--;
 				console.error(e);
 			}
 		);
+		currentXhr++;
+		//console.log("Running XHR: "+currentXhr.toString());
 	};
 	
-	var updateCache = function(data){
-		var ids = new Array();
-		for(var i = 0; ((i < 50) && (i < data.length)); i++){
-			ids.push(data.pop());
-		}
-			
+	var updateCache2 = function(data){
 		request(
-			updateUrl+"&id="+ids, {
+			updateUrl+"&id="+data, {
 				"handleAs": "text",
 				"preventCache": true
 			}
 		).then(
 			function(cache){
+				currentXhr--;
 				global.postMessage({
 					"type": "message",
 					"message": {
 						"type": "updateCache",
-						"message": cache
+						"message": cache,
+						"orginalLookup": data
 					}
 				});
-				if(data.length > 0){
-					updateCache(data);
-				}
+				updateCache([]);
 			},
 			function(e){
-				console.error("ERROR");
+				currentXhr--;
+				console.error(e);
 			}
 		);
+		currentXhr++;
+		//console.log("Running XHR: "+currentXhr.toString());
 	};
 	
-	var updateVenueCache = function(data){
+	var serviceIds = new Array();
+	var updateCache = function(data){
+		serviceIds = serviceIds.concat(data);
+		
 		var ids = new Array();
-		for(var i = 0; ((i < 50) && (i < data.length)); i++){
-			ids.push(data.pop());
+		for(var i = 0; ((i < 50) && (i < serviceIds.length)); i++){
+			ids.push(serviceIds.pop());
 		}
-			
+		
+		if(ids.length > 0){
+			global.setTimeout(function(){
+				updateCache2(ids)
+			}, throttle);
+		}
+	}
+	
+	var updateVenueCache2 = function(data){
 		request(
-			updateVenueUrl+"&id="+ids, {
+			updateVenueUrl+"&id="+data, {
 				"handleAs": "text",
 				"preventCache": true
 			}
 		).then(
 			function(cache){
+				currentXhr--;
 				global.postMessage({
 					"type": "message",
 					"message": {
 						"type": "updateVenueCache",
-						"message": cache
+						"message": cache,
+						"orginalLookup": data
 					}
 				});
 				if(data.length > 0){
-					updateCache(data);
+					updateVenueCache([]);
 				}
 			},
 			function(e){
-				console.error("ERROR");
+				currentXhr--;
+				console.error(e);
 			}
 		);
+		currentXhr++;
+		//console.log("Running XHR: "+currentXhr.toString());
 	};
+	
+	var venueIds = new Array();
+	var updateVenueCache = function(data){
+		venueIds = venueIds.concat(data);
+		
+		var ids = new Array();
+		for(var i = 0; ((i < 50) && (i < venueIds.length)); i++){
+			ids.push(venueIds.pop());
+		}
+		
+		if(ids.length > 0){
+			global.setTimeout(function(){
+				updateVenueCache2(ids)
+			}, throttle);
+		}
+	}
 	
 	var handleCommand = function(message){
 		if(message.command == "updateStubs"){
