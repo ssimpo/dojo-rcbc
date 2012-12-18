@@ -22,6 +22,7 @@ define([
 	"dojo/_base/array",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
+	"dojo/dom-class",
 	"dojo/query",
 	"dojo/on",
 	
@@ -36,7 +37,7 @@ define([
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, $, on
+	domConstr, domAttr, domClass, $, on
 ){
 	"use strict";
 	
@@ -153,7 +154,12 @@ define([
 		_setSectionAttr: function(section){
 			var query = this._getHashObj();
 			if(!this._isEqual(query.section, this.get("section"))){
+				var oldSection = this._createItemClass(this.section);
 				this.section = section;
+				domClass.add(this.domNode, this._createItemClass(this.section));
+				if(!this._isBlank(oldSection)){
+					domClass.remove(this.domNode, oldSection);
+				}
 				query.section = section;
 				this._updateHash(query);
 			}
@@ -162,10 +168,22 @@ define([
 		_setCategoryAttr: function(category){
 			var query = this._getHashObj();
 			if(!this._isEqual(query.category, this.get("category"))){
+				var oldCategory = this._createItemClass(this.category);
 				this.category = category;
+				domClass.add(this.domNode, this._createItemClass(this.category));
+				if(!this._isBlank(oldCategory)){
+					domClass.remove(this.domNode, oldCategory);
+				}
 				query.category = category;
 				this._updateHash(query);
 			}
+		},
+		
+		_createItemClass: function(category){
+			category = category.replace(/ \& | and /g," ");
+			category = category.replace(/ /g,"-");
+			
+			return category.toLowerCase();
 		},
 		
 		_setTagAttr: function(tag){
