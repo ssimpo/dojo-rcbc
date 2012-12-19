@@ -72,19 +72,35 @@ define([
 		
 		
 		postCreate: function(){
-			this._init();
+			try{
+				console.log(1);
+				this._init();
+			}catch(e){
+				console.info("Could load PIN application.");
+			}
 		},
 		
 		_init: function(){
-			this.store = new store();
-			//uncomment to clear the localstorage.
-			//this.store.clear(true);
+			try{
+				console.log(2);
+				this.store = new store();
+				//uncomment to clear the localstorage.
+				//this.store.clear(true);
+				console.log(3);
 			
-			this._initTopicSubscriptions();
-			this._initShortlist();
-			this._initTitle();
-			this._initEvents()
-			this._hashChange();
+				this._initTopicSubscriptions();
+				console.log(4);
+				this._initShortlist();
+				console.log(5);
+				this._initTitle();
+				console.log(6);
+				this._initEvents();
+				console.log(7);
+				this._hashChange();
+				console.log(8);
+			}catch(e){
+				console.info("Could inititiate the PIN application.");
+			}
 		},
 		
 		_initTopicSubscriptions: function(){

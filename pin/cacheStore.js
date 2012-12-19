@@ -16,30 +16,66 @@ define([
 	"dojo/request",
 	"dojo/topic",
 	"simpo/webworker",
-	"dojo/json"
+	"dojo/json",
+	"dojo/sniff"
 ], function(
 	declare, _variableTestMixin, store, aspect, lang, has, on, array,
-	request, topic, webworker, JSON
+	request, topic, webworker, JSON, sniff
 ){
 	"use strict";
 	
 	var construct = declare([_variableTestMixin, store], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
-		"compress": true,
+		"compress": false,
 		"encrypt": false,
 		
 		"_menuUpdateUrl": "/pin.nsf/getMenu?openagent",
 		"_serviceUpdateUrl": "/pin.nsf/getService?openagent",
 		"_worker":{},
+		"_stubCacheInterval": null,
+		"_updateCacheInterval": null,
+		"_stubCache": [],
+		"_trottle": 100,
+		"_slicer": 75,
+		"_servicesToCache": [],
 		
 		constructor: function(args){
-			this._initWorker();
+			if(has("webworker")){
+				this._initWorker();
+				
+				this._worker.postMessage({
+					"type": "command",
+					"command": "updateStubs"
+				});
+			}else{
+				this._updateStubs();
+			}
 			
-			this._worker.postMessage({
-				"type": "command",
-				"command": "updateStubs"
-			});
+			//if(sniff("chrome") || sniff("safari") || sniff("ff")){
+				//this._slicer = 350;
+			//}
+			
+			this._stubCacheInterval = setInterval(
+				lang.hitch(this, this._updateServices), this._trottle
+			);
+			this._updateCacheInterval = setInterval(
+				lang.hitch(this, this._updateCache), this._trottle
+			);
+		},
+		
+		_updateStubs: function(){
+			request(
+				"/servicesStub.json", {
+					"handleAs": "json",
+					"preventCache": true
+				}
+			).then(
+				lang.hitch(this, this._updateStubsSuccess),
+				function(e){
+					console.info("Could not update Stubs");
+				}
+			);
 		},
 		
 		_initWorker: function(){
@@ -406,33 +442,65 @@ define([
 			return lookup;
 		},
 		
-		_updateStubsSuccess: function(data){
-			var servicesToCache = new Array();
+		_updateServices: function(){
+			if(!this._isBlank(this._stubCache)){
+				var services = new Array();
+				for(var i = 0; ((i < this._stubCache.length) && (i < this._slicer)); i++){
+					services.push(this._stubCache.shift());
+				}
 			
-			array.forEach(data.services, function(service, n){
+				this._updateServices2(services);
+			}
+		},
+		
+		_updateServices2: function(services){
+			console.log("services: ", services.length);
+			
+			array.forEach(services, function(service, n){
 				if(service.hasOwnProperty("id")){
 					var lookup = this.getService(service.id.toLowerCase());
 					if(!this._isBlank(lookup)){
 						if(lookup.isStub){
-							servicesToCache.push(service.id);
+							this._servicesToCache.push(service.id);
 						}else{
 							if(!this._hashIsEqual(service, lookup)){
-								servicesToCache.push(service.id);
+								this._servicesToCache.push(service.id);
 							}
 						}
 					}else{
-						servicesToCache.push(service.id);
+						this._servicesToCache.push(service.id);
 					}
 					this._updateServiceById(service);
 				}
 			}, this);
+		},
+		
+		_updateStubsSuccess: function(data){
+			this._stubCache = this._stubCache.concat(data.services);
 			
-			if(!this._isBlank(servicesToCache)){
-				this._worker.postMessage({
-					"type": "command",
-					"command": "updateCache",
-					"data": servicesToCache
-				});
+			
+		},
+		
+		_updateCache: function(){
+			if(!this._isBlank(this._servicesToCache)){
+				var ids = new Array();
+				for(var i = 0; ((i < this._servicesToCache.length) && (i < this._slicer)); i++){
+					ids.push(this._servicesToCache.shift());
+				}
+			
+				this._updateCache2(ids);
+			}
+		},
+		
+		_updateCache2: function(ids){
+			if(has("webworker")){
+				if(!this._isBlank(ids)){
+					this._worker.postMessage({
+						"type": "command",
+						"command": "updateCache",
+						"data": ids
+					});
+				}
 			}
 		},
 		
