@@ -12,7 +12,21 @@ require([
 	var throttle = 800;
 	var currentXhr = 0;
 	
+	var serviceIds = new Array();
+	var venueIds = new Array();
+	
+	var interval = setInterval(function(){
+		if((currentXhr < 2) && ((serviceIds.length > 0) || (venueIds.length > 0))){
+			if(serviceIds.length > venueIds.length){
+				updateCache();
+			}else{
+				updateVenueCache();
+			}
+		}
+	}, throttle);
+	
 	var updateStubs = function(){
+		currentXhr++;
 		request(
 			"/servicesStub.json", {
 				"handleAs": "json",
@@ -34,15 +48,16 @@ require([
 				console.error(e);
 			}
 		);
-		currentXhr++;
 		//console.log("Running XHR: "+currentXhr.toString());
 	};
 	
 	var updateCache2 = function(data){
+		currentXhr++;
 		request(
 			updateUrl+"&id="+data, {
 				"handleAs": "text",
-				"preventCache": true
+				"preventCache": true,
+				"timeout": 5*1000
 			}
 		).then(
 			function(cache){
@@ -62,31 +77,26 @@ require([
 				console.error(e);
 			}
 		);
-		currentXhr++;
-		//console.log("Running XHR: "+currentXhr.toString());
+		//console.log("Running XHR: "+currentXhr.toString(), data.length);
 	};
 	
-	var serviceIds = new Array();
-	var updateCache = function(data){
-		serviceIds = serviceIds.concat(data);
-		
+	var updateCache = function(){
 		var ids = new Array();
 		for(var i = 0; ((i < 50) && (i < serviceIds.length)); i++){
 			ids.push(serviceIds.pop());
 		}
-		
 		if(ids.length > 0){
-			global.setTimeout(function(){
-				updateCache2(ids)
-			}, throttle);
+			updateCache2(ids);
 		}
 	}
 	
 	var updateVenueCache2 = function(data){
+		currentXhr++;
 		request(
 			updateVenueUrl+"&id="+data, {
 				"handleAs": "text",
-				"preventCache": true
+				"preventCache": true,
+				"timeout": 5*1000
 			}
 		).then(
 			function(cache){
@@ -108,23 +118,16 @@ require([
 				console.error(e);
 			}
 		);
-		currentXhr++;
-		//console.log("Running XHR: "+currentXhr.toString());
+		//console.log("Running XHR: "+currentXhr.toString(), data.length);
 	};
 	
-	var venueIds = new Array();
-	var updateVenueCache = function(data){
-		venueIds = venueIds.concat(data);
-		
+	var updateVenueCache = function(){
 		var ids = new Array();
 		for(var i = 0; ((i < 50) && (i < venueIds.length)); i++){
 			ids.push(venueIds.pop());
 		}
-		
 		if(ids.length > 0){
-			global.setTimeout(function(){
-				updateVenueCache2(ids)
-			}, throttle);
+			updateVenueCache2(ids);
 		}
 	}
 	
@@ -132,9 +135,9 @@ require([
 		if(message.command == "updateStubs"){
 			updateStubs();
 		}else if(message.command == "updateCache"){
-			updateCache(message.data);
+			serviceIds = serviceIds.concat(message.data);
 		}else if(message.command == "updateVenueCache"){
-			updateVenueCache(message.data);
+			venueIds = venueIds.concat(message.data);
 		}
 	};
 	

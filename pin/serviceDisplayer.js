@@ -459,7 +459,7 @@ define([
 		},
 		
 		_getTableWidgetSetDataArgument: function(value, args){
-			if(args.hasOwnProperty("field")){
+			if(Object.prototype.hasOwnProperty.call(args, "field")){
 				args.data = value[args.field];
 			}else{
 				args.data = value;	

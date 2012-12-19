@@ -16,11 +16,10 @@ define([
 	"dojo/request",
 	"dojo/topic",
 	"simpo/webworker",
-	"dojo/json",
-	"dojo/sniff"
+	"dojo/json"
 ], function(
 	declare, _variableTestMixin, store, aspect, lang, has, on, array,
-	request, topic, webworker, JSON, sniff
+	request, topic, webworker, JSON
 ){
 	"use strict";
 	
@@ -30,15 +29,16 @@ define([
 		"compress": false,
 		"encrypt": false,
 		
-		"_menuUpdateUrl": "/pin.nsf/getMenu?openagent",
-		"_serviceUpdateUrl": "/pin.nsf/getService?openagent",
+		"updateUrl": "/pin.nsf/getService2?openagent",
 		"_worker":{},
 		"_stubCacheInterval": null,
 		"_updateCacheInterval": null,
+		"_venueCacheInterval": null,
 		"_stubCache": [],
 		"_trottle": 100,
 		"_slicer": 75,
 		"_servicesToCache": [],
+		"_venuesToCache": [],
 		
 		constructor: function(args){
 			if(has("webworker")){
@@ -55,13 +55,6 @@ define([
 			//if(sniff("chrome") || sniff("safari") || sniff("ff")){
 				//this._slicer = 350;
 			//}
-			
-			this._stubCacheInterval = setInterval(
-				lang.hitch(this, this._updateServices), this._trottle
-			);
-			this._updateCacheInterval = setInterval(
-				lang.hitch(this, this._updateCache), this._trottle
-			);
 		},
 		
 		_updateStubs: function(){
@@ -339,7 +332,7 @@ define([
 			}else if(this._isEqual(type, "updateCache")){
 				try{
 					var data = JSON.parse(message);
-					this._updateCacheSuccess(data, e.message.orginalLookup);
+					this._updateCacheSuccess(data);
 				}catch(e){
 					console.error(e);
 				}
@@ -386,26 +379,61 @@ define([
 			topic.publish("/rcbc/pin/updateVenue", data.id, data);
 		},
 		
-		_updateCacheSuccess: function(data, orginal){
-			console.log("UPDATING CACHE", data);
-			//console.log("COMPARE", data.services.length, orginal.length);
+		_updateCacheSuccess: function(data){
+			if(this._isString(data)){
+				data = JSON.parse(data);
+			}
+			console.log("UPDATING: ", data.services.length);
+			
 			array.forEach(data.services, function(service){
 				this._updateServiceById(service);
 			}, this);
 			
-			var venueLookup = this._getUpdateVenueCacheArray(data);
-			if(!this._isBlank(venueLookup)){
-				this._worker.postMessage({
-					"type": "command",
-					"command": "updateVenueCache",
-					"data": venueLookup
-				});
+			if(this._updateCacheInterval === null){
+				this._updateCacheInterval = setTimeout(
+					lang.hitch(this, this._updateCache), this._trottle
+				);
 			}
+			
+			this._venuesToCache = this._venuesToCache.concat(
+				this._getUpdateVenueCacheArray(data)
+			);
+			if((this._venueCacheInterval === null) && (this._venuesToCache.length > 0)){
+				this._venueCacheInterval = setInterval(
+					lang.hitch(this, this._updateVenueCache), this._trottle
+				);
+			}
+		},
+		
+		_updateVenueCache: function(){
+			if(!this._isBlank(this._venuesToCache)){
+				var venues = new Array();
+				for(var i = 0; ((i < this._venuesToCache.length) && (i < this._slicer)); i++){
+					venues.push(this._venuesToCache.shift());
+				}
+			
+				this._updateVenueCache2(venues);
+			}else{
+				clearInterval(this._venueCacheInterval);
+				this._venueCacheInterval = null;
+			}
+		},
+		
+		_updateVenueCache2: function(ids){
+			console.log("TO WEBWORKER VENUES: ", ids.length);
+			/*if(!this._isBlank(ids)){
+				if(has("webworker")){
+					this._worker.postMessage({
+						"type": "command",
+						"command": "updateVenueCache",
+						"data": ids
+					});
+				}
+			}*/
 		},
 		
 		_updateVenueCacheSuccess: function(data,orginal){
 			console.log("UPDATING VENUE CACHE", data);
-			//console.log("COMPARE", data.venues.length, orginal.length);
 			array.forEach(data.venues, function(venue){
 				this._updateVenueById(venue);
 			}, this);
@@ -450,12 +478,13 @@ define([
 				}
 			
 				this._updateServices2(services);
+			}else{
+				clearInterval(this._stubCacheInterval);
+				this._stubCacheInterval = null;
 			}
 		},
 		
 		_updateServices2: function(services){
-			console.log("services: ", services.length);
-			
 			array.forEach(services, function(service, n){
 				if(service.hasOwnProperty("id")){
 					var lookup = this.getService(service.id.toLowerCase());
@@ -473,15 +502,32 @@ define([
 					this._updateServiceById(service);
 				}
 			}, this);
+			
+			if((this._updateCacheInterval === null) && (!this._isBlank(this._servicesToCache))){
+				this._updateCacheInterval = setTimeout(
+					lang.hitch(this, this._updateCache), this._trottle
+				);
+			}
+			
 		},
 		
+
 		_updateStubsSuccess: function(data){
 			this._stubCache = this._stubCache.concat(data.services);
-			
-			
+			if(this._stubCacheInterval !== null){
+				clearInterval(this._stubCacheInterval);
+			}
+			this._stubCacheInterval = setInterval(
+				lang.hitch(this, this._updateServices), this._trottle
+			);
 		},
 		
 		_updateCache: function(){
+			if(this._updateCacheInterval !== null){
+				clearTimeout(this._updateCacheInterval);
+				this._updateCacheInterval = null;
+			}
+			
 			if(!this._isBlank(this._servicesToCache)){
 				var ids = new Array();
 				for(var i = 0; ((i < this._servicesToCache.length) && (i < this._slicer)); i++){
@@ -493,13 +539,26 @@ define([
 		},
 		
 		_updateCache2: function(ids){
-			if(has("webworker")){
-				if(!this._isBlank(ids)){
+			//console.log("Making request: "+this.updateUrl+"&id="+ids.join(","));
+			if(!this._isBlank(ids)){
+				if(has("webworker")){
 					this._worker.postMessage({
 						"type": "command",
 						"command": "updateCache",
 						"data": ids
 					});
+				}else{
+					request(
+						this.updateUrl+"&id="+ids.join(","), {
+							"handleAs": "text",
+							"preventCache": true
+						}
+					).then(
+						lang.hitch(this, this._updateCacheSuccess),
+						function(e){
+							console.error(e);
+						}
+					);
 				}
 			}
 		},

@@ -156,13 +156,17 @@ define([
 		},
 		
 		_isWidget: function(obj){
-			if((typeof obj === "object") && (obj !== undefined) && (obj !== null)){
-				if(obj.hasOwnProperty("domNode")){
-					try{
-						var widget = registry.byNode(obj.domNode);
-						return (widget !== undefined);
-					}catch(e){}
+			try{
+				if((typeof obj === "object") && (obj !== undefined) && (obj !== null)){
+					if(Object.prototype.hasOwnProperty.call(obj, "domNode")){
+						try{
+							var widget = registry.byNode(obj.domNode);
+							return (widget !== undefined);
+						}catch(e){}
+					}
 				}
+			}catch(e){
+				console.info("Failed to do isWidget test");
 			}
 			
 			return false;
