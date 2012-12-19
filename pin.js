@@ -73,7 +73,6 @@ define([
 		
 		postCreate: function(){
 			try{
-				console.log(1);
 				this._init();
 			}catch(e){
 				console.info("Could load PIN application.");
@@ -82,22 +81,15 @@ define([
 		
 		_init: function(){
 			try{
-				console.log(2);
 				this.store = new store();
 				//uncomment to clear the localstorage.
 				//this.store.clear(true);
-				console.log(3);
 			
 				this._initTopicSubscriptions();
-				console.log(4);
 				this._initShortlist();
-				console.log(5);
 				this._initTitle();
-				console.log(6);
 				this._initEvents();
-				console.log(7);
 				this._hashChange();
-				console.log(8);
 			}catch(e){
 				console.info("Could inititiate the PIN application.");
 			}
@@ -230,7 +222,11 @@ define([
 			try{
 				if(this.headTitleNode !== null){
 					if(!this._isBlank(title)){
-						domAttr.set(this.headTitleNode, "innerHTML", title);
+						try{
+							domAttr.set(this.headTitleNode, "innerHTML", title);
+						}catch(e){
+							window.document.title = title;
+						}
 					}else{
 						var query = this._getHashObj();
 						if(!this._isBlank(query.section)){
@@ -242,18 +238,26 @@ define([
 								}
 							}
 							
-							domAttr.set(this.headTitleNode, "innerHTML", title);
+							try{
+								domAttr.set(this.headTitleNode, "innerHTML", title);
+							}catch(e){
+								window.document.title = title;
+							}
 						}else{
-							domAttr.set(
-								this.headTitleNode,
-								"innerHTML",
-								"Peoples Information Network"
-							);
+							try{
+								domAttr.set(
+									this.headTitleNode,
+									"innerHTML",
+									"Peoples Information Network"
+								);
+							}catch(e){
+								window.document.title = title;
+							}
 						}
 					}
 				}
 			}catch(e){
-				console.warn("Could not change the page title");
+				console.warn("Could not change the page title", e);
 			}
 		},
 		
@@ -331,7 +335,7 @@ define([
 		
 		_hashChangeNewSectionIsShortlist: function(){
 			var shortlist = this.store.getShortlist();
-			if(shortlist.hasOwnProperty("services")){
+			if(Object.prototype.hasOwnProperty.call(shortlist, "services")){
 				//articleContentNode
 				this.shortlist.set("value", shortlist.services);
 				if(shortlist.services.length > 0){
@@ -430,7 +434,8 @@ define([
 			try{
 				if(!this._isBlank(propName)){
 					defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
-					obj[propName] = ((obj.hasOwnProperty(propName)) ? obj[propName] : defaultValue);
+					obj[propName] = ((Object.prototype.hasOwnProperty.call(obj, propName)) ? obj[propName] : defaultValue);
+					
 				}
 			}catch(e){
 				console.error("Failed to add property to object");
@@ -502,14 +507,14 @@ define([
 		
 		_getCategorySize: function(service, section){
 			if(this._isObject(service)){
-				if(service.hasOwnProperty("data")){
+				if(Object.prototype.hasOwnProperty.call(service, "data")){
 					service = service.data;
 				}
 			}else{
 				return 0;
 			}
 			
-			if(service.hasOwnProperty(section)){
+			if(Object.prototype.hasOwnProperty.call(service, section)){
 				if(this._isArray(service[section])){
 					return service[section].length;
 				}else{
@@ -567,7 +572,7 @@ define([
 		_shortlistUpdate: function(shortlist){
 			if(this._isElement(this.shortlistCounterNode)){
 				var counter = 0;
-				if(shortlist.hasOwnProperty("services")){
+				if(Object.prototype.hasOwnProperty.call(shortlist, "services")){
 					counter = shortlist.services.length;
 				}
 				domAttr.set(

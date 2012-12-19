@@ -93,7 +93,7 @@ define([
 		
 		_placeRows: function(rows){
 			array.forEach(this._days, function(day){
-				if(rows.hasOwnProperty(day)){
+				if(Object.prototype.hasOwnProperty.call(rows, day)){
 					array.forEach(rows[day], function(tr){
 						domConstr.place(tr, this.tableNode);
 					}, this);
@@ -106,7 +106,7 @@ define([
 			var obj2 = lang.clone(obj2o);
 			
 			for(var key in obj2){
-				if(obj1.hasOwnProperty(key)){
+				if(Object.prototype.hasOwnProperty.call(obj1, key)){
 					if((Object.prototype.toString.call(obj1[key]) === '[object Array]') || (Object.prototype.toString.call(obj2[key]) === '[object Array]')){
 						if(Object.prototype.toString.call(obj1[key]) !== '[object Array]'){
 							obj1[key] = new Array(obj1[key]);
@@ -133,7 +133,7 @@ define([
 			array.forEach(row.day, function(day){
 				var tr = this._createRow(day, row);
 				
-				if(rows.hasOwnProperty(day)){
+				if(Object.prototype.hasOwnProperty.call(rows, day)){
 					rows[day].push(tr);
 				}else{
 					rows[day] = new Array(tr);
