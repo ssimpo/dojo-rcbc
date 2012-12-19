@@ -14,7 +14,7 @@ define([
 		"tooltip": {},
 		
 		postCreate: function(){
-			if(this.hasOwnProperty("promptMessage")){
+			if(this._hasProperty(this, "promptMessage")){
 				if(this.promptMessage != ""){
 					this.tooltip = new Tooltip({
 						"label": "<div class=\"dojoDijitHelperTooltip\"><b class=\"label\">"+strings.help+":</b> "+this.promptMessage+"</div>",
@@ -23,6 +23,10 @@ define([
 					this.tooltip.addTarget(this.domNode);
 				}
 			}
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
 		}
 	});
 	

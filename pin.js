@@ -335,7 +335,7 @@ define([
 		
 		_hashChangeNewSectionIsShortlist: function(){
 			var shortlist = this.store.getShortlist();
-			if(Object.prototype.hasOwnProperty.call(shortlist, "services")){
+			if(this._hasProperty(shortlist, "services")){
 				//articleContentNode
 				this.shortlist.set("value", shortlist.services);
 				if(shortlist.services.length > 0){
@@ -434,7 +434,7 @@ define([
 			try{
 				if(!this._isBlank(propName)){
 					defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
-					obj[propName] = ((Object.prototype.hasOwnProperty.call(obj, propName)) ? obj[propName] : defaultValue);
+					obj[propName] = ((this._hasProperty(obj, propName)) ? obj[propName] : defaultValue);
 					
 				}
 			}catch(e){
@@ -507,14 +507,14 @@ define([
 		
 		_getCategorySize: function(service, section){
 			if(this._isObject(service)){
-				if(Object.prototype.hasOwnProperty.call(service, "data")){
+				if(this._hasProperty(service, "data")){
 					service = service.data;
 				}
 			}else{
 				return 0;
 			}
 			
-			if(Object.prototype.hasOwnProperty.call(service, section)){
+			if(this._hasProperty(service, section)){
 				if(this._isArray(service[section])){
 					return service[section].length;
 				}else{
@@ -541,7 +541,7 @@ define([
 			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
 			var fieldName = "category" + section.toString();
 			
-			if(service.hasOwnProperty(fieldName)){
+			if(this._hasProperty(service, fieldName)){
 				if(!this._isArray(service[fieldName])){
 					if(this._isBlank(service[fieldName])){
 						return new Array();
@@ -572,7 +572,7 @@ define([
 		_shortlistUpdate: function(shortlist){
 			if(this._isElement(this.shortlistCounterNode)){
 				var counter = 0;
-				if(Object.prototype.hasOwnProperty.call(shortlist, "services")){
+				if(this._hasProperty(shortlist, "services")){
 					counter = shortlist.services.length;
 				}
 				domAttr.set(
@@ -614,7 +614,7 @@ define([
 		_getField: function(data, fieldName){
 			var value = ""
 			
-			if(data.hasOwnProperty(fieldName)){
+			if(this._hasProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			

@@ -113,7 +113,7 @@ define([
 			}else{
 				var values = value.split(",");
 				array.forEach(values, function(label){
-					if(this._checkboxes.hasOwnProperty(label)){
+					if(this._hasProperty(this._checkboxes, label)){
 						this._checkboxes[label].set("checked", true);
 					}
 				}, this);
@@ -136,6 +136,10 @@ define([
 			}
 			
 			return widgets;
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
 		},
 		
 		reset: function(){
