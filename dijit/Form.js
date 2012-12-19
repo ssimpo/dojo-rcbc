@@ -25,7 +25,7 @@ define([
 		constructor: function(args){
 			this._init(args);
 			
-			if(args.hasOwnProperty("id")){
+			if(this._hasProperty(args, "id")){
 				args.id = this._getStoreId(args);
 				if(this.useStore){
 					this.store = new memory({
@@ -71,6 +71,10 @@ define([
 					}
 				}));
 			}
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
 		},
 		
 		_widgetUpdate: function(event){

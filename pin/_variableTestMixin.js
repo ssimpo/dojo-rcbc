@@ -130,7 +130,7 @@ define([
 		
 		_isEmptyObject: function(obj){
 			for(var key in obj){
-				if(obj.hasOwnProperty(key)){
+				if(this._hasProperty(obj, key)){
 					return false;
 				}
 			}
@@ -155,10 +155,14 @@ define([
 			);
 		},
 		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
+		},
+		
 		_isWidget: function(obj){
 			try{
 				if((typeof obj === "object") && (obj !== undefined) && (obj !== null)){
-					if(Object.prototype.hasOwnProperty.call(obj, "domNode")){
+					if(this._hasProperty(obj, "domNode")){
 						try{
 							var widget = registry.byNode(obj.domNode);
 							return (widget !== undefined);

@@ -74,7 +74,7 @@ define([
 		},
 		
 		_setValueAttr: function(value){
-			if(value.hasOwnProperty("type") && value.hasOwnProperty("years") && value.hasOwnProperty("months")){
+			if(this._hasProperty(value, "type") && this._hasProperty(value, "years") && this._hasProperty(value, "months")){
 				on.once(this.selectorNode, "change", lang.hitch(this, function(){
 					if(value.type == "above"){
 						this.fromAgeNode.set("value", value.years);
@@ -136,6 +136,10 @@ define([
 			domConstr.place(this.toBlock, this.toCell, "first");
 			
 			this.reset();
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
 		},
 		
 		reset: function(){

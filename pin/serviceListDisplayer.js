@@ -256,7 +256,7 @@ define([
 			
 			var value = ""
 			
-			if(Object.prototype.hasOwnProperty.call(data, fieldName)){
+			if(this._hasProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			

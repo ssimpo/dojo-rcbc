@@ -128,7 +128,7 @@ define([
 		_getIdFromData: function(data){
 			var id;
 			
-			if(!data.hasOwnProperty("id")){
+			if(!this._hasProperty(data, "id")){
 				id = this._createUnid();
 			}else if(data.id == ""){
 				id = this._createUnid();
@@ -219,7 +219,11 @@ define([
 			array.forEach(items, function(item){
 				item.item["delete"]();
 			}, this);
-		}
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
+		},
 	});
 	
 	return construct;

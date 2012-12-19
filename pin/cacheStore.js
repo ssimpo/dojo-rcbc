@@ -96,7 +96,7 @@ define([
 		
 		_sanitizeShortlist: function(shortlist){
 			var ids;
-			if(shortlist.hasOwnProperty("services")){
+			if(this._hasProperty(shortlist, "services")){
 				if(this._isArray(shortlist.services)){
 					ids = shortlist.services;
 				}else{
@@ -158,7 +158,7 @@ define([
 			}, this);
 			
 			if(!found){
-				if(shortlist.hasOwnProperty("services")){
+				if(this._hasProperty(shortlist, "services")){
 					shortlist.services.push(id);
 				}else{
 					shortlist.services = new Array(id);
@@ -184,7 +184,7 @@ define([
 			var shortlist = this.getShortlist();
 			var found = false;
 			
-			if(shortlist.hasOwnProperty("services")){
+			if(this._hasProperty(shortlist, "services")){
 				array.every(shortlist.services, function(serviceId){
 					if(this._isEqual(serviceId, id)){
 						found = true;
@@ -208,7 +208,7 @@ define([
 			var service = this.query({"id":id});
 			if(!this._isBlank(service)){
 				service = service[0];
-				if(service.hasOwnProperty("type")){
+				if(this._hasProperty(service, "type")){
 					if(service.type == "service"){
 						return service;
 					}
@@ -240,7 +240,7 @@ define([
 			array.forEach(services, function(service){
 				array.forEach(service.data.tags, function(tag){
 					if(!this._isBlank(tag)){
-						if(tags.hasOwnProperty(tag)){
+						if(this._hasProperty(tags, tag)){
 							tags[tag]++;
 						}else{
 							tags[tag] = 1; 
@@ -278,7 +278,7 @@ define([
 				
 				array.forEach(categories, function(category){
 					if(!this._isBlank(category)){
-						if(!categoryList.hasOwnProperty(category)){
+						if(!this._hasProperty(categoryList, category)){
 							categoryList[category] = true;
 						}
 					}
@@ -306,12 +306,12 @@ define([
 		
 		_getCategoryValue: function(service, fieldName){
 			if(this._isObject(service)){
-				if(service.hasOwnProperty("data")){
+				if(this._hasProperty(service, "data")){
 					service = service.data;
 				}
 				
 				if(this._isObject(service)){
-					if(service.hasOwnProperty(fieldName)){
+					if(this._hasProperty(service, fieldName)){
 						var categories = service[fieldName];
 						if(this._isArray(categories)){
 							return categories;
@@ -350,7 +350,7 @@ define([
 			var hash = this._getHash(service);
 			var modified = this._getModified(service);
 			
-			if(service.hasOwnProperty("id")){
+			if(this._hasProperty(service, "id")){
 				hash = ((hash === false) ? this._getHash(service.id) : hash);
 				modified = ((modified === false) ? this._getModified(service.id) : modified);
 				if(service.isStub){
@@ -442,10 +442,10 @@ define([
 		_getUpdateVenueCacheArray: function(data){
 			var venues = new Array();
 			array.forEach(data.services, function(service){
-				if(service.hasOwnProperty("venues")){
+				if(this._hasProperty(service, "venues")){
 					if(this._isArray(service.venues)){
 						array.forEach(service.venues, function(venue){
-							if(venue.hasOwnProperty("venueId")){
+							if(this._hasProperty(venue, "venueId")){
 								venues.push(venue.venueId);
 							}
 						}, this);
@@ -457,7 +457,7 @@ define([
 			array.forEach(venues, function(venueId){
 				var venueItem = this.get(venueId);
 				if(!this._isBlank(venueItem)){
-					if(venueItem.hasOwnProperty("isStub")){
+					if(this._hasProperty(venueItem, "isStub")){
 						if(venueItem.isStub){
 							lookup.push(venueId);
 						}
@@ -486,7 +486,7 @@ define([
 		
 		_updateServices2: function(services){
 			array.forEach(services, function(service, n){
-				if(service.hasOwnProperty("id")){
+				if(this._hasProperty(service, "id")){
 					var lookup = this.getService(service.id.toLowerCase());
 					if(!this._isBlank(lookup)){
 						if(lookup.isStub){
@@ -572,7 +572,7 @@ define([
 		
 		_getHash: function(service){
 			if(this._isObject(service)){
-				if(service.hasOwnProperty("hash")){
+				if(this._hasProperty(service, "hash")){
 					return lang.trim(service.hash.toLowerCase());
 				}else{
 					return false;
@@ -591,7 +591,7 @@ define([
 		
 		_getModified: function(service){
 			if(this._isObject(service)){
-				if(service.hasOwnProperty("modified")){
+				if(this._hasProperty(service, "modified")){
 					return service.modified
 				}else{
 					return false;
@@ -612,7 +612,7 @@ define([
 			service.id = service.id.toLowerCase();
 			service.category1 = this._parseCategory(service, 1);
 			service.category2 = this._parseCategory(service, 2);
-			service.isStub = ((service.hasOwnProperty("isStub")) ? service.isStub : true);
+			service.isStub = ((this._hasProperty(service, "isStub")) ? service.isStub : true);
 			service.tags = this._parseTags(service);
 			
 			array.forEach(service.category1, function(category, n){
@@ -642,7 +642,9 @@ define([
 		},
 		
 		_isServiceItem: function(item){
-			if(item.hasOwnProperty("type") && item.hasOwnProperty("data")){
+			
+			
+			if(this._hasProperty(item, "type") && this._hasProperty(item, "data")){
 				if(this._isEqual(item.type, "service")){
 					return true;
 				}
@@ -682,7 +684,7 @@ define([
 		
 		_parseCategory: function(service, categoryNum){
 			var fieldName = "category" + categoryNum.toString();
-			if(service.hasOwnProperty(fieldName)){
+			if(this._hasProperty(service, fieldName)){
 				if(!this._isArray(service[fieldName])){
 					if(this._isBlank(service[fieldName])){
 						return new Array();
@@ -698,7 +700,7 @@ define([
 		},
 		
 		_parseTags: function(service){
-			if(service.hasOwnProperty("tags")){
+			if(this._hasProperty(service, "tags")){
 				if(!this._isArray(service.tags)){
 					return this._trimArray(service.tags.split(";"));
 				}else{

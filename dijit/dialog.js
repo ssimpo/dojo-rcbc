@@ -53,9 +53,9 @@ define([
 			var widget = null;
 			var node = null;
 			
-			if(this._nodes.hasOwnProperty(id)){
+			if(this._hasProperty(this._nodes, id)){
 				var node = this._nodes2[dialogId][id];
-			}else if(this.hasOwnProperty(id)){
+			}else if(this._hasProperty(this, id)){
 				var node = this[id];
 			}
 			
@@ -75,9 +75,9 @@ define([
 			var widget = null;
 			var node = null;
 			
-			if(this._nodes.hasOwnProperty(id)){
+			if(this._hasProperty(this._nodes, id)){
 				var node = this._nodes[id];
-			}else if(this.hasOwnProperty(id)){
+			}else if(this._hasProperty(this, id)){
 				var node = this._nodes[id];
 			}
 			
@@ -117,7 +117,7 @@ define([
 		_generateLabels: function(pane){
 			$("[data-dojo-for]", pane).forEach(function(node){
 				var id = domAttr.get(node, "data-dojo-for");
-				if(this._ids.hasOwnProperty(id)){
+				if(this._hasProperty(this._ids, id)){
 					domAttr.set(node, "for", this._ids[id]);
 				}
 			}, this);
@@ -220,6 +220,10 @@ define([
 				value = form.get("value");
 			}
 			return value;
+		},
+		
+		_hasProperty: function(obj, propName){
+			return Object.prototype.hasOwnProperty.call(obj, propName);
 		},
 		
 		clear: function(){

@@ -406,8 +406,7 @@ define([
 			}
 			
 			var value = ""
-			
-			if(data.hasOwnProperty(fieldName)){
+			if(this._hasProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			
@@ -418,16 +417,16 @@ define([
 			args = this._getTableWidgetSetDataArgument(value, args);
 			
 			var node;
-			if(args.hasOwnProperty("data")){
+			if(this._hasProperty(args, "data")){
 				var obj = {
 					"data": args.data,
 					"title": args.title
 				};
-				if(args.hasOwnProperty("titleLevel")){
+				if(this._hasProperty(args, "titleLevel")){
 					obj.titleLevel = args.titleLevel;
 				}
 				
-				if(args.hasOwnProperty("propertyNode")){
+				if(this._hasProperty(args, "propertyNode")){
 					this._createAttachPoint(
 						args.propertyNode,
 						args.constructor, obj
@@ -440,7 +439,7 @@ define([
 			}
 			
 			if(node === undefined){
-				if(args.hasOwnProperty("propertyNode")){
+				if(this._hasProperty(args, "propertyNode")){
 					this._createAttachPoint(args.propertyNode, "div");
 					node = this.contactsWidget;
 				}else{
@@ -459,7 +458,7 @@ define([
 		},
 		
 		_getTableWidgetSetDataArgument: function(value, args){
-			if(Object.prototype.hasOwnProperty.call(args, "field")){
+			if(this._hasProperty(args, "field")){
 				args.data = value[args.field];
 			}else{
 				args.data = value;	
