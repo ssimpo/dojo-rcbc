@@ -114,7 +114,10 @@ define([
 						"timeout": this.xhrTimeout
 					}
 				).then(
-					lang.hitch(this, this._updateServiceSuccess),
+					lang.hitch(this, function(data){
+						this._intervalPeriod *= 5;
+						this._updateServiceSuccess(data);
+					}),
 					lang.hitch(this, this._xhrError, this._updateUrls.stubs)
 				);
 			}catch(e){

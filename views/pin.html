@@ -2,7 +2,15 @@
 	class="rcbcPIN"
 	data-dojo-attach-point="containerNode"
 >
-	<div class="hiddenDiv" data-dojo-attach-point="hiddenDiv"></div>
+	<div class="hiddenDiv" data-dojo-attach-point="hiddenDiv">
+		<div class="buttonsPanel" data-dojo-attach-point="buttonsPanelNode">
+			<button
+				type="button"
+				data-dojo-attach-point="manageShortlistButton"
+				data-dojo-type="dijit/form/Button"
+			></button>
+		</div>
+	</div>
 	<div
 		data-dojo-type="rcbc/pin/sectionMenu"
 		data-dojo-attach-point="sectionMenu"
@@ -17,13 +25,7 @@
 	</aside>
 	
 	<div class="articleContent" data-dojo-attach-point="articleContentNode">
-		<div class="buttonsPanel" data-dojo-attach-point="buttonsPanelNode">
-			<button
-				type="button"
-				data-dojo-attach-point="manageShortlistButton"
-				data-dojo-type="dijit/form/Button"
-			></button>
-		</div>
+		
 		<h1 data-dojo-attach-point="titleNode"></h1>
 		<div
 			data-dojo-type="rcbc/pin/shortlist"
