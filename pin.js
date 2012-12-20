@@ -13,7 +13,7 @@ define([
 	"dojo/i18n",
 	"dojo/i18n!./nls/pin",
 	"dojo/text!./views/pin.html",
-	"./pin/cacheStore",
+	"./pin/cacheStore2",
 	"dojo/hash",
 	"dojo/topic",
 	"dojo/_base/lang",
@@ -438,7 +438,7 @@ define([
 					
 				}
 			}catch(e){
-				console.error("Failed to add property to object");
+				console.info("Failed to add property ("+propName+") to object");
 			}
 			
 			return obj;

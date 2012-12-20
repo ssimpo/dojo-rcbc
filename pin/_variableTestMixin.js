@@ -156,7 +156,11 @@ define([
 		},
 		
 		_hasProperty: function(obj, propName){
-			return Object.prototype.hasOwnProperty.call(obj, propName);
+			if(this._isObject(obj)){
+				return Object.prototype.hasOwnProperty.call(obj, propName);
+			}
+			
+			return false;
 		},
 		
 		_isWidget: function(obj){
