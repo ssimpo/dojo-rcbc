@@ -114,8 +114,8 @@ define([
 		
 		_setValueAttr: function(value){
 			this._initNodes();
-			
 			this.value = value;
+			
 			if(this._isBlank(this.value)){
 				this._hideWidget();
 			}else{
