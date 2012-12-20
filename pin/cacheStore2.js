@@ -343,12 +343,16 @@ define([
 		getCategory: function(section, category){
 			var self = this;
 			
-			return this.query(function(object){
+			var query = this.query(function(object){
 				if(self._isServiceItem(object)){
 					return self._itemHasCategory(object, section, category);
 				}else{
 					return false;
 				}
+			});
+			
+			return query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 			});
 		},
 		
@@ -379,7 +383,7 @@ define([
 		getTag: function(section, category, tag){
 			var self = this;
 			
-			return this.query(function(object){
+			var query = this.query(function(object){
 				if(self._isServiceItem(object)){
 					if(self._itemHasCategory(object, section, category)){
 						return (self._itemHasTag(object, tag));
@@ -389,6 +393,10 @@ define([
 				}else{
 					return false;
 				}
+			});
+			
+			return query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 			});
 		},
 		

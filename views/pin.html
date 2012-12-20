@@ -18,6 +18,10 @@
 	></div>
 	<aside data-dojo-attach-point="asideNode" class="rcbcArticleAside">
 		<div
+			data-dojo-attach-point="loadingNode"
+			class="rcbcLoadingNotice"
+		>Loading please wait...</div>
+		<div
 			data-dojo-type="rcbc/pin/sideMenu"
 			data-dojo-attach-point="sideMenu"
 			data-dojo-props="application:this"
@@ -25,7 +29,6 @@
 	</aside>
 	
 	<div class="articleContent" data-dojo-attach-point="articleContentNode">
-		
 		<h1 data-dojo-attach-point="titleNode"></h1>
 		<div
 			data-dojo-type="rcbc/pin/shortlist"

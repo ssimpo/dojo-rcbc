@@ -110,6 +110,10 @@ define([
 		
 		_parseMenuData: function(value){
 			if(!this._isBlank(value)){
+				value = value.sort(function(a, b){
+					return ((a.title < b.title) ? -1 : 1);
+				});
+				
 				array.forEach(value, function(item){
 					var listitem = this._createItem(item);
 					if(!this._isBlank(listitem)){
