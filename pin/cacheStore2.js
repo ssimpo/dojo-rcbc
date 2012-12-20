@@ -26,7 +26,8 @@ define([
 		
 		"_updateUrls": {
 			"stubs": "/servicesStub.json",
-			"serviceUpdate": "/pin.nsf/getService2?openagent&stub=false"
+			"serviceUpdate": "/pin.nsf/getService2?openagent&stub=false",
+			"venueUpdate": "/pin.nsf/getVenue?openagent"
 		},
 		"_updateAttempts": {
 			"stubs": 5
@@ -39,19 +40,18 @@ define([
 		"_throttle": 100,
 		"_serverThrottle": 50,
 		"_serviceIdsToUpdate": [],
+		"_venueIdsToUpdate": [],
+		"_venueCache": [],
 		
 		constructor: function(args){
+			this._initInterval();
 			this._callStubsUpdate();
-			
-			setInterval(lang.hitch(this, function(){
-				this._initInterval();
-			}), this._intervalPeriod * 5);
 		},
 		
 		_initInterval: function(){
 			try{
 				if(this._interval === null){
-					this._interval = setTimeout(
+					this._interval = setInterval(
 						lang.hitch(this, this._checkCommands),
 						this._intervalPeriod
 					);
@@ -64,14 +64,31 @@ define([
 		_checkCommands: function(){
 			if(!this._isBlank(this._intervalCommands)){
 				try{
-					this._interval = null;
 					var func = this._intervalCommands.shift();
-					
-					
-					
 					func();
 				}catch(e){
 					console.info("Failed to run interval command.");
+				}
+			}else{
+				if(!this._isBlank(this._serviceIdsToUpdate)){
+					this._addIntervalCommand(
+						lang.hitch(this, this._callServicesUpdate)
+					);
+				}
+				if(!this._isBlank(this._serviceCache)){
+					this._addIntervalCommand(
+						lang.hitch(this, this._updateFromServiceCache)
+					);
+				}
+				if(!this._isBlank(this._venueIdsToUpdate)){
+					this._addIntervalCommand(
+						lang.hitch(this, this._callVenuesUpdate)
+					);
+				}
+				if(!this._isBlank(this._venueCache)){
+					this._addIntervalCommand(
+						lang.hitch(this, this._updateFromVenueCache)
+					);
 				}
 			}
 		},
@@ -124,17 +141,33 @@ define([
 						lang.hitch(this, this._xhrError, this._updateUrls.serviceUpdate)
 					);
 				}
-				
-				if(!this._isBlank(this._serviceIdsToUpdate)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._callServicesUpdate)
-					);
-				}
 			}catch(e){
 				console.info("Failed to update services - now working from cache");
 			}
+		},
+		
+		_callVenuesUpdate: function(){
+			var ids = new Array();
+			for(var i = 0; ((i < this._serverThrottle) && (i < this._venueIdsToUpdate.length)); i++){
+				ids.push(this._venueIdsToUpdate.shift());
+			}
 			
-			this._initInterval();
+			try{
+				if(!this._isBlank(ids)){
+					request(
+						this._updateUrls.venueUpdate+"&id="+ids.join(","), {
+							"handleAs": "json",
+							"preventCache": true,
+							"timeout": this.xhrTimeout
+						}
+					).then(
+						lang.hitch(this, this._updateVenueSuccess),
+						lang.hitch(this, this._xhrError, this._updateUrls.venueUpdate)
+					);
+				}
+			}catch(e){
+				console.info("Failed to update venues - now working from cache");
+			}
 		},
 		
 		_xhrError: function(url, e){
@@ -144,7 +177,6 @@ define([
 					this._addIntervalCommand(
 						lang.hitch(this, this._updateStubs)
 					);
-					this._initInterval();
 				}
 			}
 			
@@ -154,11 +186,7 @@ define([
 		_updateServiceSuccess: function(data){
 			if(this._hasProperty(data, "services")){
 				this._serviceCache = this._serviceCache.concat(data.services);
-				this._addIntervalCommand(
-					lang.hitch(this, this._updateFromServiceCache)
-				);
 			}
-			this._initInterval();
 		},
 		
 		_updateFromServiceCache: function(){
@@ -169,25 +197,12 @@ define([
 				}
 				this._updateServicesFromArray(services);
 			}
-			
-			if(!this._isBlank(this._serviceCache)){
-				this._addIntervalCommand(
-					lang.hitch(this, this._updateFromServiceCache)
-				);
-			}
-			this._initInterval();
 		},
 		
 		_updateServicesFromArray: function(services){
 			if(!this._isBlank(services)){
 				array.forEach(services, this._updateService, this);
-				if(!this._isBlank(this._serviceIdsToUpdate)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._callServicesUpdate)
-					);
-				}
 			}
-			this._initInterval();
 		},
 		
 		_updateService: function(service){
@@ -200,21 +215,97 @@ define([
 					if(this._needsUpdating(cItem, item)){
 						this._serviceIdsToUpdate.push(item.id);
 					}
-					var isStub = cItem.isStub;
-					item = lang.mixin(cItem, item, {"isStub": isStub});
+					
+					item = lang.mixin(cItem, item);
+					var isStub = this._isServiceStub(item);
+					item.isStub = isStub;
+					item.data.isStub = isStub;
+					
 					this.put(item);
 					topic.publish("/rcbc/pin/updateService", item.id, item);
+					if(item.isStub){
+						this._serviceIdsToUpdate.push(item.id);
+					}
+					this._checkForServiceVenues(service);
 				}else{
+					var isStub = this._isServiceStub(item);
+					item.isStub = isStub;
+					item.data.isStub = isStub;
+					
 					if(item.isStub){
 						this._serviceIdsToUpdate.push(item.id);
 					}
 					this.put(item);
 					topic.publish("/rcbc/pin/updateService", item.id, item);
+					this._checkForServiceVenues(service);
 				}
 			}catch(e){}
 		},
 		
+		_checkForServiceVenues: function(service){
+			if(this._hasOwnProperty(service, "data")){
+				service = service.data;
+			}
+			
+			if(this._hasOwnProperty(service,"venues")){
+				array.forEach(service.venues, function(venueId){
+					if(this._hasOwnProperty(venueId, "venueId")){
+						venueId = venueId.venueId;
+					}
+					if(this._isString(venueId)){
+						if(venueId.length == 32){
+							var venue = this.get(venueId.toLowerCase());
+							if(this._isBlank(venue)){
+								this._venueIdsToUpdate.push(venueId);
+							}
+						}
+					}
+				}, this);
+			}
+		},
 		
+		_updateVenueSuccess: function(data){
+			if(this._hasProperty(data, "venues")){
+				this._venueCache = this._venueCache.concat(data.services);
+			}
+		},
+		
+		_updateFromVenueCache: function(){
+			if(!this._isBlank(this._venueCache)){
+				var venues = new Array();
+				for(var i = 0; ((i < this._throttle) && (i < this._venueCache.length)); i++){
+					venues.push(this._venueCache.shift());
+				}
+				this._updateVenuesFromArray(venues);
+			}
+		},
+		
+		_updateVenuesFromArray: function(venues){
+			if(!this._isBlank(venues)){
+				array.forEach(venues, this._updateVenue, this);
+			}
+		},
+		
+		_updateVenue: function(venue){
+			var data = this._convertVenueToDataItem(venue);
+			this.put(data);
+			topic.publish("/rcbc/pin/updateVenue", data.id, data);
+		},
+		
+		_convertVenueToDataItem: function(venue){
+			venue.id = venue.id.toLowerCase();
+			
+			return {
+				"id": venue.id,
+				"type": "venue",
+				"data": venue,
+				"isStub": venue.isStub
+			}
+		},
+		
+		_isServiceStub: function(obj){
+			return (!this._hasOwnProperty(obj.data, "description") && !this._hasOwnProperty(obj.data, "venues") && !this._hasOwnProperty(obj.data, "contacts"));
+		},
 		
 		_needsUpdating: function(oldItem, newItem){
 			return (oldItem.hash !== newItem.hash);
@@ -226,6 +317,19 @@ define([
 				if(this._hasProperty(service, "type")){
 					if(service.type == "service"){
 						return service;
+					}
+				}
+			}
+			
+			return null;
+		},
+		
+		getVenue: function(id){
+			var venue = this.get(id);
+			if(!this._isBlank(venue)){
+				if(this._hasProperty(venue, "type")){
+					if(venue.type == "venue"){
+						return venue;
 					}
 				}
 			}
@@ -385,6 +489,26 @@ define([
 			}else if(this._isObject(service)){
 				if(this._hasOwnProperty(service, "id")){
 					this._serviceIdsToUpdate.push(service.id);
+					return true;
+				}else{
+					return false;
+				}
+			}
+				
+			return false;
+		},
+		
+		updateVenue: function(venue){
+			if(this._isString(venue)){
+				if(venue.length == 32){
+					this._venueIdsToUpdate.push(venue);
+					return true;
+				}else{
+					return false;
+				}
+			}else if(this._isObject(venue)){
+				if(this._hasOwnProperty(venue, "id")){
+					this._venueIdsToUpdate.push(venue.id);
 					return true;
 				}else{
 					return false;

@@ -82,7 +82,7 @@ define([
 		
 		_getData: function(callback){
 			if(this.venueId !== ""){
-				var data = this.application.store.get(this.venueId);
+				var data = this.application.store.get(this.venueId.toLowerCase());
 				if(!this._isBlank(data)){
 					this.data = data.data;
 					callback();
