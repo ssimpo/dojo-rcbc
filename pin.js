@@ -86,10 +86,7 @@ define([
 				//this.store.clear(true);
 			
 				this._initTopicSubscriptions();
-				this._initShortlist();
 				this._initTitle();
-				this._initEvents();
-				this._hashChange();
 			}catch(e){
 				console.info("Could inititiate the PIN application.");
 			}
@@ -97,6 +94,10 @@ define([
 		
 		_initTopicSubscriptions: function(){
 			try{
+				topic.subscribe(
+					"/simpo/store/local/databaseReady",
+					lang.hitch(this, this._databaseReady)
+				);
 				topic.subscribe(
 					"/dojo/hashchange",
 					lang.hitch(this, this._hashChange)
@@ -148,6 +149,12 @@ define([
 			if(qry.length > 0){
 				this.headTitleNode = qry[0];
 			}
+		},
+		
+		_databaseReady: function(){
+			this._initShortlist();
+			this._initEvents();
+			this._hashChange();
 		},
 		
 		_setServiceIdAttr: function(id){
