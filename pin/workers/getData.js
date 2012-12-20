@@ -11,6 +11,7 @@ require([
 	var serviceIds = [];
 	var throttle = 800;
 	var currentXhr = 0;
+	var xhrCounter = 0;
 	
 	var serviceIds = new Array();
 	var venueIds = new Array();
@@ -27,6 +28,7 @@ require([
 	
 	var updateStubs = function(){
 		currentXhr++;
+		xhrCounter++;
 		request(
 			"/servicesStub.json", {
 				"handleAs": "json",
@@ -48,11 +50,13 @@ require([
 				console.error(e);
 			}
 		);
+		//console.log("XHR COUNTER", xhrCounter);
 		//console.log("Running XHR: "+currentXhr.toString());
 	};
 	
 	var updateCache2 = function(data){
 		currentXhr++;
+		xhrCounter++;
 		request(
 			updateUrl+"&id="+data, {
 				"handleAs": "text",
@@ -77,6 +81,7 @@ require([
 				console.error(e);
 			}
 		);
+		//console.log("XHR COUNTER", xhrCounter);
 		//console.log("Running XHR: "+currentXhr.toString(), data.length);
 	};
 	
@@ -92,6 +97,7 @@ require([
 	
 	var updateVenueCache2 = function(data){
 		currentXhr++;
+		xhrCounter++;
 		request(
 			updateVenueUrl+"&id="+data, {
 				"handleAs": "text",
@@ -118,6 +124,7 @@ require([
 				console.error(e);
 			}
 		);
+		//console.log("XHR COUNTER", xhrCounter);
 		//console.log("Running XHR: "+currentXhr.toString(), data.length);
 	};
 	

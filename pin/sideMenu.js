@@ -77,14 +77,10 @@ define([
 		_setValueAttr: function(value){
 			this._initNodes();
 			
-			console.log("SETTING SIDEMENU", value);
-			
 			domConstr.empty(this.domNode);
 			if(this._isBlank(value)){
-				console.log("HIDE", value);
 				this._hideWidget();
 			}else{
-				console.log("SHOW", value);
 				this._showWidget();
 				value = this._parseValue(value);
 				this._parseMenuData(value);
