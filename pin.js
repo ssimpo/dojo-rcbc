@@ -81,6 +81,7 @@ define([
 		
 		_init: function(){
 			try{
+				this.loading(true);
 				this.store = new store();
 				//uncomment to clear the localstorage.
 				//this.store.clear(true);
@@ -151,10 +152,24 @@ define([
 			}
 		},
 		
+		loading: function(isLoading){
+			isLoading = ((isLoading === undefined) ? true : isLoading);
+			if(isLoading){
+				domAttr.set(
+					this.loadingNode, "innerHTML", "Loading please wait..."
+				);
+			}else{
+				domAttr.set(
+					this.loadingNode, "innerHTML", ""
+				);
+			}
+		},
+		
 		_databaseReady: function(){
 			this._initShortlist();
 			this._initEvents();
 			this._hashChange();
+			this.loading(false);
 		},
 		
 		_setServiceIdAttr: function(id){

@@ -95,8 +95,10 @@ define([
 				}
 				this._hideWidget();
 			}else{
+				this.loading(true);
 				this._showWidget();
 				this._createContent(value);
+				this.loading(false);
 			}
 		},
 		
@@ -117,6 +119,20 @@ define([
 			this.set("section", "");
 			this.set("category", "");
 			this.set("tag", "");
+		},
+		
+		loading: function(isLoading){
+			isLoading = ((isLoading === undefined) ? true : isLoading);
+			if(isLoading){
+				this._clear();
+				domAttr.set(
+					this.loadingNode, "innerHTML", "Loading please wait..."
+				);
+			}else{
+				domAttr.set(
+					this.loadingNode, "innerHTML", ""
+				);
+			}
 		},
 		
 		_clear: function(){
@@ -193,15 +209,20 @@ define([
 			domConstr.empty(this.tagListNode);
 			
 			if(!this._isBlank(value)){
+				var tags = new Array();
 				for(var tag in value){
+					tags.push(tag);
+				}
+				tags.sort();
+				
+				array.forEach(tags, function(tag){
 					var li = domConstr.create("li", {}, this.tagListNode);
-					var href = "/pin.nsf/page?readform&release=no#section="+""+"&category="+""+"&tag="
 					
 					domConstr.create("a", {
 						"innerHTML": tag + " ("+value[tag].toString()+")",
 						"href": this._createTagHref(tag)
 					}, li);
-				}
+				}, this);
 			}
 		},
 		
