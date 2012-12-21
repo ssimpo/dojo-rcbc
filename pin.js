@@ -23,6 +23,7 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/dom-class",
+	"dojo/dom-style",
 	"dojo/query",
 	"dojo/on",
 	"dijit/registry",
@@ -38,7 +39,7 @@ define([
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, domClass, $, on, registry
+	domConstr, domAttr, domClass, domStyle, $, on, registry
 ){
 	"use strict";
 	
@@ -176,13 +177,28 @@ define([
 			}
 		},
 		
+		_getRootNode: function(getHtmlNode){
+			getHtmlNode = ((getHtmlNode === undefined) ? false : true);
+			var qry = $((getHtmlNode ? "html" : "body"));
+			return ((qry.length > 0) ? qry[0] : null);
+		},
+		
+		_setRootCursor: function(cursor){
+			cursor = ((cursor === undefined) ? "default" : cursor);
+			domStyle.set(this._getRootNode(false), "cursor", cursor);
+			domStyle.set(this._getRootNode(true), "cursor", cursor);
+		},
+		
 		loading: function(isLoading){
 			isLoading = ((isLoading === undefined) ? true : isLoading);
+			
 			if(isLoading){
+				this._setRootCursor("progress");
 				domAttr.set(
 					this.loadingNode, "innerHTML", "Loading please wait..."
 				);
 			}else{
+				this._setRootCursor();
 				domAttr.set(
 					this.loadingNode, "innerHTML", ""
 				);
