@@ -4,5 +4,6 @@
 @import url("./checkWithDetails.css");
 @import url("./dialog.css");
 @import url("./serviceListDisplayer.css");
+@import url("./expandingDiv.css?v=2");
 div.dojoRcbcDijitLinkedIdListItem:hover{cursor:pointer;}
 div.hiddenDiv{visibility:hidden;position:absolute;left:0px;top:0px;height:1px;width:1px;overflow:hidden;}
