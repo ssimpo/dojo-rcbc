@@ -12,7 +12,9 @@ define([
 	"./pin/_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/pin",
+	"dojo/i18n!dijit/nls/loading",
 	"dojo/text!./views/pin.html",
+	"rcbc/console!./nls/errors",
 	"./pin/cacheStore2",
 	"dojo/hash",
 	"dojo/topic",
@@ -27,6 +29,7 @@ define([
 	"dojo/query",
 	"dojo/on",
 	"dijit/registry",
+	"dojo/string",
 	
 	"dijit/form/Button",
 	"./pin/shortlist",
@@ -37,9 +40,9 @@ define([
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, template,
+	i18n, strings, loadingStrings, template, console,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, domClass, domStyle, $, on, registry
+	domConstr, domAttr, domClass, domStyle, $, on, registry, string
 ){
 	"use strict";
 	
@@ -49,6 +52,7 @@ define([
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
+		"i18nLoading": loadingStrings,
 		
 		// templateString: string
 		//		The loaded template string containing the HTML formatted template for this widget.
@@ -78,9 +82,10 @@ define([
 		
 		postCreate: function(){
 			try{
+				window.errorLevel = 5;
 				this._init();
 			}catch(e){
-				console.info("Could load PIN application.");
+				console.warn("consoleInfo.couldNotLoad");
 			}
 		},
 		
@@ -96,7 +101,7 @@ define([
 				this._initHeading();
 				this._initSearchForm();
 			}catch(e){
-				console.info("Could inititiate the PIN application.");
+				console.warn("pin.couldNotInit");
 			}
 		},
 		
@@ -123,7 +128,7 @@ define([
 					lang.hitch(this, this._setPageTitleAttr)
 				);
 			}catch(e){
-				console.warn("Could not initiate PIN subscriptions");
+				console.warn("pin.couldNotInitSubs");
 			}
 		},
 		
@@ -135,7 +140,7 @@ define([
 					lang.hitch(this, this._shortlistClick)
 				);
 			}catch(e){
-				console.warn("Could not initiate PIN events");
+				console.warn("pin.couldNotInitEvents");
 			}
 		},
 		
@@ -148,7 +153,7 @@ define([
 					this._shortlistUpdate(shortlist);
 				}
 			}catch(e){
-				console.warn("Shortlist could not be loaded.")
+				console.warn("pin.shortlistNotLoaded")
 			}
 		},
 		
@@ -191,11 +196,10 @@ define([
 		
 		loading: function(isLoading){
 			isLoading = ((isLoading === undefined) ? true : isLoading);
-			
 			if(isLoading){
 				this._setRootCursor("progress");
 				domAttr.set(
-					this.loadingNode, "innerHTML", "Loading please wait..."
+					this.loadingNode, "innerHTML", loadingStrings.loadingState
 				);
 			}else{
 				this._setRootCursor();
@@ -278,7 +282,7 @@ define([
 				
 				this._changeHeadTitle(title);
 			}catch(e){
-				console.warn("Could not change the page heading");
+				console.warn("pin.couldNotChangePageHeading");
 			}
 		},
 		
@@ -321,7 +325,7 @@ define([
 					}
 				}
 			}catch(e){
-				console.warn("Could not change the page title", e);
+				console.warn("pin.couldNotChangePageTitle");
 			}
 		},
 		
@@ -493,7 +497,7 @@ define([
 					)
 				);
 			}catch(e){
-				console.warn("Could not get the hash object");
+				console.warn("pin.couldNotGetHash");
 				return this._blankHashValue;
 			}
 		},
@@ -507,7 +511,7 @@ define([
 				
 				return hashQuery;
 			}catch(e){
-				console.warn("Could not sanitize the hash object");
+				console.warn("pin.couldNotSanitizeHash");
 				return this._blankHashValue;
 			}
 		},
@@ -520,7 +524,7 @@ define([
 					
 				}
 			}catch(e){
-				console.info("Failed to add property ("+propName+") to object");
+				console.warn("pin.failedToAddProperty",{"propertyName": propName});
 			}
 			
 			return obj;

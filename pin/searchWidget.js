@@ -49,11 +49,20 @@ define([
 		
 		_setSectionAttr: function(section){
 			if(this._isEqual(section, "Adult Services")){
-				this.searchInput.set("placeHolder", "Search Adult Services");
+				this.searchInput.set(
+					"placeHolder",
+					strings.searchInputAdultsPlaceHolder
+				);
 			}else if(this._isEqual(section, "Family Services")){
-				this.searchInput.set("placeHolder", "Search Family Services");
+				this.searchInput.set(
+					"placeHolder",
+					strings.searchInputFamiliesPlaceHolder
+				);
 			}else{
-				this.searchInput.set("placeHolder", "Search PIN");
+				this.searchInput.set(
+					"placeHolder",
+					strings.searchInputPlaceHolder
+				);
 			}
 		},
 		

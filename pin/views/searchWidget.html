@@ -8,19 +8,19 @@
 			name="query"
 			data-dojo-type="dijit/form/TextBox"
 			data-dojo-attach-point="searchInput"
-			data-dojo-props="placeHolder:'Search PIN'"
+			data-dojo-props="placeHolder:'${i18n.searchInputPlaceHolder}'"
 		/>
 		<input
 			type="text"
 			name="filter"
 			data-dojo-type="dijit/form/TextBox"
 			data-dojo-attach-point="locationInput"
-			data-dojo-props="placeHolder:'In location or postcode'"
+			data-dojo-props="placeHolder:'${i18n.locationInputPlaceHolder}'"
 		/>
 		<button
 			type="button"
 			data-dojo-type="dijit/form/Button"
 			data-dojo-attach-point="searchButton"
-		>Search</button>
+		>${i18n.Search}</button>
 	</fieldset>
 </form>
