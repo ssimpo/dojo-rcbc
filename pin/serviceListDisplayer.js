@@ -20,7 +20,9 @@ define([
 	"dojo/_base/array",
 	"dojo/hash",
 	"dojo/io-query",
-	"dojo/topic"
+	"dojo/topic",
+	
+	"rcbc/pin/expandingDiv"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
@@ -213,7 +215,9 @@ define([
 				for(var tag in value){
 					tags.push(tag);
 				}
-				tags.sort();
+				tags.sort(function(a,b){
+					return ((value[a] > value[b]) ? -1 : 1);
+				});
 				
 				array.forEach(tags, function(tag){
 					var li = domConstr.create("li", {}, this.tagListNode);
@@ -223,6 +227,10 @@ define([
 						"href": this._createTagHref(tag)
 					}, li);
 				}, this);
+				
+				this.expandingDiv.setHeader("Filter services:");
+			}else{
+				this.expandingDiv.setHeader("");
 			}
 		},
 		

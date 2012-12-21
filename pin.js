@@ -25,6 +25,7 @@ define([
 	"dojo/dom-class",
 	"dojo/query",
 	"dojo/on",
+	"dijit/registry",
 	
 	"dijit/form/Button",
 	"./pin/shortlist",
@@ -37,7 +38,7 @@ define([
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, domClass, $, on
+	domConstr, domAttr, domClass, $, on, registry
 ){
 	"use strict";
 	
@@ -59,6 +60,8 @@ define([
 		"category": "",
 		"tag": "",
 		"pageTitle": "",
+		"searchForm": "",
+		"heading": "",
 		
 		"shortlistCounterNode": {},
 		"headTitleNode": null,
@@ -67,7 +70,8 @@ define([
 			"id": "",
 			"section": "",
 			"category": "",
-			"tag": ""
+			"tag": "",
+			"search": ""
 		},
 		
 		
@@ -88,6 +92,8 @@ define([
 			
 				this._initTopicSubscriptions();
 				this._initTitle();
+				this._initHeading();
+				this._initSearchForm();
 			}catch(e){
 				console.info("Could inititiate the PIN application.");
 			}
@@ -152,6 +158,24 @@ define([
 			}
 		},
 		
+		_initHeading: function(){
+			var qry = $(".header");
+			if(qry.length > 0){
+				this.heading = qry[0];
+			}
+		},
+		
+		_initSearchForm: function(){
+			var qry = $("form.rcbcPinSearchWidget");
+			if(qry.length > 0){
+				var node = qry[0];
+				var widget = registry.byNode(node);
+				if(this._isWidget(widget)){
+					this.searchForm = widget;
+				}
+			}
+		},
+		
 		loading: function(isLoading){
 			isLoading = ((isLoading === undefined) ? true : isLoading);
 			if(isLoading){
@@ -191,6 +215,8 @@ define([
 					domClass.remove(this.domNode, oldSection);
 				}
 				query.section = section;
+				domAttr.set(this.heading, "innerHTML", query.section);
+				this.searchForm.set("section", query.section);
 				this._updateHash(query);
 			}
 		},
@@ -286,13 +312,31 @@ define([
 		_hashChange: function(cHash){
 			var query = this._getHashObj(cHash);
 			
-			if(!this._isBlank(query.id)){
+			if(!this._isBlank(query.search)){
+				this._hashChangeNewSearch(query);
+			}else if(!this._isBlank(query.id)){
 				this._hashChangeNewId(query);
 			}else if(!this._isBlank(query.section)){
 				this._hashChangeNewSection(query);
 			}else{
 				this._hashChangeDefaultFallback(query);
 			}
+		},
+		
+		_hashChangeNewSearch: function(query){
+			this.hideButtonPanel();
+			this.serviceDisplayer.clear();
+			this.serviceListDisplayer.clear();
+			this.sectionMenu.clear();
+			
+			if(!this._isBlank(query.section)){
+				this._displayMenu(query.section);
+			}else{
+				this._displayMenu("Adult Services");
+				query.section = "Adult Services";
+			}
+			
+			this._displaySearch(query.search);
 		},
 		
 		_hashChangeNewId: function(query){
@@ -486,6 +530,28 @@ define([
 			}
 		},
 		
+		_displaySearch: function(search){
+			var rx = new RegExp(search,"i");
+			var query = this.store.query(lang.hitch(this, function(obj){
+				var type = this._getField(obj, "type");
+				var data = this._getField(obj, "data");
+				
+				if((type == "service") && (!this._isBlank(data))){
+					try{
+						var searcher = JSON.stringify(data);
+						return rx.test(searcher);
+					}catch(e){
+						return false;
+					}
+				}
+				return false;
+			}));
+			
+			this.serviceListDisplayer.set("category", "Search Results");
+			this.serviceListDisplayer.set("value", query);
+			this.serviceListDisplayer.set("tags", []);
+		},
+		
 		_displaySectionMenu: function(section){
 			var categories = this.store.getCategoryList(section);
 			this.sectionMenu.set("section", section);
@@ -617,19 +683,6 @@ define([
 				if(this._isEqual(query.id, id)){
 					this._displayService(query.id)
 				}
-				
-				/*if(!this._isBlank(query.category) && !this._isBlank(query.section) && this._isBlank(query.id)){
-					if(data.hasOwnProperty("data")){
-						data = data.data;
-					}
-					
-					var categories = this._parseCategory(data, query.section);
-					array.forEach(categories, function(category){
-						if(this._isEqual(category, query.category)){
-							this._displayCategoryList(query.section, query.category, query.tag);
-						}
-					}, this);
-				}*/
 			}
 		},
 		
@@ -640,7 +693,11 @@ define([
 				value = data[fieldName];
 			}
 			
-			return lang.trim(value);
+			if(this._isString(value)){
+				value = lang.trim(value);
+			}
+			
+			return value;
 		}
 	});
 	
