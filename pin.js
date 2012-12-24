@@ -178,6 +178,7 @@ define([
 				var widget = registry.byNode(node);
 				if(this._isWidget(widget)){
 					this.searchForm = widget;
+					this.searchForm.application = this;
 				}
 			}
 		},
@@ -551,7 +552,7 @@ define([
 		},
 		
 		_displaySearch: function(search){
-			var rx = new RegExp(search,"i");
+			var tests = this._parseSearch(search);
 			var query = this.store.query(lang.hitch(this, function(obj){
 				var type = this._getField(obj, "type");
 				var data = this._getField(obj, "data");
@@ -559,7 +560,7 @@ define([
 				if((type == "service") && (!this._isBlank(data))){
 					try{
 						var searcher = JSON.stringify(data);
-						return rx.test(searcher);
+						return this._searchTest(searcher, tests);
 					}catch(e){
 						return false;
 					}
@@ -570,6 +571,30 @@ define([
 			this.serviceListDisplayer.set("category", "Search Results");
 			this.serviceListDisplayer.set("value", query);
 			this.serviceListDisplayer.set("tags", []);
+		},
+		
+		_searchTest: function(query, tests){
+			//console.log(query, tests);
+			var found = true;
+			
+			array.every(tests, function(test){
+				if(!test.test(query)){
+					found = false;
+					return false;
+				}
+				return true;
+			}, this)
+			
+			return found;
+		},
+		
+		_parseSearch: function(search){
+			var words = search.split(" ");
+			var tests = new Array();
+			array.forEach(words, function(word){
+				tests.push(new RegExp("\\W"+word,"i"));
+			}, this);
+			return tests;
 		},
 		
 		_displaySectionMenu: function(section){
