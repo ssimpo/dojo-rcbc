@@ -43,6 +43,10 @@ define([
 			this._init();
 		},
 		
+		clear: function(){
+			this.searchInput.set("value", "");
+		},
+		
 		_init: function(){
 			on(this.searchButton, "click", lang.hitch(this, this._searchClicked));
 			on(this.searchInput, "keyup", lang.hitch(this, this._searchTyping));
@@ -93,7 +97,7 @@ define([
 				var cHash = ioQuery.queryToObject(hash());
 				cHash.search = search;
 				hash(ioQuery.objectToQuery(cHash));
-				this.searchInput.set("value", "");
+				this.clear();
 			}
 		}
 	});

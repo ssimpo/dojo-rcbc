@@ -372,6 +372,7 @@ define([
 				this.serviceListDisplayer.clear();
 				this.sectionMenu.clear();
 				this.shortlist.clear();
+				this.searchForm.clear();
 				
 				this._displayService(query.id.toLowerCase());
 				this.set("serviceId", query.id.toLowerCase());
@@ -385,6 +386,7 @@ define([
 			
 			this.hideButtonPanel();
 			this.serviceDisplayer.clear();
+			this.searchForm.clear();
 			
 			if(!this._isBlank(query.category)){
 				this._hashChangeNewCategory(query);
@@ -414,6 +416,7 @@ define([
 				this._displayMenu(query.section);
 			}
 			this.sectionMenu.clear();
+			this.searchForm.clear();
 			this.shortlist.clear();
 			this._displayCategoryList(
 				query.section, query.category, query.tag
@@ -552,12 +555,24 @@ define([
 		},
 		
 		_displaySearch: function(search){
+			var cHash = this._getHashObj(cHash);
+			if(!this._isBlank(cHash.section)){
+				if(!this._isEqual(cHash.section, "Family Services") && !this._isEqual(cHash.section, "Adult Services")){
+					this._displayMenu("Adult Services");
+				}else{
+					this._displayMenu(cHash.section);
+				}
+			}
+			this.serviceDisplayer.clear();
+			this.sectionMenu.clear();
+			this.shortlist.clear();
+			
 			var query = this._doSearch(search, this.section);
 			
-			this.serviceListDisplayer.set("category", "Search Results");
+			this.serviceListDisplayer.set("category", "Search Results: \""+search+"\"");
 			this.serviceListDisplayer.set("value", query);
 			this.serviceListDisplayer.set("tags", []);
-			this.serviceListDisplayer.addMessage("<p>Found "+query.length.toString()+" items for search <b>\""+search+"\"</b>.</p>");
+			this.serviceListDisplayer.addMessage("<p>Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>.</p>");
 		},
 		
 		_doSearch: function(search, section){
