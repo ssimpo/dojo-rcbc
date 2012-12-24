@@ -32,7 +32,12 @@ define([
 					var args = _makeArgumentsArray.apply(null, arguments);
 					args.push(strings);
 					args = _parseArguments.apply(null, args);
-					warn.apply(this, args);
+					
+					try{
+						warn.apply(this, args);
+					}catch(e){
+						Function.prototype.call.call(warn, this, Array.prototype.slice.call(args));
+					}
 				}
 			}
 			
@@ -41,7 +46,12 @@ define([
 					var args = _makeArgumentsArray.apply(null, arguments);
 					args.push(strings);
 					args = _parseArguments.apply(null, args);
-					log.apply(this, args);
+					
+					try{
+						log.apply(this, args);
+					}catch(e){
+						Function.prototype.call.call(log, this, Array.prototype.slice.call(args));
+					}
 				}
 			}
 			
@@ -50,7 +60,12 @@ define([
 					var args = _makeArgumentsArray.apply(null, arguments);
 					args.push(strings);
 					args = _parseArguments.apply(null, args);
-					info.apply(this, args);
+					
+					try{
+						info.apply(this, args);
+					}catch(e){
+						Function.prototype.call.call(info, this, Array.prototype.slice.call(args));
+					}
 				}
 			}
 			
@@ -59,7 +74,12 @@ define([
 					var args = _makeArgumentsArray.apply(null, arguments);
 					args.push(strings);
 					args = _parseArguments.apply(null, args);
-					error.apply(this, args);
+					
+					try{
+						error.apply(this, args);
+					}catch(e){
+						Function.prototype.call.call(error, this, Array.prototype.slice.call(args));
+					}
 				}
 			}
 		
