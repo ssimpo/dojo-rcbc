@@ -556,23 +556,28 @@ define([
 		
 		_displaySearch: function(search){
 			var cHash = this._getHashObj(cHash);
+			var query = this._doSearch(search, this.section);
+			var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
+			var title = "Search Results: \""+search+"\"";
+			
 			if(!this._isBlank(cHash.section)){
 				if(!this._isEqual(cHash.section, "Family Services") && !this._isEqual(cHash.section, "Adult Services")){
 					this._displayMenu("Adult Services");
 				}else{
 					this._displayMenu(cHash.section);
+					info += ", in: <b>"+cHash.section+"</b>";
 				}
 			}
 			this.serviceDisplayer.clear();
 			this.sectionMenu.clear();
 			this.shortlist.clear();
 			
-			var query = this._doSearch(search, this.section);
 			
-			this.serviceListDisplayer.set("category", "Search Results: \""+search+"\"");
+			
+			this.serviceListDisplayer.set("category", title);
 			this.serviceListDisplayer.set("value", query);
 			this.serviceListDisplayer.set("tags", []);
-			this.serviceListDisplayer.addMessage("<p>Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>.</p>");
+			this.serviceListDisplayer.addMessage("<p>"+info+".</p>");
 		},
 		
 		_doSearch: function(search, section){
