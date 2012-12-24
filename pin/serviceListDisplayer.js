@@ -134,23 +134,40 @@ define([
 			this.set("tag", "");
 		},
 		
+		addMessage: function(message){
+			domAttr.set(
+				this.infoNode,
+				"innerHTML",
+				message
+			);
+		},
+		
+		clearMessage: function(){
+			domAttr.set(
+				this.infoNode,
+				"innerHTML",
+				""
+			);
+		},
+		
 		loading: function(isLoading){
 			isLoading = ((isLoading === undefined) ? true : isLoading);
 			if(isLoading){
 				this._clear();
 				domAttr.set(
-					this.infoNode, "innerHTML", loadingStrings.loadingState
+					this.infoNode,
+					"innerHTML",
+					loadingStrings.loadingState
 				);
 			}else{
-				domAttr.set(
-					this.infoNode, "innerHTML", ""
-				);
+				this.clearMessage();
 			}
 		},
 		
 		_clear: function(){
 			this._ifHasClear("serviceListNode");
 			this._ifHasClear("tagListNode");
+			this.clearMessage();
 		},
 		
 		_ifHasClear: function(nodeName, destroy){

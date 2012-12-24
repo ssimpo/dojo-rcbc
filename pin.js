@@ -552,6 +552,15 @@ define([
 		},
 		
 		_displaySearch: function(search){
+			var query = this._doSearch(search, this.section);
+			
+			this.serviceListDisplayer.set("category", "Search Results");
+			this.serviceListDisplayer.set("value", query);
+			this.serviceListDisplayer.set("tags", []);
+			this.serviceListDisplayer.addMessage("<p>Found "+query.length.toString()+" items for search <b>\""+search+"\"</b>.</p>");
+		},
+		
+		_doSearch: function(search, section){
 			var tests = this._parseSearch(search);
 			var query = this.store.query(lang.hitch(this, function(obj){
 				var type = this._getField(obj, "type");
@@ -559,8 +568,11 @@ define([
 				
 				if((type == "service") && (!this._isBlank(data))){
 					try{
-						var searcher = JSON.stringify(data);
-						return this._searchTest(searcher, tests);
+						if(this._searchCategoryTest(data, section)){
+							var searcher = JSON.stringify(data);
+							return this._searchTest(searcher, tests);
+						}
+						return false;
 					}catch(e){
 						return false;
 					}
@@ -568,13 +580,24 @@ define([
 				return false;
 			}));
 			
-			this.serviceListDisplayer.set("category", "Search Results");
-			this.serviceListDisplayer.set("value", query);
-			this.serviceListDisplayer.set("tags", []);
+			return query;
+		},
+		
+		_searchCategoryTest: function(item, section){
+			if(this._isEqual(section, "Family Services")){
+				if(this._isBlank(item.category1)){
+					return false;
+				}
+			}else if(this._isEqual(section, "Adult Services")){
+				if(this._isBlank(item.category2)){
+					return false;
+				}
+			}
+			
+			return true;
 		},
 		
 		_searchTest: function(query, tests){
-			//console.log(query, tests);
 			var found = true;
 			
 			array.every(tests, function(test){
@@ -583,7 +606,7 @@ define([
 					return false;
 				}
 				return true;
-			}, this)
+			}, this);
 			
 			return found;
 		},
