@@ -365,26 +365,35 @@ define([
 			return this.serviceHoursWidget.domNode;
 		},
 		
+		_getPostcodes: function(venues){
+			var postcodes = new Array();
+			
+			array.forEach(venues, function(venue){
+				var postcode = this._getPostcode(venue.venueId);
+				if(!this._isBlank(postcode)){
+					postcodes.push(postcode);
+				}
+				console.log(postcode, venue.venueId);
+			}, this);
+			
+			return postcodes;
+		},
+		
 		_createMap: function(value){
-			this._createAttachPoint(
-				"mapNode",
-				googleMap, {
-					"callback": lang.hitch(this, function(canvas){
-						var postcodes = new Array();
-						
-						array.forEach(value.venues, function(venue){
-							var postcode = this._getPostcode(venue.venueId);
-							if(!this._isBlank(postcode)){
-								postcodes.push(postcode);
+			var postcodes = this._getPostcodes(value.venues);
+			if(!this._isBlank(postcodes)){
+				this._createAttachPoint(
+					"mapNode",
+					googleMap, {
+						"callback": lang.hitch(this, function(canvas){
+							array.forEach(postcodes, function(postcode){
 								this.mapNode.plot(postcode);
-							}
-						}, this);
-						
-						if(postcodes.length > 0){
+							}, this);
 							this.mapNode.centre(postcodes[0]);
-						}
-				})
-			});
+						})
+					}
+				);
+			};
 		},
 		
 		_getPostcode: function(venueId){

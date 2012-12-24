@@ -269,7 +269,7 @@ define([
 		
 		_updateVenueSuccess: function(data){
 			if(this._hasProperty(data, "venues")){
-				this._venueCache = this._venueCache.concat(data.services);
+				this._venueCache = this._venueCache.concat(data.venues);
 			}
 		},
 		
