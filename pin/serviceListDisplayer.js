@@ -108,10 +108,19 @@ define([
 			this.tags = value;
 			if(this._isBlank(this.tags)){
 				if(this._isElement(this.tagListNode) || this._isWidget(this.tagListNode)){
+					domConstr.place(
+						this.expandingDiv.domNode,
+						this.hiddenDiv
+					);
 					domConstr.empty(this.tagListNode);
 				}
 			}else{
 				this._createTagList(value);
+				domConstr.place(
+					this.expandingDiv.domNode,
+					this.loadingNode,
+					"after"
+				);
 			}
 		},
 		
