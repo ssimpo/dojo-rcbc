@@ -13,6 +13,7 @@ define([
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceListDisplayer",
 	"dojo/text!./views/serviceListDisplayer.html",
+	"dojo/i18n!dijit/nls/loading",
 	"dojo/_base/lang",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
@@ -26,7 +27,7 @@ define([
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, template,
+	i18n, strings, template, loadingStrings,
 	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic
 ){
 	"use strict";
@@ -52,6 +53,7 @@ define([
 		"parentNode": null,
 		"hiddenNode": null,
 		"parentPosPlace": "last",
+		"i18nLoading": loadingStrings,
 		
 		_initNodes: function(){
 			if(this.application !== null){
@@ -115,12 +117,12 @@ define([
 					domConstr.empty(this.tagListNode);
 				}
 			}else{
-				this._createTagList(value);
 				domConstr.place(
 					this.expandingDiv.domNode,
-					this.loadingNode,
+					this.infoNode,
 					"after"
 				);
+				this._createTagList(value);
 			}
 		},
 		
@@ -137,11 +139,11 @@ define([
 			if(isLoading){
 				this._clear();
 				domAttr.set(
-					this.loadingNode, "innerHTML", "Loading please wait..."
+					this.infoNode, "innerHTML", loadingStrings.loadingState
 				);
 			}else{
 				domAttr.set(
-					this.loadingNode, "innerHTML", ""
+					this.infoNode, "innerHTML", ""
 				);
 			}
 		},
