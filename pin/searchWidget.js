@@ -45,6 +45,7 @@ define([
 		
 		_init: function(){
 			on(this.searchButton, "click", lang.hitch(this, this._searchClicked));
+			on(this.searchInput, "keyup", lang.hitch(this, this._searchTyping));
 		},
 		
 		_setSectionAttr: function(section){
@@ -64,6 +65,26 @@ define([
 					strings.searchInputPlaceHolder
 				);
 			}
+		},
+		
+		_searchTyping: function(evt){
+			var search = this.searchInput.get("value");
+			var temp = setTimeout(
+				lang.hitch(
+					this.application,
+					this.application._displaySearch,
+					search
+				),
+				50
+			)
+			//this.application._displaySearch(search);
+			
+			//if(!this._isBlank(search)){
+				//var cHash = ioQuery.queryToObject(hash());
+				//cHash.search = search;
+				//hash(ioQuery.objectToQuery(cHash));
+				//this.searchInput.set("value", "");
+			//}
 		},
 		
 		_searchClicked: function(evt){
