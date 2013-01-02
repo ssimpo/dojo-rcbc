@@ -7,6 +7,9 @@
 define([
 	"dojo/_base/declare",
 	"./_variableTestMixin",
+	"./cacheStore/_shortlist",
+	"./cacheStore/_services",
+	"./cacheStore/_venues",
 	"simpo/store/local",
 	"dojo/_base/lang",
 	"dojo/json",
@@ -14,11 +17,14 @@ define([
 	"dojo/_base/array",
 	"dojo/request"
 ], function(
-	declare, _variableTestMixin, store, lang, JSON, topic, array, request
+	declare, _variableTestMixin, store, _shortlist, _services, _venues,
+	lang, JSON, topic, array, request
 ){
 	"use strict";
 	
-	var construct = declare([_variableTestMixin, store], {
+	var construct = declare([
+		_variableTestMixin, store, _shortlist, _services, _venues
+	], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
 		"compress": false,
@@ -26,8 +32,10 @@ define([
 		
 		"_updateUrls": {
 			"stubs": "/servicesStub.json",
+			"venueUpdate": "/pin.nsf/getVenue?openagent",
 			"serviceUpdate": "/pin.nsf/getService2?openagent&stub=false",
-			"venueUpdate": "/pin.nsf/getVenue?openagent"
+			"infoUpdate": "/pin.nsf/getInfo?openagent",
+			"factsheetUpdate": "/pin.nsf/getFactsheets?openagent"
 		},
 		"_updateAttempts": {
 			"stubs": 5
@@ -42,6 +50,9 @@ define([
 		"_serviceIdsToUpdate": [],
 		"_venueIdsToUpdate": [],
 		"_venueCache": [],
+		"_infoCache": [],
+		"_factsheetCache": [],
+		"_intervalChecks": [],
 		
 		constructor: function(args){
 			this._initInterval();
@@ -61,6 +72,10 @@ define([
 			}
 		},
 		
+		addIntervalCheck: function(func){
+			this._intervalChecks.push(lang.hitch(this, func));
+		},
+		
 		_checkCommands: function(){
 			if(!this._isBlank(this._intervalCommands)){
 				try{
@@ -70,24 +85,18 @@ define([
 					console.info("Failed to run interval command.");
 				}
 			}else{
-				if(!this._isBlank(this._serviceIdsToUpdate)){
+				array.forEach(this._intervalChecks, function(func){
+					func();
+				}, this);
+				
+				if(!this._isBlank(this._infoCache)){
 					this._addIntervalCommand(
-						lang.hitch(this, this._callServicesUpdate)
+						lang.hitch(this, this._updateFromInfoCache)
 					);
 				}
-				if(!this._isBlank(this._serviceCache)){
+				if(!this._isBlank(this._factsheetCache)){
 					this._addIntervalCommand(
-						lang.hitch(this, this._updateFromServiceCache)
-					);
-				}
-				if(!this._isBlank(this._venueIdsToUpdate)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._callVenuesUpdate)
-					);
-				}
-				if(!this._isBlank(this._venueCache)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._updateFromVenueCache)
+						lang.hitch(this, this._updateFromFactsheetCache)
 					);
 				}
 			}
@@ -125,54 +134,6 @@ define([
 			}
 		},
 		
-		_callServicesUpdate: function(){
-			var ids = new Array();
-			for(var i = 0; ((i < this._serverThrottle) && (i < this._serviceIdsToUpdate.length)); i++){
-				ids.push(this._serviceIdsToUpdate.shift());
-			}
-			
-			try{
-				if(!this._isBlank(ids)){
-					request(
-						this._updateUrls.serviceUpdate+"&id="+ids.join(","), {
-							"handleAs": "json",
-							"preventCache": true,
-							"timeout": this.xhrTimeout
-						}
-					).then(
-						lang.hitch(this, this._updateServiceSuccess),
-						lang.hitch(this, this._xhrError, this._updateUrls.serviceUpdate)
-					);
-				}
-			}catch(e){
-				console.info("Failed to update services - now working from cache");
-			}
-		},
-		
-		_callVenuesUpdate: function(){
-			var ids = new Array();
-			for(var i = 0; ((i < this._serverThrottle) && (i < this._venueIdsToUpdate.length)); i++){
-				ids.push(this._venueIdsToUpdate.shift());
-			}
-			
-			try{
-				if(!this._isBlank(ids)){
-					request(
-						this._updateUrls.venueUpdate+"&id="+ids.join(","), {
-							"handleAs": "json",
-							"preventCache": true,
-							"timeout": this.xhrTimeout
-						}
-					).then(
-						lang.hitch(this, this._updateVenueSuccess),
-						lang.hitch(this, this._xhrError, this._updateUrls.venueUpdate)
-					);
-				}
-			}catch(e){
-				console.info("Failed to update venues - now working from cache");
-			}
-		},
-		
 		_xhrError: function(url, e){
 			if(url === this._updateUrls.stubs){
 				this._updateAttempts.stubs--;
@@ -186,63 +147,10 @@ define([
 			console.info("Failed to load: " + url);
 		},
 		
-		_updateServiceSuccess: function(data){
-			if(this._hasProperty(data, "services")){
-				this._serviceCache = this._serviceCache.concat(data.services);
-			}
+		_updateFromInfoCache: function(){
 		},
 		
-		_updateFromServiceCache: function(){
-			if(!this._isBlank(this._serviceCache)){
-				var services = new Array();
-				for(var i = 0; ((i < this._throttle) && (i < this._serviceCache.length)); i++){
-					services.push(this._serviceCache.shift());
-				}
-				this._updateServicesFromArray(services);
-			}
-		},
-		
-		_updateServicesFromArray: function(services){
-			if(!this._isBlank(services)){
-				array.forEach(services, this._updateService, this);
-			}
-		},
-		
-		_updateService: function(service){
-			try{
-				var item = this._convertServiceToDataItem(service);
-				var cItem = this.getService(item.id);
-				var callUpdate = false;
-				
-				if((item.isStub) && (cItem !== null)){
-					if(this._needsUpdating(cItem, item)){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					
-					item = lang.mixin(cItem, item);
-					var isStub = this._isServiceStub(item);
-					item.isStub = isStub;
-					item.data.isStub = isStub;
-					
-					this.put(item);
-					topic.publish("/rcbc/pin/updateService", item.id, item);
-					if(item.isStub){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					this._checkForServiceVenues(service);
-				}else{
-					var isStub = this._isServiceStub(item);
-					item.isStub = isStub;
-					item.data.isStub = isStub;
-					
-					if(item.isStub){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					this.put(item);
-					topic.publish("/rcbc/pin/updateService", item.id, item);
-					this._checkForServiceVenues(service);
-				}
-			}catch(e){}
+		_updateFromFactsheetCache: function(){
 		},
 		
 		_checkForServiceVenues: function(service){
@@ -267,77 +175,8 @@ define([
 			}
 		},
 		
-		_updateVenueSuccess: function(data){
-			if(this._hasProperty(data, "venues")){
-				this._venueCache = this._venueCache.concat(data.venues);
-			}
-		},
-		
-		_updateFromVenueCache: function(){
-			if(!this._isBlank(this._venueCache)){
-				var venues = new Array();
-				for(var i = 0; ((i < this._throttle) && (i < this._venueCache.length)); i++){
-					venues.push(this._venueCache.shift());
-				}
-				this._updateVenuesFromArray(venues);
-			}
-		},
-		
-		_updateVenuesFromArray: function(venues){
-			if(!this._isBlank(venues)){
-				array.forEach(venues, this._updateVenue, this);
-			}
-		},
-		
-		_updateVenue: function(venue){
-			var data = this._convertVenueToDataItem(venue);
-			this.put(data);
-			topic.publish("/rcbc/pin/updateVenue", data.id, data);
-		},
-		
-		_convertVenueToDataItem: function(venue){
-			venue.id = venue.id.toLowerCase();
-			
-			return {
-				"id": venue.id,
-				"type": "venue",
-				"data": venue,
-				"isStub": venue.isStub
-			}
-		},
-		
-		_isServiceStub: function(obj){
-			return (!this._hasOwnProperty(obj.data, "description") && !this._hasOwnProperty(obj.data, "venues") && !this._hasOwnProperty(obj.data, "contacts"));
-		},
-		
 		_needsUpdating: function(oldItem, newItem){
 			return (oldItem.hash !== newItem.hash);
-		},
-		
-		getService: function(id){
-			var service = this.get(id);
-			if(!this._isBlank(service)){
-				if(this._hasProperty(service, "type")){
-					if(service.type == "service"){
-						return service;
-					}
-				}
-			}
-			
-			return null;
-		},
-		
-		getVenue: function(id){
-			var venue = this.get(id);
-			if(!this._isBlank(venue)){
-				if(this._hasProperty(venue, "type")){
-					if(venue.type == "venue"){
-						return venue;
-					}
-				}
-			}
-			
-			return null;
 		},
 		
 		getCategory: function(section, category){
@@ -416,167 +255,6 @@ define([
 			}, this);
 			
 			return tags;
-		},
-		
-		getShortlist: function(){
-			var shortlist = this.get("shortlist");
-			if(this._isBlank(shortlist)){
-				shortlist = this._createBlankShortList();
-				this.put(shortlist);
-				topic.publish("/rcbc/pin/changeShortlist", shortlist);
-			}
-			
-			return this._sanitizeShortlist(shortlist);
-		},
-		
-		inShortlist: function(id){
-			var shortlist = this.getShortlist();
-			var found = false;
-			
-			if(this._hasProperty(shortlist, "services")){
-				array.every(shortlist.services, function(serviceId){
-					if(this._isEqual(serviceId, id)){
-						found = true;
-						return false;
-					}
-					return true;
-				}, this);
-			}
-			
-			return found;
-		},
-		
-		removeFromShortlist: function(id){
-			var shortlist = this.getShortlist();
-			
-			var newList = new Array();
-			array.forEach(shortlist.services, function(serviceId){
-				if(!this._isEqual(serviceId, id)){
-					newList.push(serviceId);
-				}
-			}, this);
-			
-			this._updateShortlist(newList);
-		},
-		
-		emptyShortlist: function(){
-			var shortlist = this._createBlankShortList();
-			this.put(shortlist);
-			topic.publish("/rcbc/pin/changeShortlist", shortlist);
-			
-			return shortlist;
-		},
-		
-		addToShortlist: function(id){
-			var shortlist = this.getShortlist();
-			
-			var found = false;
-			array.every(shortlist.services, function(serviceId){
-				if(this._isEqual(serviceId, id)){
-					found = true;
-					return false;
-				}
-				return true;
-			}, this);
-			
-			if(!found){
-				if(this._hasProperty(shortlist, "services")){
-					shortlist.services.push(id);
-				}else{
-					shortlist.services = new Array(id);
-				}
-				this._updateShortlist(shortlist.services);
-			}
-		},
-		
-		updateService: function(service){
-			if(this._isString(service)){
-				if(service.length == 32){
-					this._serviceIdsToUpdate.push(service);
-					return true;
-				}else{
-					return false;
-				}
-			}else if(this._isObject(service)){
-				if(this._hasOwnProperty(service, "id")){
-					this._serviceIdsToUpdate.push(service.id);
-					return true;
-				}else{
-					return false;
-				}
-			}
-				
-			return false;
-		},
-		
-		updateVenue: function(venue){
-			if(this._isString(venue)){
-				if(venue.length == 32){
-					this._venueIdsToUpdate.push(venue);
-					return true;
-				}else{
-					return false;
-				}
-			}else if(this._isObject(venue)){
-				if(this._hasOwnProperty(venue, "id")){
-					this._venueIdsToUpdate.push(venue.id);
-					return true;
-				}else{
-					return false;
-				}
-			}
-				
-			return false;
-		},
-		
-		_updateShortlist: function(ary){
-			var shortlist = this.getShortlist();
-			shortlist.services = ary;
-			this.put(shortlist);
-			topic.publish("/rcbc/pin/changeShortlist", shortlist);
-		},
-		
-		_sanitizeShortlist: function(shortlist){
-			var ids;
-			if(this._hasProperty(shortlist, "services")){
-				if(this._isArray(shortlist.services)){
-					ids = shortlist.services;
-				}else{
-					return this._createBlankShortList();
-				}
-			}else{
-				if(this._isArray(shortlist)){
-					ids = shortlist;
-				}else{
-					return this._createBlankShortList();
-				}
-			}
-			
-			var lookup = new Object();
-			array.forEach(ids, function(id){
-				if(/[A-Za-z0-9]{32,32}/.test(id)){
-					lookup[id.toLowerCase()] = true;
-				}
-			}, this);
-			
-			var ids = new Array();
-			for(var id in lookup){
-				ids.push(id);
-			}
-			
-			return {
-				"type": "shortlist",
-				"id": "shortlist",
-				"services": ids
-			};
-		},
-		
-		_createBlankShortList: function(){
-			return {
-				"type": "shortlist",
-				"id": "shortlist",
-				"services": new Array()
-			};
 		},
 		
 		_getCategoryValue: function(service, fieldName){
@@ -676,16 +354,6 @@ define([
 			}, this);
 			
 			return found;
-		},
-		
-		_isServiceItem: function(item){
-			if(this._hasProperty(item, "type") && this._hasProperty(item, "data")){
-				if(this._isEqual(item.type, "service")){
-					return true;
-				}
-			}
-			
-			return false;
 		},
 		
 		_trimArray: function(ary){
