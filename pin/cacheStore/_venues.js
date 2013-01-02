@@ -8,7 +8,6 @@ define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
 	"dojo/_base/lang",
-	"dojo/request",
 	"dojo/topic"
 ], function(
 	declare, array, lang, request, topic
@@ -70,21 +69,12 @@ define([
 				ids.push(this._venueIdsToUpdate.shift());
 			}
 			
-			try{
-				if(!this._isBlank(ids)){
-					request(
-						this._updateUrls.venueUpdate+"&id="+ids.join(","), {
-							"handleAs": "json",
-							"preventCache": true,
-							"timeout": this.xhrTimeout
-						}
-					).then(
-						lang.hitch(this, this._updateVenueSuccess),
-						lang.hitch(this, this._xhrError, this._updateUrls.venueUpdate)
-					);
-				}
-			}catch(e){
-				console.info("Failed to update venues - now working from cache");
+			if(!this._isBlank(ids)){
+				this._xhrCall(
+					this._updateUrls.venueUpdate+"&id="+ids.join(","),
+					lang.hitch(this, this._updateVenueSuccess),
+					"Failed to update venues - now working from cache"
+				);
 			}
 		},
 		
