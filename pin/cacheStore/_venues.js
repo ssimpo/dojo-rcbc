@@ -19,12 +19,12 @@ define([
 		constructor: function(){
 			this.addIntervalCheck(function(){
 				if(!this._isBlank(this._venueIdsToUpdate)){
-					this._addIntervalCommand(
+					this.addIntervalCommand(
 						lang.hitch(this, this._callVenuesUpdate)
 					);
 				}
 				if(!this._isBlank(this._venueCache)){
-					this._addIntervalCommand(
+					this.addIntervalCommand(
 						lang.hitch(this, this._updateFromVenueCache)
 					);
 				}

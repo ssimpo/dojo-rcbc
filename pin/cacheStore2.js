@@ -57,6 +57,7 @@ define([
 		constructor: function(args){
 			this._initInterval();
 			this._callStubsUpdate();
+			this._addChecks();
 		},
 		
 		_initInterval: function(){
@@ -72,11 +73,78 @@ define([
 			}
 		},
 		
+		_addChecks: function(){
+			this.addIntervalCheck(function(){
+				if(!this._isBlank(this._infoCache)){
+					this.addIntervalCommand(
+						lang.hitch(this, this._updateFromInfoCache)
+					);
+				}
+				if(!this._isBlank(this._factsheetCache)){
+					this.addIntervalCommand(
+						lang.hitch(this, this._updateFromFactsheetCache)
+					);
+				}
+			});
+		},
+		
 		addIntervalCheck: function(func){
-			this._intervalChecks.push(lang.hitch(this, func));
+			// summary:
+			//		Add a new fallback function to run when no function are
+			//		waiting in the interval queue.
+			// description:
+			//		Add a function to the interval queue to perform when no
+			//		functions are waiting in the interval queue.  Any functions
+			//		in the interval queue are ran first when this is empty
+			//		this._intervalChecks is cycled-through.  Functions added
+			//		here are normally a check followed by a command if the check
+			//		is true.
+			//
+			//		Thses are regular commands ran everytime the interval is ran
+			//		and no functions are in the queue.  It is different to the
+			//		commands in this._intervalCommands, which are only run once.
+			// func: function
+			//		Function to run (function will be ran within scope of
+			//		this class).
+			
+			var found = false;
+			array.forEach(this._intervalChecks, function(cFunc){
+				if(cFunc === func){
+					found = true;
+				}
+			}, this);
+			if(!found){
+				this._intervalChecks.push(lang.hitch(this, func));
+			}
+		},
+		
+		addIntervalCommand: function(func){
+			// summary:
+			//		Add a command to the queue.
+			// description:
+			//		Add a function to be run during the next interval.
+			//		Commands are only run once.
+			// func: function
+			//		Function to run (fuction will be ran in's own scope).
+			
+			var found = false;
+			array.forEach(this._intervalCommands, function(cFunc){
+				if(cFunc === func){
+					found = true;
+				}
+			}, this);
+			if(!found){
+				this._intervalCommands.push(func);
+			}
 		},
 		
 		_checkCommands: function(){
+			// summary:
+			//		Run command(s) in current queue.
+			// description:
+			//		Run any the next command in this._intervalCommands.  If
+			//		non are found then run each command in this._intervalChecks.
+			
 			if(!this._isBlank(this._intervalCommands)){
 				try{
 					var func = this._intervalCommands.shift();
@@ -88,29 +156,6 @@ define([
 				array.forEach(this._intervalChecks, function(func){
 					func();
 				}, this);
-				
-				if(!this._isBlank(this._infoCache)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._updateFromInfoCache)
-					);
-				}
-				if(!this._isBlank(this._factsheetCache)){
-					this._addIntervalCommand(
-						lang.hitch(this, this._updateFromFactsheetCache)
-					);
-				}
-			}
-		},
-		
-		_addIntervalCommand: function(func){
-			var found = false;
-			array.forEach(this._intervalCommands, function(cFunc){
-				if(cFunc === func){
-					found = true;
-				}
-			}, this);
-			if(!found){
-				this._intervalCommands.push(func);
 			}
 		},
 		
@@ -138,7 +183,7 @@ define([
 			if(url === this._updateUrls.stubs){
 				this._updateAttempts.stubs--;
 				if(this._updateAttempts.stubs > 0){
-					this._addIntervalCommand(
+					this.addIntervalCommand(
 						lang.hitch(this, this._updateStubs)
 					);
 				}
