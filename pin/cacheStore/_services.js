@@ -15,6 +15,9 @@ define([
 	"use strict";
 	
 	var construct = declare(null, {
+		"_serviceIdsToUpdate": [],
+		"_serviceCache": [],
+		
 		constructor: function(){
 			this.addIntervalCheck(function(){
 				if(!this._isBlank(this._serviceIdsToUpdate)){
@@ -63,6 +66,103 @@ define([
 			return false;
 		},
 		
+		getCategory: function(section, category){
+			var self = this;
+			
+			var query = this.query(function(object){
+				if(self._isServiceItem(object)){
+					return self._itemHasCategory(object, section, category);
+				}else{
+					return false;
+				}
+			});
+			
+			return query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+			});
+		},
+		
+		getCategoryList: function(section){
+			var services = this.query({"type":"service"});
+			var categoryList = {};
+			
+			if(!this._isNumber(section)){
+				section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			}
+			var fieldName = "category" + section.toString();
+			
+			array.forEach(services, function(service){
+				var categories = this._getCategoryValue(service, fieldName);
+				
+				array.forEach(categories, function(category){
+					if(!this._isBlank(category)){
+						if(!this._hasProperty(categoryList, category)){
+							categoryList[category] = true;
+						}
+					}
+				}, this);
+			}, this);
+			
+			return categoryList;
+		},
+		
+		getTag: function(section, category, tag){
+			var self = this;
+			
+			var query = this.query(function(object){
+				if(self._isServiceItem(object)){
+					if(self._itemHasCategory(object, section, category)){
+						return (self._itemHasTag(object, tag));
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
+			});
+			
+			return query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+			});
+		},
+		
+		getTagsList: function(section, category){
+			var services = this.getCategory(section, category);
+			var tags = {};
+			array.forEach(services, function(service){
+				array.forEach(service.data.tags, function(tag){
+					if(!this._isBlank(tag)){
+						if(this._hasProperty(tags, tag)){
+							tags[tag]++;
+						}else{
+							tags[tag] = 1; 
+						}
+					}
+				}, this);
+			}, this);
+			
+			return tags;
+		},
+		
+		_getCategoryValue: function(service, fieldName){
+			if(this._isObject(service)){
+				if(this._hasProperty(service, "data")){
+					service = service.data;
+				}
+				
+				if(this._isObject(service)){
+					if(this._hasProperty(service, fieldName)){
+						var categories = service[fieldName];
+						if(this._isArray(categories)){
+							return categories;
+						}
+					}
+				}
+			}
+			
+			return new Array();
+		},
+		
 		_callServicesUpdate: function(){
 			var ids = new Array();
 			for(var i = 0; ((i < this._serverThrottle) && (i < this._serviceIdsToUpdate.length)); i++){
@@ -71,7 +171,7 @@ define([
 			
 			if(!this._isBlank(ids)){
 				this._xhrCall(
-					this._updateUrls.serviceUpdate+"&id="+ids.join(","),
+					"/pin.nsf/getService2?openagent&stub=false&id="+ids.join(","),
 					lang.hitch(this, this._updateServiceSuccess),
 					"Failed to update services - now working from cache"
 				);

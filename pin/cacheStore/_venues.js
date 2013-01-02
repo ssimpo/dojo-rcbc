@@ -15,6 +15,9 @@ define([
 	"use strict";
 	
 	var construct = declare(null, {
+		"_venueIdsToUpdate": [],
+		"_venueCache": [],
+		
 		constructor: function(){
 			this.addIntervalCheck(function(){
 				if(!this._isBlank(this._venueIdsToUpdate)){
@@ -71,7 +74,7 @@ define([
 			
 			if(!this._isBlank(ids)){
 				this._xhrCall(
-					this._updateUrls.venueUpdate+"&id="+ids.join(","),
+					"/pin.nsf/getVenue?openagent&id="+ids.join(","),
 					lang.hitch(this, this._updateVenueSuccess),
 					"Failed to update venues - now working from cache"
 				);

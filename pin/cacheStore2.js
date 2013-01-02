@@ -10,6 +10,8 @@ define([
 	"./cacheStore/_shortlist",
 	"./cacheStore/_services",
 	"./cacheStore/_venues",
+	"./cacheStore/_info",
+	"./cacheStore/_factsheets",
 	"simpo/store/local",
 	"dojo/_base/lang",
 	"dojo/json",
@@ -18,46 +20,40 @@ define([
 	"dojo/request",
 	"lib/md5"
 ], function(
-	declare, _variableTestMixin, store, _shortlist, _services, _venues,
+	declare,
+	_variableTestMixin, store, _shortlist, _services, _venues, _info, _factsheets,
 	lang, JSON, topic, array, request, md5
 ){
 	"use strict";
 	
 	var construct = declare([
-		_variableTestMixin, store, _shortlist, _services, _venues
+		_variableTestMixin, store, _shortlist, _services,
+		_venues, _info, _factsheets
 	], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
 		"compress": false,
 		"encrypt": false,
 		"xhrAttempts": 3,
+		"xhrTimeout": 8*1000,
 		
-		"_updateUrls": {
-			"stubs": "/servicesStub.json",
-			"venueUpdate": "/pin.nsf/getVenue?openagent",
-			"serviceUpdate": "/pin.nsf/getService2?openagent&stub=false",
+		/*"_updateUrls": {
 			"infoUpdate": "/pin.nsf/getInfo?openagent",
 			"factsheetUpdate": "/pin.nsf/getFactsheets?openagent"
-		},
+		},*/
+		
 		"_xhrAttempts": {},
-		"xhrTimeout": 8*1000,
 		"_intervalCommands": [],
+		"_intervalChecks": [],
 		"_interval": null,
 		"_intervalPeriod": 100,
-		"_serviceCache": [],
 		"_throttle": 100,
 		"_serverThrottle": 50,
-		"_serviceIdsToUpdate": [],
-		"_venueIdsToUpdate": [],
-		"_venueCache": [],
-		"_infoCache": [],
-		"_factsheetCache": [],
-		"_intervalChecks": [],
+		
 		
 		constructor: function(args){
 			this._initInterval();
 			this._callStubsUpdate();
-			this._addChecks();
 		},
 		
 		_initInterval: function(){
@@ -71,21 +67,6 @@ define([
 			}catch(e){
 				console.info("Failed to create interval.");
 			}
-		},
-		
-		_addChecks: function(){
-			this.addIntervalCheck(function(){
-				if(!this._isBlank(this._infoCache)){
-					this.addIntervalCommand(
-						lang.hitch(this, this._updateFromInfoCache)
-					);
-				}
-				if(!this._isBlank(this._factsheetCache)){
-					this.addIntervalCommand(
-						lang.hitch(this, this._updateFromFactsheetCache)
-					);
-				}
-			});
 		},
 		
 		addIntervalCheck: function(func){
@@ -167,7 +148,7 @@ define([
 		
 		_callStubsUpdate: function(){
 			this._xhrCall(
-				this._updateUrls.stubs,
+				"/servicesStub.json",
 				lang.hitch(this, function(data){
 					this._intervalPeriod *= 5;
 					this._updateServiceSuccess(data);
@@ -204,8 +185,6 @@ define([
 			if(!this._hasProperty(this._xhrAttempts, hash)){
 				this._xhrAttempts[hash] = this.xhrAttempts;
 			}
-			
-			console.log(hash, this._xhrAttempts[hash]);
 			
 			if(this._xhrAttempts[hash] > 0){
 				this._xhrAttempts[hash]--;
@@ -248,103 +227,6 @@ define([
 		
 		_needsUpdating: function(oldItem, newItem){
 			return (oldItem.hash !== newItem.hash);
-		},
-		
-		getCategory: function(section, category){
-			var self = this;
-			
-			var query = this.query(function(object){
-				if(self._isServiceItem(object)){
-					return self._itemHasCategory(object, section, category);
-				}else{
-					return false;
-				}
-			});
-			
-			return query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
-		},
-		
-		getCategoryList: function(section){
-			var services = this.query({"type":"service"});
-			var categoryList = {};
-			
-			if(!this._isNumber(section)){
-				section = (this._isEqual(section,"Family Services")) ? 1 : 2;
-			}
-			var fieldName = "category" + section.toString();
-			
-			array.forEach(services, function(service){
-				var categories = this._getCategoryValue(service, fieldName);
-				
-				array.forEach(categories, function(category){
-					if(!this._isBlank(category)){
-						if(!this._hasProperty(categoryList, category)){
-							categoryList[category] = true;
-						}
-					}
-				}, this);
-			}, this);
-			
-			return categoryList;
-		},
-		
-		getTag: function(section, category, tag){
-			var self = this;
-			
-			var query = this.query(function(object){
-				if(self._isServiceItem(object)){
-					if(self._itemHasCategory(object, section, category)){
-						return (self._itemHasTag(object, tag));
-					}else{
-						return false;
-					}
-				}else{
-					return false;
-				}
-			});
-			
-			return query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
-		},
-		
-		getTagsList: function(section, category){
-			var services = this.getCategory(section, category);
-			var tags = {};
-			array.forEach(services, function(service){
-				array.forEach(service.data.tags, function(tag){
-					if(!this._isBlank(tag)){
-						if(this._hasProperty(tags, tag)){
-							tags[tag]++;
-						}else{
-							tags[tag] = 1; 
-						}
-					}
-				}, this);
-			}, this);
-			
-			return tags;
-		},
-		
-		_getCategoryValue: function(service, fieldName){
-			if(this._isObject(service)){
-				if(this._hasProperty(service, "data")){
-					service = service.data;
-				}
-				
-				if(this._isObject(service)){
-					if(this._hasProperty(service, fieldName)){
-						var categories = service[fieldName];
-						if(this._isArray(categories)){
-							return categories;
-						}
-					}
-				}
-			}
-			
-			return new Array();
 		},
 		
 		_convertServiceToDataItem: function(service){
