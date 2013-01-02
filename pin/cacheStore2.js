@@ -10,8 +10,6 @@ define([
 	"./cacheStore/_shortlist",
 	"./cacheStore/_services",
 	"./cacheStore/_venues",
-	"./cacheStore/_info",
-	"./cacheStore/_factsheets",
 	"simpo/store/local",
 	"dojo/_base/lang",
 	"dojo/json",
@@ -21,14 +19,13 @@ define([
 	"lib/md5"
 ], function(
 	declare,
-	_variableTestMixin, store, _shortlist, _services, _venues, _info, _factsheets,
+	_variableTestMixin, store, _shortlist, _services, _venues,
 	lang, JSON, topic, array, request, md5
 ){
 	"use strict";
 	
 	var construct = declare([
-		_variableTestMixin, store, _shortlist, _services,
-		_venues, _info, _factsheets
+		_variableTestMixin, store, _shortlist, _services, _venues
 	], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
@@ -36,11 +33,6 @@ define([
 		"encrypt": false,
 		"xhrAttempts": 3,
 		"xhrTimeout": 8*1000,
-		
-		/*"_updateUrls": {
-			"infoUpdate": "/pin.nsf/getInfo?openagent",
-			"factsheetUpdate": "/pin.nsf/getFactsheets?openagent"
-		},*/
 		
 		"_xhrAttempts": {},
 		"_intervalCommands": [],
@@ -195,12 +187,6 @@ define([
 				console.info("Failed to load: " + url);
 				console.info(errorMsg);
 			}
-		},
-		
-		_updateFromInfoCache: function(){
-		},
-		
-		_updateFromFactsheetCache: function(){
 		},
 		
 		_checkForServiceVenues: function(service){

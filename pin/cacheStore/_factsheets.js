@@ -25,6 +25,9 @@ define([
 					);
 				}
 			});
+		},
+		
+		_updateFromFactsheetCache: function(){
 		}
 	});
 	
