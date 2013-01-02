@@ -19,12 +19,12 @@ define([
 		constructor: function(){
 			this.addIntervalCheck(function(){
 				if(!this._isBlank(this._serviceIdsToUpdate)){
-					this._addIntervalCommand(
+					this.addIntervalCommand(
 						lang.hitch(this, this._callServicesUpdate)
 					);
 				}
 				if(!this._isBlank(this._serviceCache)){
-					this._addIntervalCommand(
+					this.addIntervalCommand(
 						lang.hitch(this, this._updateFromServiceCache)
 					);
 				}
