@@ -15,10 +15,11 @@ define([
 	"dojo/json",
 	"dojo/topic",
 	"dojo/_base/array",
-	"dojo/request"
+	"dojo/request",
+	"lib/md5"
 ], function(
 	declare, _variableTestMixin, store, _shortlist, _services, _venues,
-	lang, JSON, topic, array, request
+	lang, JSON, topic, array, request, md5
 ){
 	"use strict";
 	
@@ -29,6 +30,7 @@ define([
 		"sessionOnly": false,
 		"compress": false,
 		"encrypt": false,
+		"xhrAttempts": 3,
 		
 		"_updateUrls": {
 			"stubs": "/servicesStub.json",
@@ -37,9 +39,7 @@ define([
 			"infoUpdate": "/pin.nsf/getInfo?openagent",
 			"factsheetUpdate": "/pin.nsf/getFactsheets?openagent"
 		},
-		"_updateAttempts": {
-			"stubs": 5
-		},
+		"_xhrAttempts": {},
 		"xhrTimeout": 8*1000,
 		"_intervalCommands": [],
 		"_interval": null,
@@ -107,15 +107,9 @@ define([
 			//		Function to run (function will be ran within scope of
 			//		this class).
 			
-			var found = false;
-			array.forEach(this._intervalChecks, function(cFunc){
-				if(cFunc === func){
-					found = true;
-				}
-			}, this);
-			if(!found){
-				this._intervalChecks.push(lang.hitch(this, func));
-			}
+			this._addCommandToArray(
+				this, "_intervalChecks", lang.hitch(this, func)
+			);
 		},
 		
 		addIntervalCommand: function(func){
@@ -127,14 +121,26 @@ define([
 			// func: function
 			//		Function to run (fuction will be ran in's own scope).
 			
+			this._addCommandToArray(
+				this, "_intervalCommands", func
+			);
+		},
+		
+		_addCommandToArray: function(obj, propName, func){
+			if (!this._isString(propName)){
+				func = propName;
+				propName = "prop";
+				obj = { "prop": obj };
+			}
+			
 			var found = false;
-			array.forEach(this._intervalCommands, function(cFunc){
+			array.forEach(obj[propName], function(cFunc){
 				if(cFunc === func){
 					found = true;
 				}
 			}, this);
 			if(!found){
-				this._intervalCommands.push(func);
+				obj[propName].push(func);
 			}
 		},
 		
@@ -160,36 +166,56 @@ define([
 		},
 		
 		_callStubsUpdate: function(){
+			this._xhrCall(
+				this._updateUrls.stubs,
+				lang.hitch(this, function(data){
+					this._intervalPeriod *= 5;
+					this._updateServiceSuccess(data);
+				}),
+				"Failed to refresh service stubs - now working off cache"
+			);
+		},
+		
+		_xhrCall: function(url, success, errorMsg){
 			try{
 				request(
-					this._updateUrls.stubs, {
+					url, {
 						"handleAs": "json",
 						"preventCache": true,
 						"timeout": this.xhrTimeout
 					}
 				).then(
-					lang.hitch(this, function(data){
-						this._intervalPeriod *= 5;
-						this._updateServiceSuccess(data);
-					}),
-					lang.hitch(this, this._xhrError, this._updateUrls.stubs)
+					success,
+					lang.hitch(this, this._xhrError, url, success, errorMsg)
 				);
 			}catch(e){
-				console.info("Failed to refresh service stubs - now working off cache");
+				console.info(errorMsg);
 			}
 		},
 		
-		_xhrError: function(url, e){
-			if(url === this._updateUrls.stubs){
-				this._updateAttempts.stubs--;
-				if(this._updateAttempts.stubs > 0){
-					this.addIntervalCommand(
-						lang.hitch(this, this._updateStubs)
-					);
-				}
+		_xhrError: function(url, success, errorMsg, e){
+			// summary:
+			//		Fallback when XHR request fails.
+			// description:
+			//		Fallback for XHR on failure, will retry a few
+			//		times before a total fail.
+			
+			var hash = md5(url);
+			if(!this._hasProperty(this._xhrAttempts, hash)){
+				this._xhrAttempts[hash] = this.xhrAttempts;
 			}
 			
-			console.info("Failed to load: " + url);
+			console.log(hash, this._xhrAttempts[hash]);
+			
+			if(this._xhrAttempts[hash] > 0){
+				this._xhrAttempts[hash]--;
+				this.addIntervalCommand(lang.hitch(this, function(){
+					this._xhrCall(url, success, errorMsg);
+				}));
+			}else{
+				console.info("Failed to load: " + url);
+				console.info(errorMsg);
+			}
 		},
 		
 		_updateFromInfoCache: function(){
