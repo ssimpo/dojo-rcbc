@@ -31,6 +31,7 @@ define([
 	"dijit/registry",
 	"dojo/string",
 	
+	"rcbc/pin/ContentPane",
 	"dijit/form/Button",
 	"./pin/shortlist",
 	"./pin/sectionMenu",
@@ -349,6 +350,7 @@ define([
 			this.serviceDisplayer.clear();
 			this.serviceListDisplayer.clear();
 			this.sectionMenu.clear();
+			this.contentPane.clear();
 			
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
@@ -373,6 +375,7 @@ define([
 				this.sectionMenu.clear();
 				this.shortlist.clear();
 				this.searchForm.clear();
+				this.contentPane.clear();
 				
 				this._displayService(query.id.toLowerCase());
 				this.set("serviceId", query.id.toLowerCase());
@@ -396,10 +399,12 @@ define([
 				this.sectionMenu.clear();
 					
 				if(this._isEqual(query.section,"shortlist")){
+					this.contentPane.clear();
 					this._hashChangeNewSectionIsShortlist();
 				}else{
 					this.shortlist.clear();
 					this._displaySectionMenu(query.section);
+					this.contentPane.set("href", "/pin.nsf/pages/"+query.section);
 				}
 			}
 		},
@@ -415,6 +420,10 @@ define([
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
 			}
+			this.contentPane.set(
+				"href",
+				"/pin.nsf/pages2/"+query.section+"_"+query.category
+			);
 			this.sectionMenu.clear();
 			this.searchForm.clear();
 			this.shortlist.clear();
