@@ -373,7 +373,7 @@ define([
 				if(!this._isBlank(postcode)){
 					postcodes.push(postcode);
 				}
-				console.log(postcode, venue.venueId);
+				//console.log(postcode, venue.venueId);
 			}, this);
 			
 			return postcodes;

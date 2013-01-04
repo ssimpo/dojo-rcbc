@@ -8,10 +8,9 @@ define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
 	"dojo/_base/lang",
-	"dojo/request",
 	"dojo/topic"
 ], function(
-	declare, array, lang, request, topic
+	declare, array, lang, topic
 ) {
 	"use strict";
 	

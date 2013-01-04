@@ -783,7 +783,6 @@ define([
 		},
 		
 		_serviceDataUpdate: function(id, data){
-			console.log("UPDATING", id, data);
 			if(!this._isBlank(id)){
 				var query = this._getHashObj();
 				
