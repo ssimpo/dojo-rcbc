@@ -405,15 +405,18 @@ define([
 				this._hashChangeNewCategory(query);
 			}else{
 				this.serviceListDisplayer.clear();
-				this.sideMenu.clear();
-					
-				if(this._isEqual(query.section,"shortlist")){
-					this.contentPane.clear();
-					this._hashChangeNewSectionIsShortlist();
+				if(!this._isBlank(query.pageId)){
+					this._displayMenu(query.section);
 				}else{
-					this.shortlist.clear();
-					this._displaySectionMenu(query.section);
-					//this.contentPane.set("href", "/pin.nsf/pages/"+query.section);
+					this.sideMenu.clear();
+					if(this._isEqual(query.section,"shortlist")){
+						this.contentPane.clear();
+						this._hashChangeNewSectionIsShortlist();
+					}else{
+						this.shortlist.clear();
+						this._displaySectionMenu(query.section);
+						this.contentPane.set("pageId",query.section);
+					}
 				}
 			}
 		},
@@ -429,10 +432,9 @@ define([
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
 			}
-			/*this.contentPane.set(
-				"href",
-				"/pin.nsf/pages2/"+query.section+"_"+query.category
-			);*/
+			this.contentPane.set(
+				"pageId", query.section, query.category
+			);
 			this.sectionMenu.clear();
 			this.searchForm.clear();
 			this.shortlist.clear();
