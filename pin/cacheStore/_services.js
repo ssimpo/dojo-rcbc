@@ -198,6 +198,21 @@ define([
 			}
 		},
 		
+		_removeOldServices: function(data){
+			var lookup = new Object();
+			
+			array.forEach(data, function(item){
+				lookup[item.id.toLowerCase()] = true;
+			}, this);
+			
+			var query = this.query({"type":"service"});
+			array.forEach(query, function(item){
+				if(!this._hasProperty(item.id.toLowerCase())){
+					this.remove(item.id);
+				}
+			}, this);
+		},
+		
 		_updateFromServiceCache: function(){
 			if(!this._isBlank(this._serviceCache)){
 				var services = new Array();

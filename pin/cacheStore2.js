@@ -143,6 +143,7 @@ define([
 				"/servicesStub.json",
 				lang.hitch(this, function(data){
 					this._intervalPeriod *= 5;
+					this._removeOldServices(data);
 					this._updateServiceSuccess(data);
 				}),
 				"Failed to refresh service stubs - now working off cache"
