@@ -80,6 +80,9 @@ define([
 			if((value === null) || (value === undefined) || (value === "") || (value === false)){
 				return true;
 			}
+			if(typeof value == "undefined"){
+				return true;
+			}
 			
 			if(this._isString(value)){
 				return (lang.trim(value.replace(/\&nbsp\;/g," ")) === "");
