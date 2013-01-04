@@ -59,13 +59,27 @@ define([
 			this.href = ""; // Do not use set() as it will trigger a url load of "".
 		},
 		
-		_setPageIdAttr: function(id){
-			console.log("UPDATING", id);
+		_setPageIdAttr: function(id, category){
 			if(this._isString(id)){
+				this._initNodes();
+				
 				if(id.length === 32){
-					
+					this.parentNode = this.application.titleNode;
 					this.pageId = id.toLowerCase();
 					var url = "/pin.nsf/pages2/"+id;
+					if(!this._isEqual(this.get("href"), url)){
+						this.set("href", url);
+						this._showWidget();
+					}
+				}else{
+					if(this._isBlank(category)){
+						var url = "/pin.nsf/pages2/"+id;
+						this.parentNode = this.application.hiddenDiv;
+					}else{
+						var url = "/pin.nsf/pages2/"+id+"_"+category;
+						this.parentNode = this.application.titleNode;
+					}
+					
 					if(!this._isEqual(this.get("href"), url)){
 						this.set("href", url);
 						this._showWidget();
