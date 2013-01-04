@@ -66,7 +66,7 @@ define([
 				if(id.length === 32){
 					this.parentNode = this.application.titleNode;
 					this.pageId = id.toLowerCase();
-					var url = "/pin.nsf/pages2/"+id;
+					var url = "/pin.nsf/pages3/"+id;
 					if(!this._isEqual(this.get("href"), url)){
 						this.set("href", url);
 						this._showWidget();
