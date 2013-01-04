@@ -370,7 +370,7 @@ define([
 				this._displayMenu(query.section);
 			}
 			
-			if(!this._isEqual(query.id, this.get("serviceId"))){
+			//if(!this._isEqual(query.id, this.get("serviceId"))){
 				this.serviceListDisplayer.clear();
 				this.sectionMenu.clear();
 				this.shortlist.clear();
@@ -379,7 +379,8 @@ define([
 				
 				this._displayService(query.id.toLowerCase());
 				this.set("serviceId", query.id.toLowerCase());
-			}
+			//}else{
+			//}
 		},
 		
 		_hashChangeNewSection: function(query){
@@ -504,9 +505,10 @@ define([
 		
 		_getHashObj: function(cHash){
 			try{
-				if(!this._isObject(cHash)){
+				if(!this._isObject(cHash) || this._isBlank(cHash)){
 					cHash = ((cHash == undefined) ? hash() : cHash);
 					cHash = ioQuery.queryToObject(cHash);
+				}else{
 				}
 				
 				return this._sanitizeHashObject(cHash);
@@ -532,7 +534,7 @@ define([
 		
 		_addPropertyToObject: function(obj, propName, defaultValue){
 			try{
-				if(!this._isBlank(propName)){
+				if(!this._isBlank(propName) && !this._isBlank(obj)){
 					defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
 					obj[propName] = ((this._hasProperty(obj, propName)) ? obj[propName] : defaultValue);
 					
@@ -781,6 +783,7 @@ define([
 		},
 		
 		_serviceDataUpdate: function(id, data){
+			console.log("UPDATING", id, data);
 			if(!this._isBlank(id)){
 				var query = this._getHashObj();
 				
