@@ -354,6 +354,11 @@ define([
 		
 		_hashChangeNewPageId: function(query){
 			this.contentPane.set("pageId", query.pageId);
+			if(this._isBlank(query.section)){
+				this.sectionMenu.clear();
+			}else if(this._isBlank(query.category) && this._isBlank(query.id)){
+				this.set("pageTitle","");
+			}
 		},
 		
 		_hashChangeNewSearch: function(query){
