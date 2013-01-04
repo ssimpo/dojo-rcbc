@@ -663,7 +663,7 @@ define([
 			var service = this.store.getService(id);
 			
 			if(!this._isBlank(service)){
-				this._setServiceHash(service);
+				this._setServiceHash(service, false);
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
@@ -680,7 +680,9 @@ define([
 			this.sideMenu.set("value", categories);
 		},
 		
-		_setServiceHash: function(service){
+		_setServiceHash: function(service, updateHistory){
+			updateHistory = ((updateHistory == undefined) ? true : updateHistory);
+			
 			var query = this._getHashObj();
 			var ASD = this._getCategorySize(service, "category1");
 			var FSD = this._getCategorySize(service, "category2");
@@ -691,7 +693,7 @@ define([
 				query.section = "Adult Services";
 			}
 			
-			this._updateHash(query);
+			this._updateHash(query, updateHistory);
 		},
 		
 		_getCategorySize: function(service, section){
@@ -714,7 +716,8 @@ define([
 			return 0
 		},
 		
-		_updateHash: function(query){
+		_updateHash: function(query, updateHistory){
+			updateHistory = ((updateHistory == undefined) ? true : updateHistory);
 			var newQuery = {};
 			
 			for(var key in query){
@@ -723,7 +726,7 @@ define([
 				}
 			}
 			
-			hash(ioQuery.objectToQuery(newQuery));
+			hash(ioQuery.objectToQuery(newQuery), !updateHistory);
 		},
 		
 		_parseCategory: function(service, section){
