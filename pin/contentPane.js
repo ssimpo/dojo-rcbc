@@ -7,13 +7,17 @@
 define([
 	"dojo/_base/declare",
 	"dijit/layout/ContentPane",
-	"dojo/dom-construct"
+	"./_variableTestMixin",
+	"dojo/dom-construct",
+	"dojo/request",
+	"dojo/_base/lang"
 ], function(
-	declare, ContentPane, domConstr
+	declare, ContentPane, _variableTestMixin,
+	domConstr, request, lang
 ) {
 	"use strict";
 	
-	var construct = declare([ContentPane], {
+	var construct = declare([ContentPane, _variableTestMixin], {
 		"application": null,
 		"parentNode": null,
 		"hiddenNode": null,
@@ -52,7 +56,22 @@ define([
 			this._initNodes();
 			this._hideWidget();
 			this.set("content", "");
-			this.set("href", "");
+			this.href = ""; // Do not use set() as it will trigger a url load of "".
+		},
+		
+		_setPageIdAttr: function(id){
+			console.log("UPDATING", id);
+			if(this._isString(id)){
+				if(id.length === 32){
+					
+					this.pageId = id.toLowerCase();
+					var url = "/pin.nsf/pages2/"+id;
+					if(!this._isEqual(this.get("href"), url)){
+						this.set("href", url);
+						this._showWidget();
+					}
+				}
+			}
 		}
 	});
 	

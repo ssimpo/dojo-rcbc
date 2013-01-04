@@ -77,7 +77,8 @@ define([
 			"section": "",
 			"category": "",
 			"tag": "",
-			"search": ""
+			"search": "",
+			"pageId": ""
 		},
 		
 		
@@ -334,6 +335,12 @@ define([
 		_hashChange: function(cHash){
 			var query = this._getHashObj(cHash);
 			
+			if(!this._isBlank(query.pageId)){
+				this._hashChangeNewPageId(query);
+			}else{
+				this.contentPane.clear();
+			}
+			
 			if(!this._isBlank(query.search)){
 				this._hashChangeNewSearch(query);
 			}else if(!this._isBlank(query.id)){
@@ -345,12 +352,15 @@ define([
 			}
 		},
 		
+		_hashChangeNewPageId: function(query){
+			this.contentPane.set("pageId", query.pageId);
+		},
+		
 		_hashChangeNewSearch: function(query){
 			this.hideButtonPanel();
 			this.serviceDisplayer.clear();
 			this.serviceListDisplayer.clear();
 			this.sectionMenu.clear();
-			//this.contentPane.clear();
 			
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
@@ -375,7 +385,6 @@ define([
 				this.sectionMenu.clear();
 				this.shortlist.clear();
 				this.searchForm.clear();
-				//this.contentPane.clear();
 				
 				this._displayService(query.id.toLowerCase());
 				this.set("serviceId", query.id.toLowerCase());
@@ -397,10 +406,9 @@ define([
 			}else{
 				this.serviceListDisplayer.clear();
 				this.sideMenu.clear();
-				this.sectionMenu.clear();
 					
 				if(this._isEqual(query.section,"shortlist")){
-					//this.contentPane.clear();
+					this.contentPane.clear();
 					this._hashChangeNewSectionIsShortlist();
 				}else{
 					this.shortlist.clear();
