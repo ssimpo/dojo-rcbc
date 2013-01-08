@@ -47,6 +47,7 @@ define([
 		"parentNode": null,
 		"hiddenNode": null,
 		"parentPosPlace": "last",
+		"messageNode": null,
 		
 		"show": {
 			"title": true,
@@ -62,6 +63,15 @@ define([
 		postCreate: function(){
 			this._initEvents();
 			this._initCheckboxes();
+		},
+		
+		ready: function(){
+			if(this.messageNode === null){
+				this.messageNode = domConstr.create("p", {
+					"innerHTML": strings.emptyMessage
+				}, this.hiddenNode);
+				this._hideEmptyMessage();
+			}
 		},
 		
 		_initEvents: function(){
@@ -150,7 +160,9 @@ define([
 		},
 		
 		clear: function(){
-			this.set("value",[]);
+			this.value = [];
+			this._hideWidget();
+			this._hideEmptyMessage();
 		},
 		
 		_showChange: function(evt){
@@ -177,7 +189,9 @@ define([
 			try{
 				if(this._isBlank(value)){
 					this._hideWidget();
+					this._showEmptyMessage();
 				}else{
+					this._hideEmptyMessage();
 					topic.publish("/rcbc/pin/titleChange", "");
 					this._showWidget();
 					this._displayShortlist(value);
@@ -185,6 +199,21 @@ define([
 				this.value = value;
 			}catch(e){
 				console.info("Could not set shortlist displayer value.");
+			}
+		},
+		
+		_showEmptyMessage: function(){
+			if(this.messageNode !== null){
+				domConstr.place(this.messageNode, this.parentNode);
+				domClass.replace(
+					this.parentNode, "articleContent-wide", "articleContent"
+				);
+			}
+		},
+		
+		_hideEmptyMessage: function(){
+			if(this.messageNode !== null){
+				domConstr.place(this.messageNode, this.hiddenNode);
 			}
 		},
 		

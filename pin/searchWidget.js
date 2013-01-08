@@ -38,12 +38,14 @@ define([
 		"templateString": template,
 		
 		"section": "",
+		"value": "",
 		
 		postCreate: function(){
 			this._init();
 		},
 		
 		clear: function(){
+			this.searchInput.set("value", "");
 			this.searchInput.set("value", "");
 		},
 		
@@ -73,6 +75,7 @@ define([
 		
 		_searchTyping: function(evt){
 			var search = this.searchInput.get("value");
+			this.set("value", search);
 			var temp = setTimeout(
 				lang.hitch(
 					this.application,
