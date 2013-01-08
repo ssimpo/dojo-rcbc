@@ -46,6 +46,7 @@ define([
 		
 		_showWidget: function(){
 			if(this.parentNode !== null){
+				console.log(this.parentPosPlace);
 				domConstr.place(
 					this.domNode, this.parentNode, this.parentPosPlace
 				);
@@ -62,9 +63,9 @@ define([
 		_setPageIdAttr: function(id, category){
 			if(this._isString(id)){
 				this._initNodes();
+				this.parentNode = this.application.titleNode;
 				
 				if(id.length === 32){
-					this.parentNode = this.application.titleNode;
 					this.pageId = id.toLowerCase();
 					var url = "/pin.nsf/pages3/"+id;
 					if(!this._isEqual(this.get("href"), url)){
@@ -77,7 +78,6 @@ define([
 						this.parentNode = this.application.hiddenDiv;
 					}else{
 						var url = "/pin.nsf/pages2/"+id+"_"+category;
-						this.parentNode = this.application.titleNode;
 					}
 					
 					if(!this._isEqual(this.get("href"), url)){
