@@ -53,6 +53,7 @@ define([
 		
 		"show": {
 			"title": true,
+			"titleLink": true,
 			"description": false,
 			"keyFeatures": true,
 			"contacts": true,
@@ -171,6 +172,7 @@ define([
 			try{
 				this.show = {
 					"title": true,
+					"titleLink": true,
 					"description": this.showDescription.get("value"),
 					"keyFeatures": this.showKeyFeatures.get("value"),
 					"contacts": this.showContacts.get("value"),

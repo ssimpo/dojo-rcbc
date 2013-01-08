@@ -69,6 +69,7 @@ define([
 		
 		"show": {
 			"title": false,
+			"titleLink": false,
 			"description": true,
 			"keyFeatures": true,
 			"contacts": true,
@@ -222,6 +223,13 @@ define([
 				title = serviceTitle + " ("+orgTitle+")";
 			}else{
 				title = serviceTitle;
+			}
+			
+			if(this.show.titleLink){
+				var id = this._getField(value, "id");
+				if(!this._isBlank(id)){
+					title = "<a href=\"#id="+id+"\">"+title+"</a>";
+				}
 			}
 			
 			if(this.show.title && !this._isBlank(title)){
