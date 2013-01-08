@@ -372,6 +372,7 @@ define([
 			this.serviceDisplayer.clear();
 			this.serviceListDisplayer.clear();
 			this.sectionMenu.clear();
+			this.contentPane.clear();
 			
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
@@ -457,7 +458,7 @@ define([
 		_hashChangeNewSectionIsShortlist: function(){
 			var shortlist = this.store.getShortlist();
 			if(this._hasProperty(shortlist, "services")){
-				//articleContentNode
+				this.set("pageTitle", "");
 				this.sectionMenu.clear();
 				this.shortlist.set("value", shortlist.services);
 				if(shortlist.services.length > 0){
@@ -593,6 +594,7 @@ define([
 				cHash.search = "";
 				this._hashChange(cHash);
 			}else{
+				this.contentPane.clear();
 				var query = this._doSearch(search, this.section);
 				var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
 				var title = "Search Results: \""+search+"\"";
@@ -618,6 +620,7 @@ define([
 		
 		_doSearch: function(search, section){
 			var tests = this._parseSearch(search);
+			
 			var query = this.store.query(lang.hitch(this, function(obj){
 				var type = this._getField(obj, "type");
 				var data = this._getField(obj, "data");
