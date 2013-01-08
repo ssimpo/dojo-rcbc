@@ -81,6 +81,7 @@ define([
 			"pageId": ""
 		},
 		
+		"_previousHash": {},
 		
 		postCreate: function(){
 			try{
@@ -396,7 +397,7 @@ define([
 				this.shortlist.clear();
 				this.searchForm.clear();
 				
-				this._displayService(query.id.toLowerCase());
+				this._displayService(query.id.toLowerCase(), query.section);
 				this.set("serviceId", query.id.toLowerCase());
 			//}else{
 			//}
@@ -681,11 +682,13 @@ define([
 			this.sectionMenu.set("value", categories);
 		},
 		
-		_displayService: function(id){
+		_displayService: function(id, section){
 			var service = this.store.getService(id);
 			
 			if(!this._isBlank(service)){
-				this._setServiceHash(service, false);
+				if(service === undefined){
+					this._setServiceHash(service, false);
+				}
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
@@ -748,7 +751,9 @@ define([
 				}
 			}
 			
-			hash(ioQuery.objectToQuery(newQuery), !updateHistory);
+			newQuery = ioQuery.objectToQuery(newQuery);
+			hash(newQuery, !updateHistory);
+			this._previousHash = newQuery;
 		},
 		
 		_parseCategory: function(service, section){
