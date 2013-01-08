@@ -210,6 +210,7 @@ define([
 				domAttr.set(
 					this.loadingNode, "innerHTML", ""
 				);
+				this.shortlist.ready();
 			}
 		},
 		
