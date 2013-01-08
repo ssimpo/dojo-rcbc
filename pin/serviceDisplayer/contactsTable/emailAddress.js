@@ -47,10 +47,14 @@ define([
 		},
 		
 		_createAnchor: function(){
+			try{
 			var details = lang.trim(this.details);
 			if(!this._isBlank(details)){
 				domAttr.set(this.anchorNode, "href", this._parseUrl(details));
 				domAttr.set(this.anchorNode, "innerHTML", details);
+			}
+			}catch(e){
+				console.log(e);
 			}
 		},
 		
