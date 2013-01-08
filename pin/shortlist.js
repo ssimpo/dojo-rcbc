@@ -20,12 +20,14 @@ define([
 	"dojo/topic",
 	"dijit/form/CheckBox",
 	"dojo/on",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"dijit/form/Button"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	serviceDisplayer, domConstr, domClass, array, topic, CheckBox, on, lang
+	serviceDisplayer, domConstr, domClass, array, topic, CheckBox, on, lang,
+	Button
 ){
 	"use strict";
 	
@@ -208,6 +210,7 @@ define([
 				domClass.replace(
 					this.parentNode, "articleContent-wide", "articleContent"
 				);
+				this.application.hideButtonPanel();
 			}
 		},
 		
@@ -254,6 +257,8 @@ define([
 		_createBlock: function(data){
 			try{
 				var block = domConstr.create("div");
+				var buttonPanel = this._createButtonPanel(data);
+				domConstr.place(buttonPanel, block);
 				var displayer = this._createDisplayer(data);
 				domConstr.place(displayer.domNode, block);
 				this._displayers.push(displayer);
@@ -262,6 +267,33 @@ define([
 				console.info("Could not create block.");
 				return domConstr.create("div");
 			}
+		},
+		
+		_createButtonPanel: function(data){
+			try{
+				var panel = domConstr.create("div", {
+					"class": "buttonsPanel"
+				});
+				var removeButton = new Button({
+					"label": "Remove from shortlist",
+				});
+				domConstr.place(removeButton.domNode, panel);
+				on(
+				   removeButton,
+				   "click",
+				   lang.hitch(this, this._removeItemClick, data.id)
+				);
+				return panel;
+			}catch(e){
+				console.info("Could not create button panel.");
+				return domConstr.create("div");
+			}
+		},
+		
+		_removeItemClick: function(id){
+			this.application.store.removeFromShortlist(id);
+			var shortlist = this.application.store.getShortlist();
+			this.set("value", shortlist.services);
 		},
 		
 		_createDisplayer: function(data){
