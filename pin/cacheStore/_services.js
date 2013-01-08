@@ -82,14 +82,18 @@ define([
 			});
 		},
 		
-		getCategoryList: function(section){
-			var services = this.query({"type":"service"});
-			var categoryList = {};
-			
+		_getCategoryFieldName: function(section){
 			if(!this._isNumber(section)){
 				section = (this._isEqual(section,"Family Services")) ? 1 : 2;
 			}
-			var fieldName = "category" + section.toString();
+			
+			return "category" + section.toString();
+		},
+		
+		getCategoryList: function(section){
+			var services = this.query({"type":"service"});
+			var categoryList = {};
+			var fieldName = this._getCategoryFieldName(section);
 			
 			array.forEach(services, function(service){
 				var categories = this._getCategoryValue(service, fieldName);
@@ -132,11 +136,14 @@ define([
 			array.forEach(services, function(service){
 				array.forEach(service.data.tags, function(tag){
 					if(!this._isBlank(tag)){
-						if(this._hasProperty(tags, tag)){
-							tags[tag]++;
-						}else{
-							tags[tag] = 1; 
-						}
+						var cTags = tag.split(";");
+						array.forEach(cTags, function(cTag){
+							if(this._hasProperty(tags, cTag)){
+								tags[cTag]++;
+							}else{
+								tags[cTag] = 1; 
+							}
+						},this);
 					}
 				}, this);
 			}, this);

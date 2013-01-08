@@ -117,6 +117,7 @@ define([
 			}
 		},
 		
+		_runningInterval: false,
 		_checkCommands: function(){
 			// summary:
 			//		Run command(s) in current queue.
@@ -126,15 +127,23 @@ define([
 			
 			if(!this._isBlank(this._intervalCommands)){
 				try{
-					var func = this._intervalCommands.shift();
-					func();
+					if(!this._runningInterval){
+						this._runningInterval = true;
+						var func = this._intervalCommands.shift();
+						func();
+						this._runningInterval = false;
+					}
 				}catch(e){
 					console.info("Failed to run interval command.");
 				}
 			}else{
-				array.forEach(this._intervalChecks, function(func){
-					func();
-				}, this);
+				if(!this._runningInterval){
+					this._runningInterval = true;
+					array.forEach(this._intervalChecks, function(func){
+						func();
+					}, this);
+					this._runningInterval = false;
+				}
 			}
 		},
 		
@@ -222,6 +231,7 @@ define([
 			service.category2 = this._parseCategory(service, 2);
 			service.isStub = ((this._hasProperty(service, "isStub")) ? service.isStub : true);
 			service.tags = this._parseTags(service);
+			//console.log(service.tags);
 			
 			array.forEach(service.category1, function(category, n){
 				service.category1[n] = category.replace(" & "," and ");
@@ -267,9 +277,17 @@ define([
 			return new Array();
 		},
 		
+		_getCategoryFieldName: function(section){
+			if(!this._isNumber(section)){
+				section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			}
+			
+			return "category" + section.toString();
+		},
+		
 		_itemHasCategory: function(item, section, category){
 			var found = false;
-			var fieldName = "category" + section.toString();
+			var fieldName = this._getCategoryFieldName(section);
 			
 			array.every(item.data[fieldName], function(cCat){
 				if(this._isEqual(cCat, category)){
@@ -298,11 +316,14 @@ define([
 		
 		_trimArray: function(ary){
 			var newAry = new Array();
+			var lookup = new Object();
 			
 			array.forEach(ary, function(item){
 				item = lang.trim(item);
-				if(!this._isBlank(item)){
+				
+				if(!this._isBlank(item) && !this._hasProperty(lookup, item)){
 					newAry.push(item);
+					lookup[item] = true;
 				}
 			}, this);
 			
