@@ -228,27 +228,39 @@ define([
 			}
 		},
 		
-		_addHr: function(){
-			try{
-				domConstr.create("br", null, this.displayerNode);
-				domConstr.create("hr", null, this.displayerNode);
-				domConstr.create("br", null, this.displayerNode);
-			}catch(e){
-				console.info("Could not add shortlist divider");
-			}
-		},
-		
 		_displayShortlist: function(ids){
 			try{
 				this._displayers = new Array();
 				var services = this._getServices(ids);
 			
 				array.forEach(services, function(service, n){
-					this._addHr();
-					this._createDisplayer(service.data);
+					this._createItem(service.data);
 				}, this);
 			}catch(e){
 				console.info("Could not display shortlist.");
+			}
+		},
+		
+		_createItem: function(data){
+			try{
+				var item = domConstr.create("li", {}, this.displayerNode);
+				var block = this._createBlock(data);
+				domConstr.place(block, item);
+			}catch(e){
+				console.info("Could not create shortlist item.");
+			}
+		},
+		
+		_createBlock: function(data){
+			try{
+				var block = domConstr.create("div");
+				var displayer = this._createDisplayer(data);
+				domConstr.place(displayer.domNode, block);
+				this._displayers.push(displayer);
+				return block;
+			}catch(e){
+				console.info("Could not create block.");
+				return domConstr.create("div");
 			}
 		},
 		
@@ -260,11 +272,13 @@ define([
 					"titleLevel": 2,
 					"show": this.show
 				});
-				this._displayers.push(displayer);
-				domConstr.place(displayer.domNode, this.displayerNode);
 				displayer.set("value", data);
+				return displayer;
 			}catch(e){
 				console.info("Could not create displayer.");
+				return {
+					"domNode": domConstr.create("div")
+				}
 			}
 		},
 		
