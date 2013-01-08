@@ -690,7 +690,7 @@ define([
 			var service = this.store.getService(id);
 			
 			if(!this._isBlank(service)){
-				if(service === undefined){
+				if(this._isBlank(section)){
 					this._setServiceHash(service, false);
 				}
 				this.serviceDisplayer.set("value", service.data);
