@@ -283,7 +283,7 @@ define([
 					
 					domConstr.create("a", {
 						"innerHTML": title,
-						"href": service.data.href
+						"href": service.data.href + "&section=" + this.section
 					}, li);
 				}, this);
 			}

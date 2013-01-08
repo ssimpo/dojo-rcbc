@@ -354,10 +354,15 @@ define([
 		
 		_hashChangeNewPageId: function(query){
 			this.contentPane.set("pageId", query.pageId);
+			this.sectionMenu.clear();
+			
 			if(this._isBlank(query.section)){
 				this.sectionMenu.clear();
 			}else if(this._isBlank(query.category) && this._isBlank(query.id)){
 				this.set("pageTitle","");
+				if(query.pageId.length == 32){
+					this.sectionMenu.clear();
+				}
 			}
 		},
 		
@@ -426,7 +431,7 @@ define([
 			}
 		},
 		
-		_hashChangeNewCategory: function(query){
+ 		_hashChangeNewCategory: function(query){
 			if(!this._isEqual(query.category, this.get("category"))){
 				this.set("category", query.category);
 			}
@@ -452,6 +457,7 @@ define([
 			var shortlist = this.store.getShortlist();
 			if(this._hasProperty(shortlist, "services")){
 				//articleContentNode
+				this.sectionMenu.clear();
 				this.shortlist.set("value", shortlist.services);
 				if(shortlist.services.length > 0){
 					this.showButtonPanel();
@@ -562,10 +568,9 @@ define([
 		},
 		
 		_displayCategoryList: function(section, category, tag){
-			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			this.serviceListDisplayer.set("section", section);
 			tag = (tag === undefined) ? "" : tag;
 			
-			this.serviceListDisplayer.set("section", section);
 			this.serviceListDisplayer.set("category", category);
 			this.serviceListDisplayer.set("tag", tag);
 			
