@@ -6,11 +6,12 @@
 //		Stephen Simpson <me@simpo.org>, <http://simpo.org>
 define([
 	"dojo/_base/declare",
+	"simpo/interval",
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/topic"
 ], function(
-	declare, array, lang, topic
+	declare, interval, array, lang, topic
 ) {
 	"use strict";
 	
@@ -19,18 +20,12 @@ define([
 		"_venueCache": [],
 		
 		constructor: function(){
-			this.addIntervalCheck(function(){
-				if(!this._isBlank(this._venueIdsToUpdate)){
-					this.addIntervalCommand(
-						lang.hitch(this, this._callVenuesUpdate)
-					);
-				}
-				if(!this._isBlank(this._venueCache)){
-					this.addIntervalCommand(
-						lang.hitch(this, this._updateFromVenueCache)
-					);
-				}
-			});
+			interval.add(
+				lang.hitch(this, this._callVenuesUpdate), true, 2
+			);
+			interval.add(
+				lang.hitch(this, this._updateFromVenueCache), true, 2
+			);
 		},
 		
 		getVenue: function(id){

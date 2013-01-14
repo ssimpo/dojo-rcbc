@@ -143,7 +143,7 @@ define([
 					lang.hitch(this, this._shortlistClick)
 				);
 			}catch(e){
-				console.warn("pin.couldNotInitEvents");
+				console.warn("pin.couldNotInitEvents", e);
 			}
 		},
 		

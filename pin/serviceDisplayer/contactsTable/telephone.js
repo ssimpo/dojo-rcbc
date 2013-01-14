@@ -32,7 +32,6 @@ define([
 		"description": "",
 		"descriptionNode": null,
 		
-		
 		postCreate: function(){
 			this._init();
 		},
