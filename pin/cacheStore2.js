@@ -7,6 +7,7 @@
 define([
 	"dojo/_base/declare",
 	"./_variableTestMixin",
+	"simpo/interval",
 	"./cacheStore/_shortlist",
 	"./cacheStore/_services",
 	"./cacheStore/_venues",
@@ -19,7 +20,7 @@ define([
 	"lib/md5"
 ], function(
 	declare,
-	_variableTestMixin, store, _shortlist, _services, _venues,
+	_variableTestMixin, interval, _shortlist, _services, _venues, store,
 	lang, JSON, topic, array, request, md5
 ){
 	"use strict";
@@ -35,116 +36,12 @@ define([
 		"xhrTimeout": 8*1000,
 		
 		"_xhrAttempts": {},
-		"_intervalCommands": [],
-		"_intervalChecks": [],
-		"_interval": null,
-		"_intervalPeriod": 100,
 		"_throttle": 100,
 		"_serverThrottle": 50,
 		
 		
 		constructor: function(args){
-			this._initInterval();
 			this._callStubsUpdate();
-		},
-		
-		_initInterval: function(){
-			try{
-				if(this._interval === null){
-					this._interval = setInterval(
-						lang.hitch(this, this._checkCommands),
-						this._intervalPeriod
-					);
-				}
-			}catch(e){
-				console.info("Failed to create interval.");
-			}
-		},
-		
-		addIntervalCheck: function(func){
-			// summary:
-			//		Add a new fallback function to run when no function are
-			//		waiting in the interval queue.
-			// description:
-			//		Add a function to the interval queue to perform when no
-			//		functions are waiting in the interval queue.  Any functions
-			//		in the interval queue are ran first when this is empty
-			//		this._intervalChecks is cycled-through.  Functions added
-			//		here are normally a check followed by a command if the check
-			//		is true.
-			//
-			//		Thses are regular commands ran everytime the interval is ran
-			//		and no functions are in the queue.  It is different to the
-			//		commands in this._intervalCommands, which are only run once.
-			// func: function
-			//		Function to run (function will be ran within scope of
-			//		this class).
-			
-			this._addCommandToArray(
-				this, "_intervalChecks", lang.hitch(this, func)
-			);
-		},
-		
-		addIntervalCommand: function(func){
-			// summary:
-			//		Add a command to the queue.
-			// description:
-			//		Add a function to be run during the next interval.
-			//		Commands are only run once.
-			// func: function
-			//		Function to run (fuction will be ran in's own scope).
-			
-			this._addCommandToArray(
-				this, "_intervalCommands", func
-			);
-		},
-		
-		_addCommandToArray: function(obj, propName, func){
-			if (!this._isString(propName)){
-				func = propName;
-				propName = "prop";
-				obj = { "prop": obj };
-			}
-			
-			var found = false;
-			array.forEach(obj[propName], function(cFunc){
-				if(cFunc === func){
-					found = true;
-				}
-			}, this);
-			if(!found){
-				obj[propName].push(func);
-			}
-		},
-		
-		_runningInterval: false,
-		_checkCommands: function(){
-			// summary:
-			//		Run command(s) in current queue.
-			// description:
-			//		Run any the next command in this._intervalCommands.  If
-			//		non are found then run each command in this._intervalChecks.
-			
-			if(!this._isBlank(this._intervalCommands)){
-				try{
-					if(!this._runningInterval){
-						this._runningInterval = true;
-						var func = this._intervalCommands.shift();
-						func();
-						this._runningInterval = false;
-					}
-				}catch(e){
-					console.info("Failed to run interval command.");
-				}
-			}else{
-				if(!this._runningInterval){
-					this._runningInterval = true;
-					array.forEach(this._intervalChecks, function(func){
-						func();
-					}, this);
-					this._runningInterval = false;
-				}
-			}
 		},
 		
 		_callStubsUpdate: function(){
@@ -190,7 +87,7 @@ define([
 			
 			if(this._xhrAttempts[hash] > 0){
 				this._xhrAttempts[hash]--;
-				this.addIntervalCommand(lang.hitch(this, function(){
+				interval.add(lang.hitch(this, function(){
 					this._xhrCall(url, success, errorMsg);
 				}));
 			}else{

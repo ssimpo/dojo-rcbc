@@ -6,11 +6,12 @@
 //		Stephen Simpson <me@simpo.org>, <http://simpo.org>
 define([
 	"dojo/_base/declare",
+	"simpo/interval",
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/topic"
 ], function(
-	declare, array, lang, topic
+	declare, interval, array, lang, topic
 ) {
 	"use strict";
 	

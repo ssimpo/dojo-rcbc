@@ -22,13 +22,16 @@ define([
 	"dojo/hash",
 	"dojo/io-query",
 	"dojo/topic",
+	"simpo/layout/pagedColumnList",
 	
 	"rcbc/pin/expandingDiv"
+	
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template, loadingStrings,
-	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic
+	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic,
+	pagedColumnList
 ){
 	"use strict";
 	
@@ -52,8 +55,21 @@ define([
 		"application": null,
 		"parentNode": null,
 		"hiddenNode": null,
+		"serviceListWidget": null,
 		"parentPosPlace": "last",
 		"i18nLoading": loadingStrings,
+		
+		postCreate: function(){
+			/*var displayer = new pagedColumnList({
+				"columnTagName": "ul",
+				"cols": 2,
+				"gap": 10,
+				"class": "rcbcWidgetsServicListDisplayerServices"
+			});
+			domConstr.place(displayer.domNode, this.domNode);
+			this.serviceListNode = displayer.domNode;
+			this.serviceListWidget = displayer;*/
+		},
 		
 		_initNodes: function(){
 			if(this.application !== null){
@@ -96,6 +112,9 @@ define([
 			if(this._isBlank(this.value)){
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
 					domConstr.empty(this.serviceListNode);
+					if(this.serviceListWidget !== null){
+						this.serviceListWidget.clear();
+					}
 				}
 				this._hideWidget();
 			}else{
@@ -248,7 +267,9 @@ define([
 				});
 				
 				array.forEach(tags, function(tag){
-					var li = domConstr.create("li", {}, this.tagListNode);
+					var li = domConstr.create(
+						"li", {}, this.tagListNode
+					);
 					
 					domConstr.create("a", {
 						"innerHTML": tag + " ("+value[tag].toString()+")",
@@ -275,6 +296,9 @@ define([
 		_createServiceList: function(value){
 			this._createAttachPoint("serviceListNode", "ul");
 			domConstr.empty(this.serviceListNode);
+			if(this.serviceListWidget !== null){
+				this.serviceListWidget.clear();
+			}
 			
 			if(!this._isBlank(value)){
 				array.forEach(value, function(service){
