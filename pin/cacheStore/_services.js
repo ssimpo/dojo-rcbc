@@ -7,11 +7,12 @@
 define([
 	"dojo/_base/declare",
 	"simpo/interval",
+	"simpo/xhrManager",
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/topic"
 ], function(
-	declare, interval, array, lang, topic
+	declare, interval, xhrManager, array, lang, topic
 ) {
 	"use strict";
 	
@@ -172,7 +173,7 @@ define([
 			}
 			
 			if(!this._isBlank(ids)){
-				this._xhrCall(
+				xhrManager.add(
 					"/pin.nsf/getService2?openagent&stub=false&id="+ids.join(","),
 					lang.hitch(this, this._updateServiceSuccess),
 					"Failed to update services - now working from cache"
