@@ -12,16 +12,16 @@ define([
 	"./cacheStore/_services",
 	"./cacheStore/_venues",
 	"simpo/store/local",
+	"simpo/xhrManager",
 	"dojo/_base/lang",
 	"dojo/json",
 	"dojo/topic",
 	"dojo/_base/array",
-	"dojo/request",
 	"lib/md5"
 ], function(
 	declare,
 	_variableTestMixin, interval, _shortlist, _services, _venues, store,
-	lang, JSON, topic, array, request, md5
+	xhrManager, lang, JSON, topic, array, md5
 ){
 	"use strict";
 	
@@ -32,10 +32,6 @@ define([
 		"sessionOnly": false,
 		"compress": false,
 		"encrypt": false,
-		"xhrAttempts": 3,
-		"xhrTimeout": 8*1000,
-		
-		"_xhrAttempts": {},
 		"_throttle": 100,
 		"_serverThrottle": 50,
 		
@@ -45,7 +41,7 @@ define([
 		},
 		
 		_callStubsUpdate: function(){
-			this._xhrCall(
+			xhrManager.add(
 				"/servicesStub.json",
 				lang.hitch(this, function(data){
 					this._intervalPeriod *= 5;
@@ -54,46 +50,6 @@ define([
 				}),
 				"Failed to refresh service stubs - now working off cache"
 			);
-		},
-		
-		_xhrCall: function(url, success, errorMsg){
-			try{
-				request(
-					url, {
-						"handleAs": "json",
-						"preventCache": true,
-						"timeout": this.xhrTimeout
-					}
-				).then(
-					success,
-					lang.hitch(this, this._xhrError, url, success, errorMsg)
-				);
-			}catch(e){
-				console.info(errorMsg);
-			}
-		},
-		
-		_xhrError: function(url, success, errorMsg, e){
-			// summary:
-			//		Fallback when XHR request fails.
-			// description:
-			//		Fallback for XHR on failure, will retry a few
-			//		times before a total fail.
-			
-			var hash = md5(url);
-			if(!this._hasProperty(this._xhrAttempts, hash)){
-				this._xhrAttempts[hash] = this.xhrAttempts;
-			}
-			
-			if(this._xhrAttempts[hash] > 0){
-				this._xhrAttempts[hash]--;
-				interval.add(lang.hitch(this, function(){
-					this._xhrCall(url, success, errorMsg);
-				}));
-			}else{
-				console.info("Failed to load: " + url);
-				console.info(errorMsg);
-			}
 		},
 		
 		_checkForServiceVenues: function(service){
