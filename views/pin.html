@@ -3,12 +3,22 @@
 	data-dojo-attach-point="containerNode"
 >
 	<div class="hiddenDiv" data-dojo-attach-point="hiddenDiv">
-		<div class="buttonsPanel" data-dojo-attach-point="buttonsPanelNode">
+		<div
+			class="buttonsPanel"
+			data-dojo-attach-point="buttonsPanelNode"
+			style="width:45%"
+		>
 			<button
 				type="button"
 				data-dojo-attach-point="manageShortlistButton"
 				data-dojo-type="dijit/form/Button"
 			></button>
+			<button
+				type="button"
+				data-dojo-attach-point="printButton"
+				data-dojo-type="dijit/form/Button"
+				onClick="window.print();"
+			>Print</button>
 			<div
 				data-dojo-type="dijit/Tooltip"
 				data-dojo-props="position:['above']"
