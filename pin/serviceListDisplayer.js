@@ -51,6 +51,7 @@ define([
 		"section": "",
 		"category": "",
 		"tag": "",
+		"sortTagsByAZ": true, // false will sort by quanity in each tag.
 		
 		"application": null,
 		"parentNode": null,
@@ -262,9 +263,14 @@ define([
 				for(var tag in value){
 					tags.push(tag);
 				}
-				tags.sort(function(a,b){
-					return ((value[a] > value[b]) ? -1 : 1);
-				});
+				
+				if(this.sortTagsByAZ){
+					tags.sort();
+				}else{
+					tags.sort(function(a,b){
+						return ((value[a] > value[b]) ? -1 : 1);
+					});
+				}
 				
 				array.forEach(tags, function(tag){
 					var li = domConstr.create(
