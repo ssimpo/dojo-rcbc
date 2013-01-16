@@ -254,7 +254,6 @@ define([
 				domClass.add(this.heading, newSection);
 				domClass.add(this.searchForm.domNode, newSection);
 				domClass.add(this.tooltipText, newSection);
-				console.log(this.tooltipText);
 				if(!this._isBlank(oldSection)){
 					domClass.remove(this.heading, oldSection);
 					domClass.remove(this.domNode, oldSection);
