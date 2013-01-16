@@ -37,7 +37,8 @@ define([
 	"./pin/sectionMenu",
 	"./pin/sideMenu",
 	"./pin/serviceDisplayer",
-	"./pin/serviceListDisplayer"
+	"./pin/serviceListDisplayer",
+	"dijit/Tooltip"
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
@@ -103,6 +104,7 @@ define([
 				this._initTitle();
 				this._initHeading();
 				this._initSearchForm();
+				this._initTooltip();
 			}catch(e){
 				console.warn("pin.couldNotInit");
 			}
@@ -186,6 +188,10 @@ define([
 			}
 		},
 		
+		_initTooltip: function(){
+			this.tooltip.addTarget(this.manageShortlistButton.domNode);
+		},
+		
 		_getRootNode: function(getHtmlNode){
 			getHtmlNode = ((getHtmlNode === undefined) ? false : true);
 			var qry = $((getHtmlNode ? "html" : "body"));
@@ -228,7 +234,6 @@ define([
 				if(!this._isBlank(oldCategory)){
 					domClass.remove(this.heading, oldCategory);
 					domClass.remove(this.domNode, oldCategory);
-					domClass.remove(this.searchForm.domNode, oldCategory);
 				}
 				this.serviceId = id;
 				query.id = id.toLowerCase();
@@ -248,10 +253,13 @@ define([
 				domClass.add(this.domNode, newSection);
 				domClass.add(this.heading, newSection);
 				domClass.add(this.searchForm.domNode, newSection);
+				domClass.add(this.tooltipText, newSection);
+				console.log(this.tooltipText);
 				if(!this._isBlank(oldSection)){
 					domClass.remove(this.heading, oldSection);
 					domClass.remove(this.domNode, oldSection);
 					domClass.remove(this.searchForm.domNode, oldSection);
+					domClass.remove(this.tooltipText, oldSection);
 				}
 				
 				this.searchForm.set("section", query.section);
@@ -508,13 +516,34 @@ define([
 			
 			if(!this._isBlank(hash.id)){
 				if(this.store.inShortlist(hash.id)){
-					this.manageShortlistButton.set("label", "Remove from shortlist");
+					this.manageShortlistButton.set(
+						"label", "Remove from shortlist"
+					);
+					domAttr.set(
+						this.tooltipText,
+						"innerHTML",
+						"Remove this item from the shortlist."
+					);
 				}else{
-					this.manageShortlistButton.set("label", "Add to shortlist");
+					this.manageShortlistButton.set(
+						"label", "Add to shortlist"
+					);
+					domAttr.set(
+						this.tooltipText,
+						"innerHTML",
+						"Add to your shortlist so you can print and compare services.  Items will remain in your shortlist until you remove them, allowing you to save information to look at later."
+					);
 				}
 			}else{
 				if(this._isEqual(hash.section, "shortlist")){
-					this.manageShortlistButton.set("label", "Empty shortlist");
+					this.manageShortlistButton.set(
+						"label", "Empty shortlist"
+					);
+					domAttr.set(
+						this.tooltipText,
+						"innerHTML",
+						"Remove all items from the shortlist."
+					);
 				}
 			}
 			
