@@ -41,15 +41,15 @@ define([
 		},
 		
 		_callStubsUpdate: function(){
-			xhrManager.add(
-				"/servicesStub.json",
-				lang.hitch(this, function(data){
-					this._intervalPeriod *= 5;
+			xhrManager.add({
+				"url": "/servicesStub.json",
+				"success": function(data){
 					this._removeOldServices(data);
 					this._updateServiceSuccess(data);
-				}),
-				"Failed to refresh service stubs - now working off cache"
-			);
+				},
+				"errorMsg": "Failed to refresh service stubs - now working off cache",
+				"hitch": this
+			});
 		},
 		
 		_checkForServiceVenues: function(service){
