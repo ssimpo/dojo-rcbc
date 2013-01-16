@@ -224,6 +224,12 @@ define([
 		_setServiceIdAttr: function(id){
 			var query = this._getHashObj();
 			if(!this._isEqual(query.id, this.get("serviceId"))){
+				var oldCategory = this._createItemClass(this.category);
+				if(!this._isBlank(oldCategory)){
+					domClass.remove(this.heading, oldCategory);
+					domClass.remove(this.domNode, oldCategory);
+					domClass.remove(this.searchForm.domNode, oldCategory);
+				}
 				this.serviceId = id;
 				query.id = id.toLowerCase();
 				this._updateHash(query);
@@ -234,13 +240,20 @@ define([
 			var query = this._getHashObj();
 			if(!this._isEqual(query.section, this.get("section"))){
 				var oldSection = this._createItemClass(this.section);
+				var newSection = this._createItemClass(section);
 				this.section = section;
-				domClass.add(this.domNode, this._createItemClass(this.section));
-				if(!this._isBlank(oldSection)){
-					domClass.remove(this.domNode, oldSection);
-				}
 				query.section = section;
 				domAttr.set(this.heading, "innerHTML", query.section);
+				
+				domClass.add(this.domNode, newSection);
+				domClass.add(this.heading, newSection);
+				domClass.add(this.searchForm.domNode, newSection);
+				if(!this._isBlank(oldSection)){
+					domClass.remove(this.heading, oldSection);
+					domClass.remove(this.domNode, oldSection);
+					domClass.remove(this.searchForm.domNode, oldSection);
+				}
+				
 				this.searchForm.set("section", query.section);
 				this._updateHash(query);
 			}
