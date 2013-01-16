@@ -69,11 +69,12 @@ define([
 			}
 			
 			if(!this._isBlank(ids)){
-				xhrManager.add(
-					"/pin.nsf/getVenue?openagent&id="+ids.join(","),
-					lang.hitch(this, this._updateVenueSuccess),
-					"Failed to update venues - now working from cache"
-				);
+				xhrManager.add({
+					"url": "/pin.nsf/getVenue?openagent&id="+ids.join(","),
+					"success": this._updateVenueSuccess,
+					"errorMsg": "Failed to update venues - now working from cache",
+					"hitch": this
+				});
 			}
 		},
 		

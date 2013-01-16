@@ -173,11 +173,12 @@ define([
 			}
 			
 			if(!this._isBlank(ids)){
-				xhrManager.add(
-					"/pin.nsf/getService2?openagent&stub=false&id="+ids.join(","),
-					lang.hitch(this, this._updateServiceSuccess),
-					"Failed to update services - now working from cache"
-				);
+				xhrManager.add({
+					"url": "/pin.nsf/getService2?openagent&stub=false&id="+ids.join(","),
+					"success": this._updateServiceSuccess,
+					"errorMsg": "Failed to update services - now working from cache",
+					"hitch": this
+				});
 			}
 		},
 		
@@ -204,13 +205,13 @@ define([
 		_removeOldServices: function(data){
 			var lookup = new Object();
 			
-			array.forEach(data, function(item){
+			array.forEach(data.services, function(item){
 				lookup[item.id.toLowerCase()] = true;
 			}, this);
 			
 			var query = this.query({"type":"service"});
 			array.forEach(query, function(item){
-				if(!this._hasProperty(item.id.toLowerCase())){
+				if(!this._hasProperty(lookup, item.id.toLowerCase())){
 					this.remove(item.id);
 				}
 			}, this);
