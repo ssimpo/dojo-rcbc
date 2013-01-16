@@ -15,7 +15,7 @@ define([
 	"dojo/i18n!dijit/nls/loading",
 	"dojo/text!./views/pin.html",
 	"rcbc/console!./nls/errors",
-	"./pin/cacheStore2",
+	"./pin/cacheStore",
 	"dojo/hash",
 	"dojo/topic",
 	"dojo/_base/lang",
