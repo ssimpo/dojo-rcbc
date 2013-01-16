@@ -134,10 +134,12 @@ define([
 					if(!this._isBlank(tag)){
 						var cTags = tag.split(";");
 						array.forEach(cTags, function(cTag){
-							if(this._hasProperty(tags, cTag)){
-								tags[cTag]++;
-							}else{
-								tags[cTag] = 1; 
+							if(!this._isBlank(cTag)){
+								if(this._hasProperty(tags, cTag)){
+									tags[cTag]++;
+								}else{
+									tags[cTag] = 1; 
+								}
 							}
 						},this);
 					}

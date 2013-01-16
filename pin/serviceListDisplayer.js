@@ -261,7 +261,9 @@ define([
 			if(!this._isBlank(value)){
 				var tags = new Array();
 				for(var tag in value){
-					tags.push(tag);
+					if(!this._isBlank(tag)){
+						tags.push(tag);
+					}
 				}
 				
 				if(this.sortTagsByAZ){
