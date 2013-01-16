@@ -28,7 +28,9 @@ define([
 ) {
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate, _variableTestMixin], {
+	var construct = declare([
+		_widget, _templated, _wTemplate, _variableTestMixin
+	], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -52,6 +54,7 @@ define([
 		_init: function(){
 			on(this.searchButton, "click", lang.hitch(this, this._searchClicked));
 			on(this.searchInput, "keyup", lang.hitch(this, this._searchTyping));
+			on(this.domNode, "submit", lang.hitch(this, this._searchClicked));
 		},
 		
 		_setSectionAttr: function(section){
@@ -84,24 +87,10 @@ define([
 				),
 				50
 			)
-			//this.application._displaySearch(search);
-			
-			//if(!this._isBlank(search)){
-				//var cHash = ioQuery.queryToObject(hash());
-				//cHash.search = search;
-				//hash(ioQuery.objectToQuery(cHash));
-				//this.searchInput.set("value", "");
-			//}
 		},
 		
 		_searchClicked: function(evt){
-			var search = this.searchInput.get("value");
-			if(!this._isBlank(search)){
-				var cHash = ioQuery.queryToObject(hash());
-				cHash.search = search;
-				hash(ioQuery.objectToQuery(cHash));
-				this.clear();
-			}
+			evt.preventDefault();
 		}
 	});
 	
