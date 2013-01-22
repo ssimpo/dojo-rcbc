@@ -83,6 +83,7 @@ define([
 		},
 		
 		"_previousHash": {},
+		"_databaseReadyActionDone": false,
 		
 		postCreate: function(){
 			try{
@@ -96,7 +97,10 @@ define([
 		_init: function(){
 			try{
 				this.loading(true);
-				this.store = new store();
+				this.store = new store({
+					"ready": lang.hitch(this, this._databaseReady),
+					"readyStubs": lang.hitch(this, this._databaseReadyStubs)
+				});
 				//uncomment to clear the localstorage.
 				//this.store.clear(true);
 			
@@ -112,10 +116,6 @@ define([
 		
 		_initTopicSubscriptions: function(){
 			try{
-				topic.subscribe(
-					"/simpo/store/local/databaseReady",
-					lang.hitch(this, this._databaseReady)
-				);
 				topic.subscribe(
 					"/dojo/hashchange",
 					lang.hitch(this, this._hashChange)
@@ -158,7 +158,7 @@ define([
 					this._shortlistUpdate(shortlist);
 				}
 			}catch(e){
-				console.warn("pin.shortlistNotLoaded")
+				console.warn("pin.shortlistNotLoaded", e)
 			}
 		},
 		
@@ -220,11 +220,24 @@ define([
 			}
 		},
 		
-		_databaseReady: function(){
-			this._initShortlist();
-			this._initEvents();
-			this._hashChange();
-			this.loading(false);
+		_databaseReady: function(data){
+			if(data.size > 0){
+				this._databaseReadyAction();
+			}
+		},
+		
+		_databaseReadyStubs: function(){
+			this._databaseReadyAction();
+		},
+		
+		_databaseReadyAction: function(){
+			if(!this._databaseReadyActionDone){
+				this._databaseReadyActionDone = true;
+				this._initShortlist();
+				this._initEvents();
+				this._hashChange();
+				this.loading(false);
+			}
 		},
 		
 		_setServiceIdAttr: function(id){

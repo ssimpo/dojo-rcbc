@@ -10,9 +10,10 @@ define([
 	"simpo/xhrManager",
 	"dojo/_base/array",
 	"dojo/_base/lang",
-	"dojo/topic"
+	"dojo/topic",
+	"simpo/array"
 ], function(
-	declare, interval, xhrManager, array, lang, topic
+	declare, interval, xhrManager, array, lang, topic, iarray
 ) {
 	"use strict";
 	
@@ -24,9 +25,9 @@ define([
 			interval.add(
 				lang.hitch(this, this._callServicesUpdate), true, 2
 			);
-			interval.add(
-				lang.hitch(this, this._updateFromServiceCache), true, 2
-			);
+			//interval.add(
+				//lang.hitch(this, this._updateFromServiceCache), true, 2
+			//);
 		},
 		
 		getService: function(id){
@@ -198,9 +199,17 @@ define([
 			return (!this._hasOwnProperty(obj.data, "description") && !this._hasOwnProperty(obj.data, "venues") && !this._hasOwnProperty(obj.data, "contacts"));
 		},
 		
-		_updateServiceSuccess: function(data){
+		_updateServiceSuccess: function(data, callback){
+			callback = ((callback === undefined) ? function(){} : callback);
+			
 			if(this._hasProperty(data, "services")){
-				this._serviceCache = this._serviceCache.concat(data.services);
+				iarray.forEach(
+					data.services,
+					this._throttle,
+					this._updateService,
+					callback,
+					this
+				);
 			}
 		},
 		
@@ -217,22 +226,6 @@ define([
 					this.remove(item.id);
 				}
 			}, this);
-		},
-		
-		_updateFromServiceCache: function(){
-			if(!this._isBlank(this._serviceCache)){
-				var services = new Array();
-				for(var i = 0; ((i < this._throttle) && (i < this._serviceCache.length)); i++){
-					services.push(this._serviceCache.shift());
-				}
-				this._updateServicesFromArray(services);
-			}
-		},
-		
-		_updateServicesFromArray: function(services){
-			if(!this._isBlank(services)){
-				array.forEach(services, this._updateService, this);
-			}
 		},
 		
 		_updateService: function(service){

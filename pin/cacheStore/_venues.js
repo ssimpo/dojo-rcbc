@@ -10,9 +10,10 @@ define([
 	"simpo/xhrManager",
 	"dojo/_base/array",
 	"dojo/_base/lang",
-	"dojo/topic"
+	"dojo/topic",
+	"simpo/array"
 ], function(
-	declare, interval, xhrManager, array, lang, topic
+	declare, interval, xhrManager, array, lang, topic, iarray
 ) {
 	"use strict";
 	
@@ -24,9 +25,9 @@ define([
 			interval.add(
 				lang.hitch(this, this._callVenuesUpdate), true, 2
 			);
-			interval.add(
-				lang.hitch(this, this._updateFromVenueCache), true, 2
-			);
+			//interval.add(
+				//lang.hitch(this, this._updateFromVenueCache), true, 2
+			//);
 		},
 		
 		getVenue: function(id){
@@ -89,12 +90,6 @@ define([
 			}
 		},
 		
-		_updateVenuesFromArray: function(venues){
-			if(!this._isBlank(venues)){
-				array.forEach(venues, this._updateVenue, this);
-			}
-		},
-		
 		_updateVenue: function(venue){
 			var data = this._convertVenueToDataItem(venue);
 			this.put(data);
@@ -103,17 +98,13 @@ define([
 		
 		_updateVenueSuccess: function(data){
 			if(this._hasProperty(data, "venues")){
-				this._venueCache = this._venueCache.concat(data.venues);
-			}
-		},
-		
-		_updateFromVenueCache: function(){
-			if(!this._isBlank(this._venueCache)){
-				var venues = new Array();
-				for(var i = 0; ((i < this._throttle) && (i < this._venueCache.length)); i++){
-					venues.push(this._venueCache.shift());
-				}
-				this._updateVenuesFromArray(venues);
+				iarray.forEach(
+					data.venues,
+					this._throttle,
+					this._updateVenue,
+					function(){},
+					this
+				);
 			}
 		}
 	});
