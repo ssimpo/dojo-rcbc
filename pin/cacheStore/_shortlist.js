@@ -16,10 +16,6 @@ define([
 	"use strict";
 	
 	var construct = declare(null, {
-		constructor: function(){
-			
-		},
-		
 		getShortlist: function(){
 			var shortlist = this.get("shortlist");
 			if(this._isBlank(shortlist)){
@@ -27,7 +23,6 @@ define([
 				this.put(shortlist);
 				topic.publish("/rcbc/pin/changeShortlist", shortlist);
 			}
-			
 			return this._sanitizeShortlist(shortlist);
 		},
 		

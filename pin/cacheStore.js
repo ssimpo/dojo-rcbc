@@ -30,10 +30,11 @@ define([
 	], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
-		"compress": false,
+		"compress": true,
 		"encrypt": false,
 		"_throttle": 100,
 		"_serverThrottle": 50,
+		"readyStubs": function(){},
 		
 		
 		constructor: function(args){
@@ -45,7 +46,10 @@ define([
 				"url": "/servicesStub.json",
 				"success": function(data){
 					this._removeOldServices(data);
-					this._updateServiceSuccess(data);
+					this._updateServiceSuccess(
+						data,
+						lang.hitch(this, this.readyStubs)
+					);
 				},
 				"errorMsg": "Failed to refresh service stubs - now working off cache",
 				"hitch": this
