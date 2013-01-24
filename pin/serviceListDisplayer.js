@@ -236,8 +236,16 @@ define([
 				var title = "";
 			
 				if(!this._isBlank(category)){
-					title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
-					topic.publish("/rcbc/pin/titleChange", title);
+					if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
+						var item = this.application.store.get(category.toLowerCase());
+						title = this._getServiceTitle(item);
+						if(title !== ""){
+							topic.publish("/rcbc/pin/titleChange", title);
+						}
+					}else{
+						title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
+						topic.publish("/rcbc/pin/titleChange", title);
+					}
 				}
 			
 				
@@ -246,6 +254,47 @@ define([
 			}
 			
 			return title;
+		},
+		
+		_getServiceTitle: function(item){
+			var title = "";
+			
+			if(this._isServiceType(item)){
+				if(this._hasProperty(item, "data")){
+					
+					var serviceTitle = this._getField(item.data, "serviceName");
+					var orgTitle = this._getField(item.data, "orgName");
+					
+					if((serviceTitle === "") && (orgTitle !== "")){
+						title = orgTitle;
+					}else if((serviceTitle !== "") && (orgTitle !== "")){
+						title = serviceTitle + " ("+orgTitle+")";
+					}else if(serviceTitle !== ""){
+						title = serviceTitle;
+					}else{
+						title = this._getField(item.data, "title");
+					}
+					
+					console.log(serviceTitle, orgTitle, title);
+				}
+			}
+			
+			return title;
+		},
+		
+		_isServiceType: function(item){
+			var isService = false;
+			
+			if(!this._isBlank(item)){
+				if(this._hasProperty(item, "type")){
+					if(item.type == "service"){
+						isService = true;
+					}
+					
+				}
+			}
+			
+			return isService;
 		},
 		
 		_createContent: function(value){
@@ -330,8 +379,10 @@ define([
 				title = orgTitle;
 			}else if((serviceTitle !== "") && (orgTitle !== "")){
 				title = serviceTitle + " ("+orgTitle+")";
-			}else{
+			}else if(serviceTitle !== ""){
 				title = serviceTitle;
+			}else{
+				title = this._getField(value, "title");
 			}
 			
 			return title;
