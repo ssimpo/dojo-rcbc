@@ -186,6 +186,7 @@ define([
 		
 		_createContent: function(value){
 			if(this.titleNotify || this.show.title){
+				console.log("DISPLAYER VALUE: ", value);
 				this._createTitle(value);
 			}
 			
@@ -221,8 +222,10 @@ define([
 				title = orgTitle;
 			}else if((serviceTitle !== "") && (orgTitle !== "")){
 				title = serviceTitle + " ("+orgTitle+")";
-			}else{
+			}else if(serviceTitle !== ""){
 				title = serviceTitle;
+			}else{
+				title = this._getField(value, "title");
 			}
 			
 			if(this.show.titleLink){

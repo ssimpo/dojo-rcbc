@@ -742,6 +742,14 @@ define([
 		
 		_displayService: function(id, section){
 			var service = this.store.getService(id);
+			if(this._isBlank(service)){
+				var service = this.store.getActivity(id);
+				console.log("ACTIVITY? ",  service);
+			}
+			if(this._isBlank(service)){
+				var service = this.store.getEvent(id);
+				console.log("EVENT? ",  service);
+			}
 			
 			if(!this._isBlank(service)){
 				if(this._isBlank(section)){

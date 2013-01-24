@@ -66,17 +66,48 @@ define([
 		getCategory: function(section, category){
 			var self = this;
 			
-			var query = this.query(function(object){
-				if(self._isServiceItem(object)){
-					return self._itemHasCategory(object, section, category);
+			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
+				if(this.get(category.toLowerCase())){
+					var query = this.query(function(obj){
+						if(self._hasProperty(obj, "data")){
+							if(self._hasProperty(obj.data, "service")){
+								return (obj.data.service.toLowerCase() === category.toLowerCase());
+							}
+						}
+						return false;
+					});
+					
+					return query.sort(function(a, b){
+						return (((a.data.title) < (b.data.title)) ? -1 : 1);
+					});
 				}else{
-					return false;
+					return [];
 				}
-			});
+			}else{
+				var query = this.query(function(obj){
+					if(self._isServiceItem(obj)){
+						return self._itemHasCategory(obj, section, category);
+					}else{
+						return false;
+					}
+				});
+				
+				return query.sort(function(a, b){
+					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+				});
+			}
+		},
+		
+		_itemHasService: function(obj, service){
+			if(this._hasProperty(obj, "type")){
+				if((obj.type = "event") || (obj.type == "activity")){
+					if(this._hasProperty(obj, "service")){
+						return (obj.service.toLowerCase() == service.toLowerCase());
+					}
+				}
+			}
 			
-			return query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
+			return false;
 		},
 		
 		_getCategoryFieldName: function(section){
@@ -235,33 +266,20 @@ define([
 				var callUpdate = false;
 				
 				if((item.isStub) && (cItem !== null)){
-					if(this._needsUpdating(cItem, item)){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					
 					item = lang.mixin(cItem, item);
-					var isStub = this._isServiceStub(item);
-					item.isStub = isStub;
-					item.data.isStub = isStub;
-					
-					this.put(item);
-					topic.publish("/rcbc/pin/updateService", item.id, item);
-					if(item.isStub){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					this._checkForServiceVenues(service);
-				}else{
-					var isStub = this._isServiceStub(item);
-					item.isStub = isStub;
-					item.data.isStub = isStub;
-					
-					if(item.isStub){
-						this._serviceIdsToUpdate.push(item.id);
-					}
-					this.put(item);
-					topic.publish("/rcbc/pin/updateService", item.id, item);
-					this._checkForServiceVenues(service);
 				}
+				
+				if(item.isStub){
+					this._serviceIdsToUpdate.push(item.id);
+				}else if(this._needsUpdating(cItem, item)){
+					this._serviceIdsToUpdate.push(item.id);
+				}
+				
+				var isStub = this._isServiceStub(item);
+				item.isStub = isStub;
+				item.data.isStub = isStub;
+				this.put(item);
+				this._checkForServiceVenues(service);
 			}catch(e){}
 		}
 	});

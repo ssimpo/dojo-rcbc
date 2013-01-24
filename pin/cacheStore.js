@@ -11,6 +11,7 @@ define([
 	"./cacheStore/_shortlist",
 	"./cacheStore/_services",
 	"./cacheStore/_venues",
+	"./cacheStore/_activities",
 	"simpo/store/local",
 	"simpo/xhrManager",
 	"dojo/_base/lang",
@@ -20,13 +21,14 @@ define([
 	"lib/md5"
 ], function(
 	declare,
-	_variableTestMixin, interval, _shortlist, _services, _venues, store,
+	_variableTestMixin, interval,
+	_shortlist, _services, _venues, _activities, store,
 	xhrManager, lang, JSON, topic, array, md5
 ){
 	"use strict";
 	
 	var construct = declare([
-		_variableTestMixin, store, _shortlist, _services, _venues
+		_variableTestMixin, store, _shortlist, _services, _venues, _activities
 	], {
 		"id": "rcbcPIN",
 		"sessionOnly": false,
@@ -50,6 +52,16 @@ define([
 						data,
 						lang.hitch(this, this.readyStubs)
 					);
+				},
+				"errorMsg": "Failed to refresh service stubs - now working off cache",
+				"hitch": this
+			});
+			
+			xhrManager.add({
+				"url": "/activitiesStub.json",
+				"success": function(data){
+					//this._removeOldServices(data);
+					this._updateActivitiesSuccess(data);
 				},
 				"errorMsg": "Failed to refresh service stubs - now working off cache",
 				"hitch": this
