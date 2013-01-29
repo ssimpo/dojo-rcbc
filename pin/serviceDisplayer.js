@@ -138,7 +138,7 @@ define([
 			this._ifHasClear("accessWidget");
 			this._ifHasClear("serviceHoursWidget");
 			this._ifHasClear("venuesNode");
-			this._ifHasClear("mapNode");
+			//this._ifHasClear("mapNode");
 		},
 		
 		_ifHasClear: function(nodeName, destroy){
@@ -186,7 +186,6 @@ define([
 		
 		_createContent: function(value){
 			if(this.titleNotify || this.show.title){
-				console.log("DISPLAYER VALUE: ", value);
 				this._createTitle(value);
 			}
 			
@@ -197,7 +196,7 @@ define([
 			this._createSection(this.show.costs, "_createCostTable", value);
 			this._createSection(this.show.accessDetails, "_createAccessTable", value);
 			this._createSection(this.show.serviceHours, "_createServiceHoursTable", value);
-			this._createSection(this.show.map, "_createMap", value);
+			//this._createSection(this.show.map, "_createMap", value);
 		},
 		
 		_createSection: function(tester, method, value){
@@ -214,20 +213,7 @@ define([
 				domConstr.empty(this.titleNode);
 			}
 			
-			var title = "";
-			var serviceTitle = this._getField(value, "serviceName");
-			var orgTitle = this._getField(value, "orgName");
-			
-			if((serviceTitle === "") && (orgTitle !== "")){
-				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")){
-				title = serviceTitle + " ("+orgTitle+")";
-			}else if(serviceTitle !== ""){
-				title = serviceTitle;
-			}else{
-				title = this._getField(value, "title");
-			}
-			
+			var title = this._getTitleText(value);
 			if(this.show.titleLink){
 				var id = this._getField(value, "id");
 				if(!this._isBlank(id)){
@@ -241,6 +227,25 @@ define([
 			
 			if(this.titleNotify){
 				topic.publish("/rcbc/pin/titleChange", title);
+			}
+			
+			return title;
+		},
+		
+		_getTitleText: function(value){
+			var title = this._getField(value, "title");
+			
+			if(this._isBlank(title)){
+				var serviceTitle = this._getField(value, "serviceName");
+				var orgTitle = this._getField(value, "orgName");
+				
+				if((serviceTitle === "") && (orgTitle !== "")){
+					title = orgTitle;
+				}else if((serviceTitle !== "") && (orgTitle !== "")){
+					title = serviceTitle + " ("+orgTitle+")";
+				}else if(serviceTitle !== ""){
+					title = serviceTitle;
+				}
 			}
 			
 			return title;

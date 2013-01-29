@@ -15,7 +15,9 @@ define([
 	"dojo/text!./views/venueDisplayer.html",
 	"dojo/dom-construct",
 	"dojo/_base/lang",
-	"dojo/topic"
+	"dojo/topic",
+	
+	"simpo/maps/google/canvas"
 ], function(
 	declare, _widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
@@ -38,9 +40,9 @@ define([
 		"venueId": "",
 		"data": null,
 		
-		"_mainDiv": {},
 		"application": {},
 		"titleLevel": 2,
+		"hiddenNode": null,
 		
 		
 		postCreate: function(){
@@ -59,6 +61,11 @@ define([
 			);
 		},
 		
+		_setVenueIdAttr: function(value){
+			this.venueId = value;
+			this._getData(lang.hitch(this, this._gotVenueData));
+		},
+		
 		_venueDataUpdate: function(id, data){
 			if(this._isEqual(id, this.venueId)){
 				this.data = data.data;
@@ -68,15 +75,19 @@ define([
 		
 		_gotVenueData: function(){
 			this._addDescription();
-			this._mainDiv = this.domNode;
-			this._addTitle();
-			this._addAddress();
+			this._updateAddressNode();
+			this._hideNode(this.mapNode);
 		},
 		
 		_addDescription: function(){
 			this.description = lang.trim(this.description);
-			if(this.description != ""){
+			if(this.description == ""){
 				this.description = lang.trim(this.data.name);
+			}
+			if(this.description == ""){
+				if(this.data.house_no_name.length >= 8){
+					this.description = lang.trim(this.data.house_no_name);
+				}
 			}
 		},
 		
@@ -92,58 +103,142 @@ define([
 			}
 		},
 		
+		_updateAddressNode: function(){
+			domConstr.empty(this.addressNode);
+			var addressContentNode = this._addTitle();
+			var addressHTML = this._addAddress(addressContentNode);
+			
+			domConstr.create("div", {
+				"innerHTML": addressHTML
+			}, addressContentNode);
+		},
+		
 		_addTitle: function(){
 			if(this.description != ""){
 				var subTitleLevel = this.titleLevel + 1;
-				var div = domConstr.create("div", {}, this._mainDiv);
 				var h3 = domConstr.create("h"+subTitleLevel.toString(), {
 					"innerHTML": this.description
-				}, div);
+				}, this.addressNode);
 				var indent = domConstr.create("div", {
 					"class": "indent"
-				}, div);
-				this._mainDiv = div;
+				}, this.addressNode);
+				
+				return indent;
+			}
+			
+			return this.addressNode;
+		},
+		
+		_addAddress: function(addressContentNode){
+			var html = "";
+			
+			try {
+				if(!this._isEqual(this.description, this.data.name)){
+					html = this._addAddressLine(
+						html, this.data.name, {
+							"bold": true
+						}
+					);
+				}
+			
+				if((!this._isBlank(this.data.house_no_name)) && (!this._isEqual(this.data.house_no_name, this.data.name))){
+					if(this.data.house_no_name.length < 8){
+						html = this._addAddressLine(
+							html,
+							this.data.house_no_name + " " + this.data.street
+						);
+					}else{
+						if(!this._isEqual(this.description, this.data.house_no_name)){
+							html = this._addAddressLine(
+								html, this.data.house_no_name, {
+									"bold": this._isBlank(this.data.name)
+								}
+							);
+						}
+						html = this._addAddressLine(html, this.data.street);
+					}
+				}else{
+					html = this._addAddressLine(html, this.data.street);
+				}
+			
+				html = this._addAddressLine(
+					html, this.data.area
+				);
+				html = this._addAddressLine(
+					html, this.data.town, {
+						"punctuation": "."
+					}
+				);
+				html = this._addAddressLine(
+					html, this.data.postcode, {
+						"punctuation": ""
+					}
+				);
+			}catch(e){
+				console.info("Could not add addrsss to venue displayer", e);
+			}
+			
+			return html;
+		},
+		
+		_addAddressLine: function(html, lineText, options){
+			options = ((options === undefined) ? {} : options);
+			lineText = lang.trim(lineText);
+			
+			if(this._hasProperty(options, "bold")){
+				if(options.bold){
+					lineText = "<b>" + lineText + "</b>";
+				}
+			}
+			
+			var punctuation = ",";
+			if(this._hasProperty(options, "punctuation")){
+				punctuation = options.punctuation;
+			}
+			
+			if(!this._isBlank(lineText)){
+				html += (lineText + punctuation + "<br />");
+			}
+			
+			return html;
+		},
+		
+		_hideNode: function(node){
+			try{
+				if(this._isWidget(node)){
+					node = node.domNode
+				}
+				if(this._isElement(node)){
+					if(this.hiddenNode !== null){
+						domConstr.place(node, this.hiddenNode);
+					}
+				}
+			}catch(e){
+				console.info("Could not hide venue node item", e);
 			}
 		},
 		
-		_addAddress: function(){
-			var html = "";
-			if(this.data.name != ""){
-				html += "<b>"+this.data.name+"</b><br />";
-			}
-			if((this.data.house_no_name != "") && (this.data.house_no_name != this.data.name)){
-				if(this.data.house_no_name.length < 8){
-					html += lang.trim(this.data.house_no_name + " " + this.data.street) + "<br />";
-				}else{
-					if(this.data.name == ""){
-						html += "<b>"+this.data.house_no_name + "</b><br />";
-					}else{
-						html += this.data.house_no_name + "<br />";
-					}
-					if(this.data.street == ""){
-						html += this.data.street + "<br />";
-					}
-				}
-			}else{
-				if(this.data.street == ""){
-					html += this.data.street + "<br />";
-				}
-			}
-			if(this.data.area != ""){
-				html += this.data.area + "<br />";
-			}
-			if(this.data.town != ""){
-				html += this.data.town + "<br />";
-			}
-			if(this.data.postcode != ""){
-				html += this.data.postcode + "<br />";
-			}
+		_showNode: function(node, refNode, position){
+			try {
+				refNode = ((refNode === undefined) ? this.domNode : refNode);
+				position = ((position === undefined) ? "last" : position);
 			
-			domConstr.create("div", {
-				"innerHTML": html
-			}, this._mainDiv);
-		}
+				if(this._isWidget(node)){
+					node = node.domNode
+				}
+				if(this._isElement(node)){
+					if(this.hiddenNode !== null){
+						domConstr.place(node, refNode, position);
+					}
+				}
+			}catch(e){
+				console.info("Could not show venue node item", e);
+			}
+		},
 		
+		_showMap: function(){
+			this._showNode(this.mapNode);
+		}
 	});
 	
 	return construct;
