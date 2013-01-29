@@ -149,6 +149,11 @@ define([
 		},
 		
 		_formatHours: function(hours){
+			if(/\d\d\d\d\-\d\d\-\d\dT\d\d\:\d\d\:\d\d/.test(hours)){
+				hours = hours.split("T");
+				hours = hours[1].split("Z");
+				hours = hours[0];
+			}
 			return hours.substring(0,5);
 		},
 		

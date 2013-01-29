@@ -741,20 +741,13 @@ define([
 		},
 		
 		_displayService: function(id, section){
-			var service = this.store.getService(id);
-			if(this._isBlank(service)){
-				var service = this.store.getActivity(id);
-				console.log("ACTIVITY? ",  service);
-			}
-			if(this._isBlank(service)){
-				var service = this.store.getEvent(id);
-				console.log("EVENT? ",  service);
-			}
+			var service = this.store.get(id);
 			
 			if(!this._isBlank(service)){
 				if(this._isBlank(section)){
 					this._setServiceHash(service, false);
 				}
+				
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
