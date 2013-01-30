@@ -20,7 +20,7 @@ define([
 	"dijit/form/Button",
 	"dojo/topic",
 	"./serviceDisplayer/contactsTable",
-	"./serviceDisplayer/venueDisplayer",
+	"./serviceDisplayer/venuesDisplayer",
 	"./serviceDisplayer/costTable",
 	"./serviceDisplayer/accessTable",
 	"./serviceDisplayer/serviceHoursTable",
@@ -31,7 +31,7 @@ define([
 	i18n, strings, template,
 	lang, domConstr, domAttr, array, Button, topic,
 	
-	contactsTable, venueDisplayer, costTable, accessTable, serviceHoursTable,
+	contactsTable, venuesDisplayer, costTable, accessTable, serviceHoursTable,
 	googleMap
 ){
 	"use strict";
@@ -317,32 +317,11 @@ define([
 		},
 		
 		_createVenues: function(value){
-			this._createAttachPoint("venuesNode", "div");
-			domConstr.empty(this.venuesNode);
-			
-			if(!this._isBlank(value.venues)){
-				array.forEach(value.venues, function(venue){
-					var venueDom = this._createVenue(venue);
-					if(venueDom !== null){
-						domConstr.place(venueDom, this.venuesNode);
-					}
-				},this);
-			}
-			
-			return this.venuesNode;
-		},
-		
-		_createVenue: function(venue){
-			var venueDom = null;
-			
-			if(venue.venueId != ""){
-				venue.application = this.application;
-				venue.titleLevel = this.titleLevel+1;
-				var venueWidget = new venueDisplayer(venue);
-				venueDom = venueWidget.domNode;
-			}
-			
-			return venueDom;
+			this._createAttachPoint("venuesNode", venuesDisplayer, {
+				"application": this.application,
+				"titleLevel": this.titleLevel+1,
+				"value": value.venues
+			});
 		},
 		
 		_createCostTable: function(value){
