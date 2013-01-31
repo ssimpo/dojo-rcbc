@@ -19,12 +19,13 @@ define([
 	"dojo/_base/array",
 	"dojo/topic",
 	"./venuesDisplayer/venueDisplayer",
+	"dojo/on",
 	
 	"simpo/maps/google/canvas"
 ], function(
 	declare, _widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template,
-	typeTest, domConstr, lang, array, topic, venueDisplayer
+	typeTest, domConstr, lang, array, topic, venueDisplayer, on
 ){
 	"use strict";
 	
@@ -55,7 +56,20 @@ define([
 		},
 		
 		_init: function(){
+			var self = this;
+			var loadDone = false;
 			
+			on(this.mapNode, "idle", function(){
+				if(!loadDone){
+					require(["dojo/query"], function($){
+						$(".gmnoprint").forEach(function(area){
+							console.log("HELLO-3");
+							console.log(area);
+						}, self);
+					});
+					loadDone = true;
+				}
+			});
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -68,6 +82,7 @@ define([
 		_setValueAttr: function(value){
 			try{
 				this.clear();
+				this._hideMap();
 				if(!typeTest.isEmpty(value)){
 					value = this._parseVenuesArray(value);
 					this.value = value;
@@ -114,6 +129,7 @@ define([
 		clear: function(){
 			this._venueIds = new Object();
 			domConstr.empty(this.venuesNode);
+			this.mapNode.clear();
 		},
 		
 		_addVenues: function(venues){
@@ -148,10 +164,8 @@ define([
 					this.mapNode.plot(postcode, lang.hitch(this, function(marker){
 						this._venueIds[venueId].mapMarker = marker;
 						this.mapNode.centre(marker.position.Ya, marker.position.Za);
-						//var icon = new google.maps.Icon({
-						//	"url": "/images/PINsml.png"
-						//});
 						marker.setIcon("/images/PINsml.png");
+						this._showMap();
 					}));
 				}
 			}
@@ -169,6 +183,10 @@ define([
 			return "";
 		},
 		
+		_hideMap: function(){
+			this._hideNode(this.mapNode);
+		},
+		
 		_hideNode: function(node){
 			try{
 				if(this._isWidget(node)){
@@ -181,6 +199,13 @@ define([
 				}
 			}catch(e){
 				console.info("Could not hide venue node item.", e);
+			}
+		},
+		
+		_showMap: function(){
+			this._showNode(this.mapNode);
+			if(google){
+				google.maps.event.trigger(this.mapNode.map, "resize");
 			}
 		},
 		
@@ -199,17 +224,6 @@ define([
 				}
 			}catch(e){
 				console.info("Could not show venue node item.", e);
-			}
-		},
-		
-		_showMap: function(postcode){
-			try{
-				this.mapNode.clear();
-				this.mapNode.plot(postcode);
-				this.mapNode.centre(postcode);
-				this._showNode(this.mapNode);
-			}catch(e){
-				console.info("Could not show the map.", e);
 			}
 		}
 	});
