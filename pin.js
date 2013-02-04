@@ -424,18 +424,18 @@ define([
 				
 			if(!this._isBlank(query.section)){
 				this._displayMenu(query.section);
+				if(!this._isEqual(query.section, this.get("section"))){
+					this.set("section", query.section);
+				}
 			}
 			
-			//if(!this._isEqual(query.id, this.get("serviceId"))){
-				this.serviceListDisplayer.clear();
-				this.sectionMenu.clear();
-				this.shortlist.clear();
-				this.searchForm.clear();
+			this.serviceListDisplayer.clear();
+			this.sectionMenu.clear();
+			this.shortlist.clear();
+			this.searchForm.clear();
 				
-				this._displayService(query.id.toLowerCase(), query.section);
-				this.set("serviceId", query.id.toLowerCase());
-			//}else{
-			//}
+			this._displayService(query.id.toLowerCase(), query.section);
+			this.set("serviceId", query.id.toLowerCase());
 		},
 		
 		_hashChangeNewSection: function(query){
