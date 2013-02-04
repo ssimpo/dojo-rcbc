@@ -203,7 +203,10 @@ define([
 		},
 		
 		_showMap: function(){
-			this._showNode(this.mapNode);
+			this._showNode(
+				this.mapNode,
+				this.application.serviceDisplayer.domNode
+			);
 			if(google){
 				google.maps.event.trigger(this.mapNode.map, "resize");
 			}
