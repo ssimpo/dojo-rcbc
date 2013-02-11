@@ -24,6 +24,7 @@ define([
 	"./serviceDisplayer/costTable",
 	"./serviceDisplayer/accessTable",
 	"./serviceDisplayer/serviceHoursTable",
+	"./serviceDisplayer/activityTimesTable",
 	"simpo/maps/google/canvas"
 ], function(
 	declare,
@@ -32,7 +33,7 @@ define([
 	lang, domConstr, domAttr, array, Button, topic,
 	
 	contactsTable, venuesDisplayer, costTable, accessTable, serviceHoursTable,
-	googleMap
+	activityTimesTable, googleMap
 ){
 	"use strict";
 	
@@ -57,6 +58,7 @@ define([
 		"serviceHoursWidget": null,
 		"venuesNode": null,
 		"mapNode": null,
+		"accessTableWidget": null,
 		
 		"application": null,
 		"parentNode": null,
@@ -77,7 +79,8 @@ define([
 			"venues": true,
 			"serviceHours": true,
 			"accessDetails": true,
-			"map": true
+			"map": true,
+			"activityTimes": true
 		},
 		
 		"_accessTesters": [
@@ -116,6 +119,7 @@ define([
 		_setValueAttr: function(value){
 			this._initNodes();
 			this.value = value;
+			console.log(value);
 			
 			if(this._isBlank(this.value)){
 				this._hideWidget();
@@ -133,6 +137,7 @@ define([
 			this._ifHasClear("titleNode", !this.show.title);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
+			this._ifHasClear("accessTableWidget");
 			this._ifHasClear("contactsWidget");
 			this._ifHasClear("costsWidget");
 			this._ifHasClear("accessWidget");
@@ -192,6 +197,7 @@ define([
 			this._createSection(this.show.description, "_createDescription", value);
 			this._createSection(this.show.keyFeatures, "_createKeyFeatures", value);
 			this._createSection(this.show.contacts, "_createContactsTable", value);
+			this._createSection(this.show.activityTimes, "_createActivityTimesTable", value);
 			this._createSection(this.show.venues, "_createVenues", value);
 			this._createSection(this.show.costs, "_createCostTable", value);
 			this._createSection(this.show.accessDetails, "_createAccessTable", value);
@@ -336,7 +342,7 @@ define([
 		},
 		
 		_createAccessTable: function(value){
-			if(this._hasAccessDetails()){
+			if(!this._isBlank(value.days)){
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
 					"constructor": accessTable,
@@ -344,6 +350,20 @@ define([
 					"titleLevel": this.titleLevel+1
 				});
 				return this.accessWidget.domNode;
+			}
+			
+			return domConstr.create("div");
+		},
+		
+		_createActivityTimesTable: function(value){
+			if(this._hasAccessDetails()){
+				this._getTableWidgetDom(value, {
+					"propertyNode": "accessTableWidget",
+					"constructor": activityTimesTable,
+					"title": "Activity Times",
+					"titleLevel": this.titleLevel+1
+				});
+				return this.accessTableWidget.domNode;
 			}
 			
 			return domConstr.create("div");
