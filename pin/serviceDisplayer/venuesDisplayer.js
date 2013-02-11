@@ -159,11 +159,11 @@ define([
 				venueId = venueId.toLowerCase();
 				var data = this.application.store.get(venueId);
 				var postcode = this._getPostcodeFromVenueData(data);
+				this.mapNode.centre(postcode);
 				
 				if(!typeTest.isBlank(postcode)){
 					this.mapNode.plot(postcode, lang.hitch(this, function(marker){
 						this._venueIds[venueId].mapMarker = marker;
-						this.mapNode.centre(marker.position.Ya, marker.position.Za);
 						marker.setIcon("/images/PINsml.png");
 						this._showMap();
 					}));

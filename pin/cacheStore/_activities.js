@@ -11,9 +11,10 @@ define([
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/topic",
-	"simpo/array"
+	"simpo/array",
+	"simpo/typeTest"
 ], function(
-	declare, interval, xhrManager, array, lang, topic, iarray
+	declare, interval, xhrManager, array, lang, topic, iarray, typeTest
 ) {
 	"use strict";
 	
@@ -111,31 +112,31 @@ define([
 		
 		_updateActivity: function(activity){
 			try{
-				var item = this._convertActivityToDataItem(activity);
-				var cItem = this.getActivity(item.id);
-				var callUpdate = false;
+				if(typeTest.isProperty(activity, "id")){
+					var item = this._convertActivityToDataItem(activity);
+					var cItem = this.getActivity(item.id);
+					var callUpdate = false;
 				
-				if((item.isStub) && (cItem !== null)){
-					item = lang.mixin(cItem, item);	
-				}
-				
-				if(item.isStub){
-					this._activityIdsToUpdate.push(item.id);
-				}else if(cItem !== null){
-					if(this._needsUpdating(cItem, item)){
-						this._activityIdsToUpdate.push(item.id);
+					if((item.isStub) && (cItem !== null)){
+						item = lang.mixin(cItem, item);	
 					}
+				
+					if(item.isStub){
+						this._activityIdsToUpdate.push(item.id);
+					}else if(cItem !== null){
+						if(this._needsUpdating(cItem, item)){
+							this._activityIdsToUpdate.push(item.id);
+						}
+					}
+				
+					var isStub = this._isActivityStub(item);
+					item.isStub = isStub;
+					item.data.isStub = isStub;
+				
+					this.put(item);
+					topic.publish("/rcbc/pin/updateActivity", item.id, item);
+					this._checkForServiceVenues(activity);
 				}
-				
-				var isStub = this._isActivityStub(item);
-				item.isStub = isStub;
-				item.data.isStub = isStub;
-				
-				this.put(item);
-				topic.publish("/rcbc/pin/updateActivity", item.id, item);
-				this._checkForServiceVenues(activity);
-				
-				//console.log("ACTIVITY", item);
 			}catch(e){
 				console.warn(e);
 			}
@@ -143,31 +144,31 @@ define([
 		
 		_updateEvent: function(event){
 			try{
-				var item = this._convertEventToDataItem(event);
-				var cItem = this.getEvent(item.id);
-				var callUpdate = false;
+				if(typeTest.isProperty(event,"id")){
+					var item = this._convertEventToDataItem(event);
+					var cItem = this.getEvent(item.id);
+					var callUpdate = false;
 				
-				if((item.isStub) && (cItem !== null)){
-					item = lang.mixin(cItem, item);	
-				}
-				
-				if(item.isStub){
-					this._activityIdsToUpdate.push(item.id);
-				}else if(cItem !== null){
-					if(this._needsUpdating(cItem, item)){
-						this._activityIdsToUpdate.push(item.id);
+					if((item.isStub) && (cItem !== null)){
+						item = lang.mixin(cItem, item);	
 					}
+				
+					if(item.isStub){
+						this._activityIdsToUpdate.push(item.id);
+					}else if(cItem !== null){
+						if(this._needsUpdating(cItem, item)){
+							this._activityIdsToUpdate.push(item.id);
+						}
+					}
+				
+					var isStub = this._isActivityStub(item);
+					item.isStub = isStub;
+					item.data.isStub = isStub;
+				
+					this.put(item);
+					topic.publish("/rcbc/pin/updateEvent", item.id, item);
+					this._checkForServiceVenues(event);
 				}
-				
-				var isStub = this._isActivityStub(item);
-				item.isStub = isStub;
-				item.data.isStub = isStub;
-				
-				this.put(item);
-				topic.publish("/rcbc/pin/updateEvent", item.id, item);
-				this._checkForServiceVenues(event);
-				
-				//console.log("EVENT", item);
 			}catch(e){
 				console.warn(e);
 			}
