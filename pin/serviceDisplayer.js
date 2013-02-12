@@ -119,7 +119,6 @@ define([
 		_setValueAttr: function(value){
 			this._initNodes();
 			this.value = value;
-			console.log(value);
 			
 			if(this._isBlank(this.value)){
 				this._hideWidget();

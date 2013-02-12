@@ -14,7 +14,7 @@ define([
 	"dojo/i18n!./nls/pin",
 	"dojo/i18n!dijit/nls/loading",
 	"dojo/text!./views/pin.html",
-	"rcbc/console!./nls/errors",
+	//"rcbc/console!./nls/errors",
 	"./pin/cacheStore",
 	"dojo/hash",
 	"dojo/topic",
@@ -42,7 +42,7 @@ define([
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, loadingStrings, template, console,
+	i18n, strings, loadingStrings, template, /*console,*/
 	store, hash, topic, lang, ioQuery, request, array,
 	domConstr, domAttr, domClass, domStyle, $, on, registry, string
 ){
