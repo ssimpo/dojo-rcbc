@@ -46,7 +46,6 @@ define([
 		
 		_showWidget: function(){
 			if(this.parentNode !== null){
-				console.log(this.parentPosPlace);
 				domConstr.place(
 					this.domNode, this.parentNode, this.parentPosPlace
 				);

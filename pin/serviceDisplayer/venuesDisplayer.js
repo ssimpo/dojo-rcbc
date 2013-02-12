@@ -70,6 +70,7 @@ define([
 					loadDone = true;
 				}
 			});
+			this._initTopicSubscriptions();
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -157,16 +158,21 @@ define([
 		_plotOnMap: function(venueId){
 			if(!typeTest.isBlank(venueId)){
 				venueId = venueId.toLowerCase();
-				var data = this.application.store.get(venueId);
-				var postcode = this._getPostcodeFromVenueData(data);
-				this.mapNode.centre(postcode);
+				var data = this.application.store.getVenue(venueId);
 				
-				if(!typeTest.isBlank(postcode)){
-					this.mapNode.plot(postcode, lang.hitch(this, function(marker){
-						this._venueIds[venueId].mapMarker = marker;
-						marker.setIcon("/images/PINsml.png");
-						this._showMap();
-					}));
+				if(!typeTest.isBlank(data)){
+					var postcode = this._getPostcodeFromVenueData(data);
+					this.mapNode.centre(postcode);
+				
+					if(!typeTest.isBlank(postcode)){
+						this.mapNode.plot(postcode, lang.hitch(this, function(marker){
+							this._venueIds[venueId].mapMarker = marker;
+							marker.setIcon("/images/PINsml.png");
+							this._showMap();
+						}));
+					}
+				}else{
+					this.application.store.updateVenue(venueId);
 				}
 			}
 		},
@@ -227,6 +233,16 @@ define([
 				}
 			}catch(e){
 				console.info("Could not show venue node item.", e);
+			}
+		},
+		
+		_venueDataUpdate: function(data){
+			if(!typeTest.isBlank(data)){
+				array.forEach(this.value, function(venue){
+					if(typeTest.isEqual(venue.venueId, data)){
+						this._plotOnMap(data);
+					}
+				}, this);
 			}
 		}
 	});

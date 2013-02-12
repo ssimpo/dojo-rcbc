@@ -151,6 +151,7 @@ define([
 					domConstr.place(
 						this.domNode, this.parentNode, this.parentPosPlace
 					);
+					
 					domClass.replace(
 						this.parentNode,
 						"articleContent-wide",
