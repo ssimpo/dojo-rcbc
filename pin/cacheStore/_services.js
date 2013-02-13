@@ -232,14 +232,14 @@ define([
 		
 		_updateServiceSuccess: function(data, callback){
 			callback = ((callback === undefined) ? function(){} : callback);
-			
 			if(this._hasProperty(data, "services")){
 				iarray.forEach(
 					data.services,
 					this._throttle,
 					this._updateService,
-					callback,
 					this
+				).then(
+					lang.hitch(this, callback)
 				);
 			}
 		},
@@ -259,6 +259,7 @@ define([
 			}, this);
 		},
 		
+		_counter: 0,
 		_updateService: function(service){
 			try{
 				var item = this._convertServiceToDataItem(service);
