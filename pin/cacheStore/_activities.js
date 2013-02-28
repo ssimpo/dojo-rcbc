@@ -24,10 +24,10 @@ define([
 		
 		constructor: function(){
 			interval.add(
-				lang.hitch(this, this._callEventUpdate), true, 3
+				lang.hitch(this, this._callEventUpdate), true, 4
 			);
 			interval.add(
-				lang.hitch(this, this._callActivityUpdate), true, 3
+				lang.hitch(this, this._callActivityUpdate), true, 4
 			);
 		},
 		

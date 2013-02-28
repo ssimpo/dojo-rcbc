@@ -121,7 +121,7 @@ define([
 		
 		_getData: function(){
 			if(!typeTest.isBlank(this.value)){
-				var data = this.application.store.get(this.value);
+				var data = this.application.store.getVenue(this.value);
 				if(!typeTest.isBlank(data)){
 					this.set("data", data.data);
 				}else{

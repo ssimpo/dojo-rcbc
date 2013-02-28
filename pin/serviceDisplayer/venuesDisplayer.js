@@ -134,6 +134,7 @@ define([
 		},
 		
 		_addVenues: function(venues){
+			console.log(venues);
 			array.forEach(venues, function(venue){
 				if(!typeTest.isProperty(this._venueIds, venue.venueId)){
 					var venueWidget = new venueDisplayer({
@@ -162,7 +163,8 @@ define([
 				
 				if(!typeTest.isBlank(data)){
 					var postcode = this._getPostcodeFromVenueData(data);
-					this.mapNode.centre(postcode);
+					console.log(2, postcode);
+					//this.mapNode.centre(postcode);
 				
 					if(!typeTest.isBlank(postcode)){
 						this.mapNode.plot(postcode, lang.hitch(this, function(marker){

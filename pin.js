@@ -15,7 +15,7 @@ define([
 	"dojo/i18n!dijit/nls/loading",
 	"dojo/text!./views/pin.html",
 	//"rcbc/console!./nls/errors",
-	"./pin/cacheStore",
+	"./pin/cacheStore2",
 	"dojo/hash",
 	"dojo/topic",
 	"dojo/_base/lang",
@@ -47,6 +47,18 @@ define([
 	domConstr, domAttr, domClass, domStyle, $, on, registry, string
 ){
 	"use strict";
+	
+	var staticStoreReady = false;
+	var staticStoreReadyStubs = false;
+	
+	var staticStore = new store({
+		"ready": function(){
+			staticStoreReady = true;
+		},
+		"readyStubs": function(){
+			staticStoreReadyStubs = true;
+		}
+	});
 	
 	var construct = declare([
 		_widget, _templated, _wTemplate, _variableTestMixin
@@ -97,10 +109,19 @@ define([
 		_init: function(){
 			try{
 				this.loading(true);
-				this.store = new store({
+				/*this.store = new store({
 					"ready": lang.hitch(this, this._databaseReady),
 					"readyStubs": lang.hitch(this, this._databaseReadyStubs)
-				});
+				});*/
+				
+				this.store = staticStore;
+				if(!staticStoreReadyStubs){
+					staticStore.readyStubs = lang.hitch(this, this._databaseReadyStubs);
+				}
+				if(!staticStoreReady){
+					staticStore.ready = lang.hitch(this, this._databaseReady);
+				}
+				
 				//uncomment to clear the localstorage.
 				//this.store.clear(true);
 			
@@ -110,7 +131,7 @@ define([
 				this._initSearchForm();
 				this._initTooltip();
 			}catch(e){
-				console.warn("pin.couldNotInit");
+				console.warn("pin.couldNotInit", e);
 			}
 		},
 		
@@ -741,7 +762,7 @@ define([
 		},
 		
 		_displayService: function(id, section){
-			var service = this.store.get(id);
+			var service = this.store.getService(id);
 			
 			if(!this._isBlank(service)){
 				if(this._isBlank(section)){

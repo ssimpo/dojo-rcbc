@@ -22,7 +22,6 @@ define([
 	"dojo/hash",
 	"dojo/io-query",
 	"dojo/topic",
-	"simpo/layout/pagedColumnList",
 	
 	"rcbc/pin/expandingDiv"
 	
@@ -30,8 +29,7 @@ define([
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template, loadingStrings,
-	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic,
-	pagedColumnList
+	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic
 ){
 	"use strict";
 	

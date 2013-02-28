@@ -18,12 +18,13 @@ define([
 	"dojo/json",
 	"dojo/topic",
 	"dojo/_base/array",
-	"lib/md5"
+	"lib/md5",
+	"simpo/typeTest"
 ], function(
 	declare,
 	_variableTestMixin, interval,
 	_shortlist, _services, _venues, _activities, store,
-	xhrManager, lang, JSON, topic, array, md5
+	xhrManager, lang, JSON, topic, array, md5, typeTest
 ){
 	"use strict";
 	
@@ -34,9 +35,12 @@ define([
 		"sessionOnly": false,
 		"compress": true,
 		"encrypt": false,
-		"_throttle": 100,
-		"_serverThrottle": 50,
+		"_throttle": 50,
+		"_serverThrottle": 100,
 		"readyStubs": function(){},
+		"_queryCache":{
+			"type":{}
+		},
 		
 		
 		constructor: function(args){
@@ -66,6 +70,14 @@ define([
 				"errorMsg": "Failed to refresh service stubs - now working off cache",
 				"hitch": this
 			});
+		},
+		
+		_getCache: function(type){
+			if(!typeTest.isProperty(this._queryCache.type, type)){
+				this._queryCache.type[type] = this.query({"type":type});
+			}
+			
+			return this._queryCache.type[type];
 		},
 		
 		_checkForServiceVenues: function(service){
