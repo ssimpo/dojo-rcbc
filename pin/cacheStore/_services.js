@@ -11,9 +11,10 @@ define([
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/topic",
-	"simpo/array"
+	"simpo/array",
+	"simpo/typeTest"
 ], function(
-	declare, interval, xhrManager, array, lang, topic, iarray
+	declare, interval, xhrManager, array, lang, topic, iarray, typeTest
 ) {
 	"use strict";
 	
@@ -23,7 +24,7 @@ define([
 		
 		constructor: function(){
 			interval.add(
-				lang.hitch(this, this._callServicesUpdate), true, 2
+				lang.hitch(this, this._callServicesUpdate), true, 4
 			);
 			//interval.add(
 				//lang.hitch(this, this._updateFromServiceCache), true, 2
@@ -119,7 +120,7 @@ define([
 		},
 		
 		getCategoryList: function(section){
-			var services = this.query({"type":"service"});
+			var services = this._getCache("service");
 			var categoryList = {};
 			var fieldName = this._getCategoryFieldName(section);
 			

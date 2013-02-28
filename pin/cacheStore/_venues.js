@@ -23,7 +23,7 @@ define([
 		
 		constructor: function(){
 			interval.add(
-				lang.hitch(this, this._callVenuesUpdate), true, 2
+				lang.hitch(this, this._callVenuesUpdate), true, 4
 			);
 			//interval.add(
 				//lang.hitch(this, this._updateFromVenueCache), true, 2
