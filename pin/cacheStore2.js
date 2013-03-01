@@ -9,6 +9,7 @@
 define([
 	"dojo/_base/declare",
 	"simpo/store/local",
+	"./cacheStore/queryCache",
 	"simpo/typeTest",
 	"simpo/xhrManager",
 	"dojo/_base/lang",
@@ -19,7 +20,7 @@ define([
 	"dojo/has",
 	"dojo/sniff"
 ], function(
-	declare, Store, typeTest, xhrManager, lang, iArray, array,
+	declare, Store, queryCache, typeTest, xhrManager, lang, iArray, array,
 	interval, topic, has, sniff
 ){
 	"use strict";
@@ -38,6 +39,7 @@ define([
 		
 		"readyStubs": function(){},
 		
+		"_cache": null,
 		"_throttle": 50,
 		"_serverThrottle": 100,
 		"_serviceIdsToUpdate": [],
@@ -50,6 +52,7 @@ define([
 		},
 		
 		_init: function(){
+			this._cache = new queryCache();
 			this._initStores();
 			this._initIntervals();
 			this._callStubsUpdate();
@@ -366,12 +369,10 @@ define([
 		
 		_callServiceStubsUpdate: function(){
 			try{
-			console.log(1);
 			xhrManager.add({
 				"url": "/servicesStub.json",
 			}).then(
 				lang.hitch(this, function(data){
-					console.log(2,data);
 					this._removeOldServices(data);
 					this._updateServiceSuccess(
 						data,
@@ -379,14 +380,12 @@ define([
 					);
 				}),
 				lang.hitch(this, function(e){
-					console.log(3);
 					console.info("Failed to refresh service stubs - now working off cache", e);
 				})
 			);
 			}catch(e){
 				console.info(e);
 			}
-			console.log(4);
 		},
 		
 		_callActivityStubsUpdate: function(){
@@ -548,125 +547,73 @@ define([
 			});
 		},
 		
-		"_getSectionCache": {},
 		getSection: function(section){
 			var self = this;
 			
-			function getCache(section){
-				section = section.toLowerCase();
-				if(typeTest.isProperty(self._getSectionCache, section)){
-					var cTimestamp = new Date().getTime();
-					var qTimestamp = self._getSectionCache[section].timestamp;
+			var query = this._cache.getCache(
+				["getSection", section], lang.hitch(this, function(){
+					var fieldName = self._getCategoryFieldName(section);
+					var query = this.servicesStore.query(function(obj){
+						if(typeTest.isProperty(obj, "data")){
+							if(typeTest.isProperty(obj.data, fieldName)){
+								return !typeTest.isBlank(obj.data[fieldName])
+							}
+						}
+						return false;
+					});
 					
-					if(cTimestamp < (qTimestamp + (1000*60*3))){
-						return self._getSectionCache[section].query;
-					}	
-				}
-				
-				return null;
-			}
-			
-			function setCache(section, query){
-				section = section.toLowerCase();
-				self._getSectionCache[section] = {
-					"query": query,
-					"timestamp": new Date().getTime()
-				};
-			}
-			
-			var query = getCache(section);
-			if(query !== null){
-				return query;
-			}
-			
-			var fieldName = self._getCategoryFieldName(section);
-			query = this.servicesStore.query(function(obj){
-				if(typeTest.isProperty(obj, "data")){
-					if(typeTest.isProperty(obj.data, fieldName)){
-						return !typeTest.isBlank(obj.data[fieldName])
-					}
-				}
-				return false;
-			});
+					query = query.sort(function(a, b){
+						return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+					});
+					
+					return query;
+				})
+			);
 			
 			if(!typeTest.isBlank(query)){
-				query = query.sort(function(a, b){
-					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-				});
-				setCache(section, query);
 				return query;
 			}
 			return new Array();
 		},
 		
-		"_searchServicesCache": {},
 		searchServices: function(search, section){
 			var self = this;
 			
-			function getCache(section, search){
-				section = section.toLowerCase();
-				search = search.toLowerCase();
-				
-				if(typeTest.isProperty(self._searchServicesCache, section)){
-					if(typeTest.isProperty(self._searchServicesCache[section], search)){
-						var cTimestamp = new Date().getTime();
-						var qTimestamp = self._searchServicesCache[section][search].timestamp;
+			var query = this._cache.getCache(
+				["searchServices", section, search], lang.hitch(this, function(){
+					var query = null;
+					if(search.length > 2){
+						query = this._cache.getCache([
+							"searchServices",
+							section,
+							search.substring(0, search.length - 1)
+						]);
+					}
+					if(query === null){
+						if(!typeTest.isBlank(section)){
+							query = this.getSection(section);
+						}else{
+							query.servicesQuery.query({});
+						}
 					}
 					
-					if(cTimestamp < (qTimestamp + (1000*60))){
-						return self._searchServicesCache[section][search].query;
-					}	
-				}
-				
-				return null;
-			}
-			
-			function setCache(section, search, query){
-				section = section.toLowerCase();
-				search = search.toLowerCase();
-				
-				if(!typeTest.isProperty(self._searchServicesCache, section)){
-					self._searchServicesCache[section] = new Object();
-				}
-				
-				self._searchServicesCache[section][search] = {
-					"query": query,
-					"timestamp": new Date().getTime()
-				};
-			}
-			
-			var query = getCache(section, search);
-			if(query !== null){
-				console.log("FROM CACHE", search);
-				return query;
-			}
-			
-			if(search.length > 2){
-				query = getCache(section, search.substring(0, search.length - 1));
-			}
-			if(query === null){
-				if(!typeTest.isBlank(section)){
-					query = this.getSection(section);
-				}else{
-					query.servicesQuery.query({});
-				}
-			}else{
-				console.log("QUICK CACHE", search.substring(0, search.length - 1));
-			}
-			
-			var tests = this._parseSearch(search);
-			query = array.filter(query, function(service){
-				try{
-					if(typeTest.isProperty(service, "data")){
-						var searcher = JSON.stringify(service.data);
-						return this._searchTest(searcher, tests);
-					}
-				}catch(e){ }
-				return false;
-			}, this);
+					var tests = this._parseSearch(search);
+					query = array.filter(query, function(service){
+						try{
+							if(typeTest.isProperty(service, "data")){
+								var searcher = JSON.stringify(service.data);
+								return this._searchTest(searcher, tests);
+							}
+						}catch(e){ }
+						
+						return false;
+					}, this);
+					
+					return query;
+				})
+			);
 			
 			if(!typeTest.isBlank(query)){
-				setCache(section, search, query);
 				return query;
 			}
 			return new Array();
@@ -695,85 +642,58 @@ define([
 			return found;
 		},
 		
-		"_getCategoryCache": {},
 		getCategory: function(section, category){
 			var self = this;
 			
-			function getCache(section, category){
-				section = section.toLowerCase();
-				category = category.toLowerCase();
-				
-				if(typeTest.isProperty(self._getCategoryCache, section)){
-					if(typeTest.isProperty(self._getCategoryCache[section], category)){
-						var cTimestamp = new Date().getTime();
-						var qTimestamp = self._getCategoryCache[section][category].timestamp;
-						
-						if(cTimestamp < (qTimestamp + (1000*60))){
-							return self._getCategoryCache[section][category].query;
-						}
-					}
-				}
-				
-				return null;
-			}
-			
-			function setCache(section, category, query){
-				section = section.toLowerCase();
-				category = category.toLowerCase();
-				
-				if(!typeTest.isProperty(self._getCategoryCache, section)){
-					self._getCategoryCache[section] = new Object();
-				}
-				
-				self._getCategoryCache[section][category] = {
-					"query": query,
-					"timestamp": new Date().getTime()
-				};
-			}
-			
-			var query = getCache(section, category);
-			if(query !== null){
-				return query;
-			}
-			
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
-				if(this.servicesStore.get(category.toLowerCase())){
-					query = this.servicesStore.query(function(obj){
-						if(typeTest.isProperty(obj, "data")){
-							if(typeTest.isProperty(obj.data, "service")){
-								return (obj.data.service.toLowerCase() === category.toLowerCase());
-							}
+				var query = this._cache.getCache(
+					["getCategory", section, category], lang.hitch(this, function(){
+						if(this.servicesStore.get(category.toLowerCase())){
+							var query = this.servicesStore.query(function(obj){
+								if(typeTest.isProperty(obj, "data")){
+									if(typeTest.isProperty(obj.data, "service")){
+										return (obj.data.service.toLowerCase() === category.toLowerCase());
+									}
+								}
+								return false;
+							});
+					
+							query = query.sort(function(a, b){
+								return (((a.data.title) < (b.data.title)) ? -1 : 1);
+							});
+							
+							return query;
+						}else{
+							return [];
 						}
-						return false;
-					});
-					
-					query = query.sort(function(a, b){
-						return (((a.data.title) < (b.data.title)) ? -1 : 1);
-					});
-				}else{
-					return [];
-				}
-			}else{
-				query = this.getSection(section);
-				query = array.filter(query, function(service){
-					return self._itemHasCategory(service, section, category);
-				}, this);
-					
-				query = this.servicesStore.query(function(obj){
-					if(self._isServiceItem(obj)){
-						return self._itemHasCategory(obj, section, category);
-					}else{
-						return false;
 					}
-				});
-				
-				query = query.sort(function(a, b){
-					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-				});
+				));
+			}else{
+				var query = this._cache.getCache(
+					["getCategory", section, category], lang.hitch(this, function(){
+						var query = this.getSection(section);
+						query = array.filter(query, function(service){
+							return self._itemHasCategory(service, section, category);
+						}, this);
+						
+						query = this.servicesStore.query(function(obj){
+							if(self._isServiceItem(obj)){
+								return self._itemHasCategory(obj, section, category);
+							}else{
+								return false;
+							}
+						});
+						
+						query = query.sort(function(a, b){
+							return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+						});
+						
+						return query;
+					})
+				);
 			}
 			
 			if(!typeTest.isBlank(query)){
-				setCache(section, category, query);
 				return query;
 			}
 			return new Array();
@@ -864,63 +784,27 @@ define([
 			return null;
 		},
 		
-		"_getTagCache": {},
 		getTag: function(section, category, tag){
 			var self = this;
 			
-			function getCache(section, category, tag){
-				section = section.toLowerCase();
-				category = category.toLowerCase();
-				tag  = tag.toLowerCase();
-				
-				if(typeTest.isProperty(self._getTagCache, section)){
-					if(typeTest.isProperty(self._getTagCache[section], category)){
-						if(typeTest.isProperty(self._getTagCache[section][category], tag)){
-							var cTimestamp = new Date().getTime();
-							var qTimestamp = self._getTagCache[section][category][tag].timestamp;
-						
-							if(cTimestamp < (qTimestamp + (1000*60))){
-								return self._getTagCache[section][category][tag].query;
-							}
-						}
-						
-					}
-				}
-				
-				return null;
-			}
+			var query = this._cache.getCache(
+				["getTag", section, category, tag], lang.hitch(this, function(){
+					var query = this.getCategory(section, category);
+					query = array.filter(query, function(service){
+						return (self._itemHasTag(service, tag));
+					}, this);
 			
-			function setCache(section, category, tag, query){
-				section = section.toLowerCase();
-				category = category.toLowerCase();
-				tag  = tag.toLowerCase();
-				
-				if(!typeTest.isProperty(self._getTagCache, section)){
-					self._getTagCache[section] = new Object();
-					if(!typeTest.isProperty(self._getTagCache[section], category)){
-						self._getTagCache[section][category] = new Object();
-					}
-				}
-				
-				self._getTagCache[section][category][tag] = {
-					"query": query,
-					"timestamp": new Date().getTime()
-				};
-			}
+					return query.sort(function(a, b){
+						return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+					});
+				})
+			);
 			
-			var query = getCache(section, category, tag);
 			if(query !== null){
 				return query;
 			}
 			
-			var query = this.getCategory(section, category);
-			query = array.filter(query, function(service){
-				return (self._itemHasTag(service, tag));
-			}, this);
-			
-			return query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
+			return new Array();
 		},
 		
 		_itemHasTag: function(item, tag){
