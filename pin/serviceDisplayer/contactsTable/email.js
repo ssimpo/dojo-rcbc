@@ -14,10 +14,11 @@ define([
 	"dojo/text!./views/email.html",
 	"dojo/dom-attr",
 	"dojo/_base/lang",
-	"dojo/dom-construct"
+	"dojo/dom-construct",
+	"simpo/typeTest"
 ], function(
 	declare, _base, _templated, _wTemplate, i18n, strings, template,
-	domAttr, lang, domConstr
+	domAttr, lang, domConstr, typeTest
 ) {
 	"use strict";
 	
@@ -49,7 +50,7 @@ define([
 		_createAnchor: function(){
 			try{
 			var details = lang.trim(this.details);
-			if(!this._isBlank(details)){
+			if(!typeTest.isBlank(details)){
 				domAttr.set(this.anchorNode, "href", this._parseUrl(details));
 				domAttr.set(this.anchorNode, "innerHTML", details);
 			}

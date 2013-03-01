@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceListDisplayer",
 	"dojo/text!./views/serviceListDisplayer.html",
@@ -27,16 +26,13 @@ define([
 	
 	"rcbc/pin/expandingDiv"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, template, loadingStrings,
-	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic, typeTest, $
+	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	loadingStrings, lang, domConstr, domAttr, domClass, array, hash, ioQuery,
+	topic, typeTest, $
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	],{
+	var construct = declare([_widget, _templated, _wTemplate],{
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -101,7 +97,7 @@ define([
 			var oldCategory = this._createItemClass(this.category);
 			this.category = category;
 			domClass.add(this.domNode, this._createItemClass(this.category));
-			if(!this._isBlank(oldCategory)){
+			if(!typeTest.isBlank(oldCategory)){
 				domClass.remove(this.domNode, oldCategory);
 			}
 		},
@@ -110,8 +106,8 @@ define([
 			this._initNodes();
 			
 			this.value = value;
-			if(this._isBlank(this.value)){
-				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
+			if(typeTest.isBlank(this.value)){
+				if(typeTest.isElement(this.serviceListNode) || typeTest.isWidget(this.serviceListNode)){
 					this._clearServiceList();
 				}
 				this._hideWidget();
@@ -125,8 +121,8 @@ define([
 		
 		_setTagsAttr: function(value){
 			this.tags = value;
-			if(this._isBlank(this.tags)){
-				if(this._isElement(this.tagListNode) || this._isWidget(this.tagListNode)){
+			if(typeTest.isBlank(this.tags)){
+				if(typeTest.isElement(this.tagListNode) || typeTest.isWidget(this.tagListNode)){
 					domConstr.place(
 						this.expandingDiv.domNode,
 						this.hiddenDiv
@@ -197,12 +193,12 @@ define([
 		
 		_ifHasClear: function(nodeName, destroy){
 			destroy = ((destroy === undefined) ? false: destroy);
-			if(this._isElement(this[nodeName]) || this._isWidget(this[nodeName])){
+			if(typeTest.isElement(this[nodeName]) || typeTest.isWidget(this[nodeName])){
 				if(destroy){
 					domConstr.destroy(this[nodeName]);
 					this[nodeName] = null;
 				}else{
-					if(this._isElement(this[nodeName])){
+					if(typeTest.isElement(this[nodeName])){
 						domConstr.empty(this[nodeName]);
 					}else{
 						domConstr.empty(this[nodeName].domNode);
@@ -214,18 +210,18 @@ define([
 		_createAttachPoint: function(propName, tagName, constructor){
 			constructor = ((constructor == undefined) ? {} : constructor);
 			
-			if(!this._isElement(this[propName]) && !this._isWidget(this[propName])){
+			if(!typeTest.isElement(this[propName]) && !typeTest.isWidget(this[propName])){
 				if(Object.prototype.toString.call(tagName) === '[object String]'){
 					this[propName] = domConstr.create(
 						tagName, constructor, this.domNode
 					);
 				}else{
 					this[propName] = new tagName(constructor);
-					if(this._isWidget(this[propName])){
+					if(typeTest.isWidget(this[propName])){
 						domConstr.place(this[propName].domNode, this.domNode);
 					}
 				}
-			}else if((this._isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
+			}else if((typeTest.isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
 				try{
 					for(var key in constructor){
 						this[propName].set(key, constructor[key]);
@@ -240,7 +236,7 @@ define([
 				var tag = this.get("tag");
 				var title = "";
 			
-				if(!this._isBlank(category)){
+				if(!typeTest.isBlank(category)){
 					if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
 						var item = this.application.store.get(category.toLowerCase());
 						title = this._getServiceTitle(item);
@@ -248,7 +244,7 @@ define([
 							topic.publish("/rcbc/pin/titleChange", title);
 						}
 					}else{
-						title = category + ((this._isBlank(tag)) ? "" : ": " + tag);
+						title = category + ((typeTest.isBlank(tag)) ? "" : ": " + tag);
 						topic.publish("/rcbc/pin/titleChange", title);
 					}
 				}
@@ -265,7 +261,7 @@ define([
 			var title = "";
 			
 			if(this._isServiceType(item)){
-				if(this._hasProperty(item, "data")){
+				if(typeTest.isProperty(item, "data")){
 					
 					var serviceTitle = this._getField(item.data, "serviceName");
 					var orgTitle = this._getField(item.data, "orgName");
@@ -290,8 +286,8 @@ define([
 		_isServiceType: function(item){
 			var isService = false;
 			
-			if(!this._isBlank(item)){
-				if(this._hasProperty(item, "type")){
+			if(!typeTest.isBlank(item)){
+				if(typeTest.isProperty(item, "type")){
 					if(item.type == "service"){
 						isService = true;
 					}
@@ -312,10 +308,10 @@ define([
 			this._createAttachPoint("tagListNode", "ul");
 			domConstr.empty(this.tagListNode);
 			
-			if(!this._isBlank(value)){
+			if(!typeTest.isBlank(value)){
 				var tags = new Array();
 				for(var tag in value){
-					if(!this._isBlank(tag)){
+					if(!typeTest.isBlank(tag)){
 						tags.push(tag);
 					}
 				}
@@ -362,7 +358,7 @@ define([
 				this.serviceListWidget.clear();
 			}
 			
-			if(!this._isBlank(value)){
+			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(service){
 					if(typeTest.isProperty(this._cache, service.id)){
 						domConstr.place(this._cache[service.id], this.serviceListNode);
@@ -408,7 +404,7 @@ define([
 			
 			var value = ""
 			
-			if(this._hasProperty(data, fieldName)){
+			if(typeTest.isProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			

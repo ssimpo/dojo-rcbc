@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"../_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/venuesDisplayer",
 	"dojo/text!./views/venuesDisplayer.html",
@@ -23,15 +22,12 @@ define([
 	
 	"simpo/maps/google/canvas"
 ], function(
-	declare, _widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, template,
+	declare, _widget, _templated, _wTemplate, i18n, strings, template,
 	typeTest, domConstr, lang, array, topic, venueDisplayer, on
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -197,10 +193,10 @@ define([
 		
 		_hideNode: function(node){
 			try{
-				if(this._isWidget(node)){
+				if(typeTest.isWidget(node)){
 					node = node.domNode
 				}
-				if(this._isElement(node)){
+				if(typeTest.isElement(node)){
 					if(this.hiddenNode !== null){
 						domConstr.place(node, this.hiddenNode);
 					}
@@ -225,10 +221,10 @@ define([
 				refNode = ((refNode === undefined) ? this.domNode : refNode);
 				position = ((position === undefined) ? "last" : position);
 			
-				if(this._isWidget(node)){
+				if(typeTest.isWidget(node)){
 					node = node.domNode
 				}
-				if(this._isElement(node)){
+				if(typeTest.isElement(node)){
 					if(this.hiddenNode !== null){
 						domConstr.place(node, refNode, position);
 					}

@@ -16,18 +16,15 @@ define([
 	"dojo/dom-construct",
 	"dojo/_base/lang",
 	"dojo/_base/array",
-	"dojo/dom-attr"
+	"dojo/dom-attr",
+	"simpo/typeTest"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _tableMixin,
-	i18n, strings, template,
-	domConstr, lang, array, domAttr
+	declare, _widget, _templated, _wTemplate, _tableMixin, i18n, strings,
+	template, domConstr, lang, array, domAttr, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _tableMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate, _tableMixin], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -42,7 +39,7 @@ define([
 		"titleLevel": 2,
 		
 		_fixTitleLevel: function(){
-			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+			if(!typeTest.isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
 				this.titleDom = domConstr.create(
 					"h"+this.titleLevel.toString(),
 					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
@@ -68,7 +65,7 @@ define([
 			domConstr.empty(this.tableNode);
 			domConstr.empty(this.detailsNode);
 			
-			if(!this._isBlank(this.data)){
+			if(!typeTest.isBlank(this.data)){
 				this._addRows();
 			}
 			if(!this._tableIsEmpty()){
@@ -89,7 +86,7 @@ define([
 		},
 		
 		_addDetails: function(){
-			if(!this._isBlank(this.data.accessDetails)){
+			if(!typeTest.isBlank(this.data.accessDetails)){
 				domAttr.set(
 					this.detailsNode,
 					"innerHTML",
@@ -104,7 +101,7 @@ define([
 				test = true;
 			}
 			
-			if(this._isTrue(test) && !this._isBlank(details)){
+			if(typeTest.isTrue(test) && !typeTest.isBlank(details)){
 				domConstr.place(
 					this._createTr([title, details]),
 					this.tableNode
@@ -142,23 +139,23 @@ define([
 		
 		_addAge: function(){
 			var html = "";
-			if(this._isEqual(this.data.ageTargetType, "Above")){
+			if(typeTest.isEqual(this.data.ageTargetType, "Above")){
 				var age = this._getAgeBlock(1);
-				if(this._isBlank(age)){
+				if(typeTest.isBlank(age)){
 					age = this._getAgeBlock(2);
 				}
-				if(!this._isBlank(age)){
+				if(!typeTest.isBlank(age)){
 					html += strings.above + " "+age;
 				}
-			}else if(this._isEqual(this.data.ageTargetType, "Below")){
+			}else if(typeTest.isEqual(this.data.ageTargetType, "Below")){
 				var age = this._getAgeBlock(1);
-				if(this._isBlank(age)){
+				if(typeTest.isBlank(age)){
 					age = this._getAgeBlock(2);
 				}
-				if(!this._isBlank(age)){
+				if(!typeTest.isBlank(age)){
 					html += strings.below + " " + age;
 				}
-			}else if(this._isEqual(this.data.ageTargetType, "Between")){
+			}else if(typeTest.isEqual(this.data.ageTargetType, "Between")){
 				html += strings.between + " " + this._getAgeBlock(1)+" - "+this._getAgeBlock(2);
 			}
 				
@@ -171,15 +168,15 @@ define([
 		
 		_addOther: function(){
 			var html = "";
-			if(this._isTrue(this.data.genderTarget) || this._isTrue(this.data.geographicRestriction)){
-				if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Male")){
+			if(typeTest.isTrue(this.data.genderTarget) || typeTest.isTrue(this.data.geographicRestriction)){
+				if(typeTest.isTrue(this.data.genderTarget) && typeTest.isEqual(this.data.genderTargetType, "Male")){
 					html += strings.restrictedToMen + ".  "
-				}else if(this._isTrue(this.data.genderTarget) && this._isEqual(this.data.genderTargetType, "Female")){
+				}else if(typeTest.isTrue(this.data.genderTarget) && typeTest.isEqual(this.data.genderTargetType, "Female")){
 					html += strings.restrictedToWomen + ".  "
 				}
 			}
 			
-			if(this._isTrue(this.data.geographicRestriction) && !this._isBlank(this.data.geographicCoverage)){
+			if(typeTest.isTrue(this.data.geographicRestriction) && !typeTest.isBlank(this.data.geographicCoverage)){
 				if(Object.prototype.toString.call(this.data.geographicCoverage) === '[object Array]'){
 					html += strings.restrictedToAreas + ": " + this._combineListAsText(this.data.geographicCoverage) + ".  ";
 				}
@@ -215,11 +212,11 @@ define([
 			var age = this.data["age"+no.toString()];
 			var months = this.data["age"+no.toString()+"Months"];
 			
-			if((!this._isBlank(age)) && (!this._isBlank(months))){
+			if((!typeTest.isBlank(age)) && (!typeTest.isBlank(months))){
 				return age + strings.yrs + " " + months + strings.mths;
-			}else if(!this._isBlank(age)){
+			}else if(!typeTest.isBlank(age)){
 				return age + strings.yrs;
-			}else if(!this._isBlank(months)){
+			}else if(!typeTest.isBlank(months)){
 				return months + strings.mths;
 			}
 			

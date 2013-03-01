@@ -15,18 +15,15 @@ define([
 	"dojo/text!./views/costTable.html",
 	"dojo/dom-construct",
 	"dojo/dom-attr",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"simpo/typeTest"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _tableMixin,
-	i18n, strings, template,
-	domConstr, domAttr, array
+	declare, _widget, _templated, _wTemplate, _tableMixin, i18n, strings,
+	template, domConstr, domAttr, array, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _tableMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate, _tableMixin], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -41,7 +38,7 @@ define([
 		"titleLevel": 2,
 		
 		_fixTitleLevel: function(){
-			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+			if(!typeTest.isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
 				this.titleDom = domConstr.create(
 					"h"+this.titleLevel.toString(),
 					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
@@ -65,7 +62,7 @@ define([
 		_init: function(){
 			this._fixTitleLevel();
 			domConstr.empty(this.tableNode);
-			if(!this._isBlank(this.data)){
+			if(!typeTest.isBlank(this.data)){
 				this._createRows();
 			}
 			if(!this._tableIsEmpty()){
@@ -78,7 +75,7 @@ define([
 		
 		_createRows: function(){
 			array.forEach(this.data, function(row){
-				if(!this._isBlank(row)){
+				if(!typeTest.isBlank(row)){
 					this._createRow(row);
 				}
 			},this);
@@ -93,7 +90,7 @@ define([
 		
 		_getCostDetails: function(rowData){
 			var costDetails = rowData.details;
-			if(!this._isBlank(rowData.description)){
+			if(!typeTest.isBlank(rowData.description)){
 				costDetails += "&nbsp;("+rowData.description+")";
 			}
 			

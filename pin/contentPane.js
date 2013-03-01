@@ -7,17 +7,16 @@
 define([
 	"dojo/_base/declare",
 	"dijit/layout/ContentPane",
-	"./_variableTestMixin",
 	"dojo/dom-construct",
 	"dojo/request",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"simpo/typeTest"
 ], function(
-	declare, ContentPane, _variableTestMixin,
-	domConstr, request, lang
+	declare, ContentPane, domConstr, request, lang, typeTest
 ) {
 	"use strict";
 	
-	var construct = declare([ContentPane, _variableTestMixin], {
+	var construct = declare([ContentPane], {
 		"application": null,
 		"parentNode": null,
 		"hiddenNode": null,
@@ -60,26 +59,26 @@ define([
 		},
 		
 		_setPageIdAttr: function(id, category){
-			if(this._isString(id)){
+			if(typeTest.isString(id)){
 				this._initNodes();
 				this.parentNode = this.application.titleNode;
 				
 				if(id.length === 32){
 					this.pageId = id.toLowerCase();
 					var url = "/pin.nsf/pages3/"+id;
-					if(!this._isEqual(this.get("href"), url)){
+					if(!typeTest.isEqual(this.get("href"), url)){
 						this.set("href", url);
 						this._showWidget();
 					}
 				}else{
-					if(this._isBlank(category)){
+					if(typeTest.isBlank(category)){
 						var url = "/pin.nsf/pages2/"+id;
 						this.parentNode = this.application.hiddenDiv;
 					}else{
 						var url = "/pin.nsf/pages2/"+id+"_"+category;
 					}
 					
-					if(!this._isEqual(this.get("href"), url)){
+					if(!typeTest.isEqual(this.get("href"), url)){
 						this.set("href", url);
 						this._showWidget();
 					}

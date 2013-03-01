@@ -16,18 +16,16 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/_base/array",
-	"dojo/_base/lang"
+	"dojo/_base/lang",
+	"simpo/typeTest"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _tableMixin,
+	declare, _widget, _templated, _wTemplate, _tableMixin,
 	i18n, strings, template,
-	domConstr, domAttr, array, lang
+	domConstr, domAttr, array, lang, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _tableMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate, _tableMixin], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -44,7 +42,7 @@ define([
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
 		
 		_fixTitleLevel: function(){
-			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+			if(!typeTest.isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
 				this.titleDom = domConstr.create(
 					"h"+this.titleLevel.toString(),
 					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
@@ -68,7 +66,7 @@ define([
 		_init: function(){
 			this._fixTitleLevel();
 			domConstr.empty(this.tableNode);
-			if(!this._isBlank(this.data)){
+			if(!typeTest.isBlank(this.data)){
 				this._createTableRows();
 			}
 			if(!this._tableIsEmpty()){
@@ -93,7 +91,7 @@ define([
 		
 		_placeRows: function(rows){
 			array.forEach(this._days, function(day){
-				if(this._hasProperty(rows, day)){
+				if(typeTest.isProperty(rows, day)){
 					array.forEach(rows[day], function(tr){
 						domConstr.place(tr, this.tableNode);
 					}, this);
@@ -106,7 +104,7 @@ define([
 			var obj2 = lang.clone(obj2o);
 			
 			for(var key in obj2){
-				if(this._hasProperty(obj1, key)){
+				if(typeTest.isProperty(obj1, key)){
 					if((Object.prototype.toString.call(obj1[key]) === '[object Array]') || (Object.prototype.toString.call(obj2[key]) === '[object Array]')){
 						if(Object.prototype.toString.call(obj1[key]) !== '[object Array]'){
 							obj1[key] = new Array(obj1[key]);
@@ -133,7 +131,7 @@ define([
 			array.forEach(row.day, function(day){
 				var tr = this._createRow(day, row);
 				
-				if(this._hasProperty(rows, day)){
+				if(typeTest.isProperty(rows, day)){
 					rows[day].push(tr);
 				}else{
 					rows[day] = new Array(tr);

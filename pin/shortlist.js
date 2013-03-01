@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/shortlist",
 	"dojo/text!./views/shortlist.html",
@@ -21,19 +20,18 @@ define([
 	"dijit/form/CheckBox",
 	"dojo/on",
 	"dojo/_base/lang",
-	"dijit/form/Button"
+	"dijit/form/Button",
+	"simpo/typeTest"
 ], function(
 	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
+	_widget, _templated, _wTemplate,
 	i18n, strings, template,
 	serviceDisplayer, domConstr, domClass, array, topic, CheckBox, on, lang,
-	Button
+	Button, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -192,7 +190,7 @@ define([
 			this._init();
 			
 			try{
-				if(this._isBlank(value)){
+				if(typeTest.isBlank(value)){
 					this._hideWidget();
 					this._showEmptyMessage();
 				}else{
@@ -323,7 +321,7 @@ define([
 			try{
 				array.forEach(ids, function(id){
 					var service = this.application.store.get(id);
-					if(!this._isBlank(service)){
+					if(!typeTest.isBlank(service)){
 						services.push(service);
 					}
 				}, this);

@@ -6,26 +6,26 @@
 //		Stephen Simpson <me@simpo.org>, <http://simpo.org>
 define([
 	"dojo/_base/declare",
-	"../_variableTestMixin",
 	"dojo/dom-construct",
 	"dojo/_base/lang",
 	"dojo/_base/array",
 	"dojo/dom-style",
 	"dojo/query",
-	"dojo/dom-attr"
+	"dojo/dom-attr",
+	"simpo/typeTest"
 ], function(
-	declare, _variableTestMixin, domConstr, lang, array, domStyle, $, domAttr
+	declare, domConstr, lang, array, domStyle, $, domAttr, typeTest
 ){
 	"use strict";
 	
-	var construct = declare(_variableTestMixin, {
+	var construct = declare(null, {
 		"titleDom": null,
 		
 		_tableIsEmpty: function(tableDom){
 			var isBlank = true;
 			tableDom = this._getTableDom(tableDom);
 			
-			if(this._isElement(tableDom)){
+			if(typeTest.isElement(tableDom)){
 				try{
 					var trs = $("tr", tableDom);
 					if(trs.length == 0){
@@ -35,7 +35,7 @@ define([
 					var cells = $("td,th", tableDom);
 			
 					array.every(cells, function(cell){
-						if(!this._isBlank(domAttr.get(cell, "innerHTML"))){
+						if(!typeTest.isBlank(domAttr.get(cell, "innerHTML"))){
 							isBlank = false;
 							return false;
 						}
@@ -53,7 +53,7 @@ define([
 			var hasTable = false;
 			
 			try{
-				hasTable = this._isElement(this.titleDom);
+				hasTable = typeTest.isElement(this.titleDom);
 			}catch(e){
 				console.info("Could not check for table");
 			}
@@ -79,7 +79,7 @@ define([
 		
 		_hideTable: function(){
 			try{
-				if(this._isElement(this.hiddenNode)){
+				if(typeTest.isElement(this.hiddenNode)){
 					this._hideTitleNode();
 					this._hideDetailsNode();
 					this._hideTableNode();
@@ -91,7 +91,7 @@ define([
 		
 		_hideTitleNode: function(){
 			try{
-				if(this._isElement(this.titleDom)){
+				if(typeTest.isElement(this.titleDom)){
 					domConstr.place(this.titleDom, this.hiddenNode);
 				}
 			}catch(e){
@@ -101,7 +101,7 @@ define([
 		
 		_hideDetailsNode: function(){
 			try{
-				if(this._isElement(this.detailsNode)){
+				if(typeTest.isElement(this.detailsNode)){
 					domConstr.place(this.detailsNode, this.hiddenNode);
 				}
 			}catch(e){
@@ -111,7 +111,7 @@ define([
 		
 		_hideTableNode: function(){
 			try{
-				if(this._isElement(this.tableNode)){
+				if(typeTest.isElement(this.tableNode)){
 					domConstr.place(this.tableNode, this.hiddenNode);
 				}
 			}catch(e){
@@ -121,7 +121,7 @@ define([
 		
 		_showTable: function(){
 			try{
-				if(this._isElement(this.hiddenNode)){
+				if(typeTest.isElement(this.hiddenNode)){
 					this._showTitleNode();
 					this._showDetailsNode();
 					this._showTableNode();
@@ -133,8 +133,8 @@ define([
 		
 		_showTitleNode: function(){
 			try{
-				if(this._isElement(this.titleDom)){
-					if((!this._isBlank(this.titleDom)) && (!this._tableIsEmpty() || !this._isBlank(this.detailsNode))){
+				if(typeTest.isElement(this.titleDom)){
+					if((!typeTest.isBlank(this.titleDom)) && (!this._tableIsEmpty() || !typeTest.isBlank(this.detailsNode))){
 						domConstr.place(this.titleDom, this.domNode, "first");
 					}else{
 					this._hideTitleNode();
@@ -147,8 +147,8 @@ define([
 		
 		_showDetailsNode: function(){
 			try{
-				if(this._isElement(this.detailsNode)){
-					if(!this._isBlank(this.detailsNode)){
+				if(typeTest.isElement(this.detailsNode)){
+					if(!typeTest.isBlank(this.detailsNode)){
 						domConstr.place(this.detailsNode, this.domNode);
 					}else{
 						this._hideDetailsNode();
@@ -161,8 +161,8 @@ define([
 		
 		_showTableNode: function(){
 			try{
-				if(this._isElement(this.tableNode)){
-					if(!this._isBlank(this.tableNode)){
+				if(typeTest.isElement(this.tableNode)){
+					if(!typeTest.isBlank(this.tableNode)){
 						domConstr.place(this.tableNode, this.domNode);
 					}else{
 						this._hideTableNode();
@@ -174,14 +174,14 @@ define([
 		},
 		
 		_addTitle: function(){
-			if(!this._isBlank(this.title) && !this._hasTitle()){
+			if(!typeTest.isBlank(this.title) && !this._hasTitle()){
 				this.titleDom = domConstr.create(
 					"h2",{}, this.domNode, "first"
 				);
 			}
 			if(this._hasTitle()){
 				domConstr.empty(this.titleDom);
-				if(!this._isBlank(this.title)){
+				if(!typeTest.isBlank(this.title)){
 					domAttr.set(this.titleDom, "innerHTML", this.title + ":");
 				}else{
 					domAttr.set(this.titleDom, "innerHTML", "");
@@ -219,7 +219,7 @@ define([
 		
 		_getCellWidths: function(){
 			var classWidths = [];
-			if(!this._isBlank(this.columnWidths)){
+			if(!typeTest.isBlank(this.columnWidths)){
 				classWidths = this.columnWidths;
 			}
 			

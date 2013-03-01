@@ -15,18 +15,15 @@ define([
 	"dojo/text!./views/activityTimesTable.html",
 	"dojo/dom-attr",
 	"dojo/dom-construct",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"simpo/typeTest"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _tableMixin,
-	i18n, strings, template,
-	domAttr, domConstr, array
+	declare, _widget, _templated, _wTemplate, _tableMixin, i18n, strings,
+	template, domAttr, domConstr, array, typeTest
 ) {
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _tableMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate, _tableMixin], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -56,7 +53,7 @@ define([
 		},
 		
 		_fixTitleLevel: function(){
-			if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+			if(!typeTest.isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
 				this.titleDom = domConstr.create(
 					"h"+this.titleLevel.toString(),
 					{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
@@ -67,7 +64,7 @@ define([
 		},
 		
 		_setDaysAttr: function(value){
-			if(this._isArray(value)){
+			if(typeTest.isArray(value)){
 				if(value.length > 0){
 					this.days = value;
 					
@@ -90,7 +87,7 @@ define([
 				""
 			];
 			
-			if(this._isEqual(details.repeatType, "weekly")){
+			if(typeTest.isEqual(details.repeatType, "weekly")){
 				if(details.repeatPeriod[0] == 1){
 					row[2] = "Every week";
 				}else if(details.repeatPeriod[0] == 2){
@@ -98,7 +95,7 @@ define([
 				}else{
 					row[2] = "Every " + details.repeatPeriod[0].toString()+ " weeks";
 				}
-			}else if(this._isEqual(details.repeatType, "monthly")){
+			}else if(typeTest.isEqual(details.repeatType, "monthly")){
 				if(details.repeatPeriod[0] == 1){
 					row[2] = "1st "+row[0]+" of every month";
 				}else if(details.repeatPeriod[0] == 2){

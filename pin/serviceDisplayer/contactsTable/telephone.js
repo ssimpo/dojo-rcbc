@@ -12,9 +12,11 @@ define([
 	"dojo/i18n",
 	"dojo/i18n!./nls/telephone",
 	"dojo/text!./views/telephone.html",
-	"dojo/dom-attr"
+	"dojo/dom-attr",
+	"simpo/typeTest"
 ], function(
-	declare, _base, _templated, _wTemplate, i18n, strings, template, domAttr
+	declare, _base, _templated, _wTemplate, i18n, strings, template,
+	domAttr, typeTest
 ) {
 	"use strict";
 	
@@ -38,7 +40,7 @@ define([
 		
 		_init: function(){
 			try{
-				if(!this._isBlank(this.details)){
+				if(!typeTest.isBlank(this.details)){
 					domAttr.set(this.detailsCell, "innerHTML", this.details);
 				}
 				this._createDescription();
