@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/searchWidget",
 	"dojo/text!./views/searchWidget.html",
@@ -17,20 +16,17 @@ define([
 	"dojo/_base/lang",
 	"dojo/hash",
 	"dojo/io-query",
+	"simpo/typeTest",
 	
 	"dijit/form/TextBox",
 	"dijit/form/Button"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
-	i18n, strings, template, 
-	on, lang, hash, ioQuery
+	declare, _widget, _templated, _wTemplate, i18n, strings, template, 
+	on, lang, hash, ioQuery, typeTest
 ) {
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -58,12 +54,12 @@ define([
 		},
 		
 		_setSectionAttr: function(section){
-			if(this._isEqual(section, "Adult Services")){
+			if(typeTest.isEqual(section, "Adult Services")){
 				this.searchInput.set(
 					"placeHolder",
 					strings.searchInputAdultsPlaceHolder
 				);
-			}else if(this._isEqual(section, "Family Services")){
+			}else if(typeTest.isEqual(section, "Family Services")){
 				this.searchInput.set(
 					"placeHolder",
 					strings.searchInputFamiliesPlaceHolder

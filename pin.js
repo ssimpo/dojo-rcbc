@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./pin/_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/pin",
 	"dojo/i18n!dijit/nls/loading",
@@ -30,6 +29,7 @@ define([
 	"dojo/on",
 	"dijit/registry",
 	"dojo/string",
+	"simpo/typeTest",
 	
 	"rcbc/pin/ContentPane",
 	"dijit/form/Button",
@@ -41,10 +41,10 @@ define([
 	"dijit/Tooltip"
 ], function(
 	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
+	_widget, _templated, _wTemplate, 
 	i18n, strings, loadingStrings, template, /*console,*/
 	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, domClass, domStyle, $, on, registry, string
+	domConstr, domAttr, domClass, domStyle, $, on, registry, string, typeTest
 ){
 	"use strict";
 	
@@ -60,9 +60,7 @@ define([
 		}
 	});
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -202,7 +200,7 @@ define([
 			if(qry.length > 0){
 				var node = qry[0];
 				var widget = registry.byNode(node);
-				if(this._isWidget(widget)){
+				if(typeTest.isWidget(widget)){
 					this.searchForm = widget;
 					this.searchForm.application = this;
 				}
@@ -263,9 +261,9 @@ define([
 		
 		_setServiceIdAttr: function(id){
 			var query = this._getHashObj();
-			if(!this._isEqual(query.id, this.get("serviceId"))){
+			if(!typeTest.isEqual(query.id, this.get("serviceId"))){
 				var oldCategory = this._createItemClass(this.category);
-				if(!this._isBlank(oldCategory)){
+				if(!typeTest.isBlank(oldCategory)){
 					domClass.remove(this.heading, oldCategory);
 					domClass.remove(this.domNode, oldCategory);
 				}
@@ -277,7 +275,7 @@ define([
 		
 		_setSectionAttr: function(section){
 			var query = this._getHashObj();
-			if(!this._isEqual(query.section, this.get("section"))){
+			if(!typeTest.isEqual(query.section, this.get("section"))){
 				var oldSection = this._createItemClass(this.section);
 				var newSection = this._createItemClass(section);
 				this.section = section;
@@ -288,7 +286,7 @@ define([
 				domClass.add(this.heading, newSection);
 				domClass.add(this.searchForm.domNode, newSection);
 				domClass.add(this.tooltipText, newSection);
-				if(!this._isBlank(oldSection)){
+				if(!typeTest.isBlank(oldSection)){
 					domClass.remove(this.heading, oldSection);
 					domClass.remove(this.domNode, oldSection);
 					domClass.remove(this.searchForm.domNode, oldSection);
@@ -302,11 +300,11 @@ define([
 		
 		_setCategoryAttr: function(category){
 			var query = this._getHashObj();
-			if(!this._isEqual(query.category, this.get("category"))){
+			if(!typeTest.isEqual(query.category, this.get("category"))){
 				var oldCategory = this._createItemClass(this.category);
 				this.category = category;
 				domClass.add(this.domNode, this._createItemClass(this.category));
-				if(!this._isBlank(oldCategory)){
+				if(!typeTest.isBlank(oldCategory)){
 					domClass.remove(this.domNode, oldCategory);
 				}
 				query.category = category;
@@ -323,7 +321,7 @@ define([
 		
 		_setTagAttr: function(tag){
 			var query = this._getHashObj();
-			if(!this._isEqual(query.tag, this.get("tag"))){
+			if(!typeTest.isEqual(query.tag, this.get("tag"))){
 				this.tag = tag;
 				query.tag = tag;
 				this._updateHash(query);
@@ -333,7 +331,7 @@ define([
 		_setPageTitleAttr: function(title){
 			try{
 				this.pageTitle = title;
-				if(this._isBlank(this.pageTitle)){
+				if(typeTest.isBlank(this.pageTitle)){
 					domConstr.empty(this.titleNode);
 				}else{
 					domAttr.set(this.titleNode, "innerHTML", this.pageTitle);
@@ -348,7 +346,7 @@ define([
 		_changeHeadTitle: function(title){
 			try{
 				if(this.headTitleNode !== null){
-					if(!this._isBlank(title)){
+					if(!typeTest.isBlank(title)){
 						try{
 							domAttr.set(this.headTitleNode, "innerHTML", title);
 						}catch(e){
@@ -356,11 +354,11 @@ define([
 						}
 					}else{
 						var query = this._getHashObj();
-						if(!this._isBlank(query.section)){
+						if(!typeTest.isBlank(query.section)){
 							title = query.section;
-							if(!this._isBlank(query.category)){
+							if(!typeTest.isBlank(query.category)){
 								title += " > " + query.category;
-								if(!this._isBlank(query.tag)){
+								if(!typeTest.isBlank(query.tag)){
 									title += " > " + query.tag;
 								}
 							}
@@ -391,17 +389,17 @@ define([
 		_hashChange: function(cHash){
 			var query = this._getHashObj(cHash);
 			
-			if(!this._isBlank(query.pageId)){
+			if(!typeTest.isBlank(query.pageId)){
 				this._hashChangeNewPageId(query);
 			}else{
 				this.contentPane.clear();
 			}
 			
-			if(!this._isBlank(query.search)){
+			if(!typeTest.isBlank(query.search)){
 				this._hashChangeNewSearch(query);
-			}else if(!this._isBlank(query.id)){
+			}else if(!typeTest.isBlank(query.id)){
 				this._hashChangeNewId(query);
-			}else if(!this._isBlank(query.section)){
+			}else if(!typeTest.isBlank(query.section)){
 				this._hashChangeNewSection(query);
 			}else{
 				this._hashChangeDefaultFallback(query);
@@ -412,9 +410,9 @@ define([
 			this.contentPane.set("pageId", query.pageId);
 			this.sectionMenu.clear();
 			
-			if(this._isBlank(query.section)){
+			if(typeTest.isBlank(query.section)){
 				this.sectionMenu.clear();
-			}else if(this._isBlank(query.category) && this._isBlank(query.id)){
+			}else if(typeTest.isBlank(query.category) && typeTest.isBlank(query.id)){
 				this.set("pageTitle","");
 				if(query.pageId.length == 32){
 					this.sectionMenu.clear();
@@ -429,7 +427,7 @@ define([
 			this.sectionMenu.clear();
 			this.contentPane.clear();
 			
-			if(!this._isBlank(query.section)){
+			if(!typeTest.isBlank(query.section)){
 				this._displayMenu(query.section);
 			}else{
 				this._displayMenu("Adult Services");
@@ -443,9 +441,9 @@ define([
 			this.showButtonPanel();
 			this._setShortlistLabel();
 				
-			if(!this._isBlank(query.section)){
+			if(!typeTest.isBlank(query.section)){
 				this._displayMenu(query.section);
-				if(!this._isEqual(query.section, this.get("section"))){
+				if(!typeTest.isEqual(query.section, this.get("section"))){
 					this.set("section", query.section);
 				}
 			}
@@ -460,7 +458,7 @@ define([
 		},
 		
 		_hashChangeNewSection: function(query){
-			if(!this._isEqual(query.section, this.get("section"))){
+			if(!typeTest.isEqual(query.section, this.get("section"))){
 				this.set("section", query.section);
 			}
 			
@@ -468,15 +466,15 @@ define([
 			this.serviceDisplayer.clear();
 			this.searchForm.clear();
 			
-			if(!this._isBlank(query.category)){
+			if(!typeTest.isBlank(query.category)){
 				this._hashChangeNewCategory(query);
 			}else{
 				this.serviceListDisplayer.clear();
-				if(!this._isBlank(query.pageId)){
+				if(!typeTest.isBlank(query.pageId)){
 					this._displayMenu(query.section);
 				}else{
 					this.sideMenu.clear();
-					if(this._isEqual(query.section,"shortlist")){
+					if(typeTest.isEqual(query.section,"shortlist")){
 						this.contentPane.clear();
 						this._hashChangeNewSectionIsShortlist();
 					}else{
@@ -489,14 +487,14 @@ define([
 		},
 		
  		_hashChangeNewCategory: function(query){
-			if(!this._isEqual(query.category, this.get("category"))){
+			if(!typeTest.isEqual(query.category, this.get("category"))){
 				this.set("category", query.category);
 			}
-			if(!this._isEqual(query.tag, this.get("tag"))){
+			if(!typeTest.isEqual(query.tag, this.get("tag"))){
 				this.set("tag", query.tag);
 			}
 			
-			if(!this._isBlank(query.section)){
+			if(!typeTest.isBlank(query.section)){
 				this._displayMenu(query.section);
 			}
 			this.contentPane.set(
@@ -512,7 +510,7 @@ define([
 		
 		_hashChangeNewSectionIsShortlist: function(){
 			var shortlist = this.store.getShortlist();
-			if(this._hasProperty(shortlist, "services")){
+			if(typeTest.isProperty(shortlist, "services")){
 				this.set("pageTitle", "");
 				this.sectionMenu.clear();
 				this.shortlist.set("value", shortlist.services);
@@ -547,7 +545,7 @@ define([
 		_setShortlistLabel: function(){
 			var hash = this._getHashObj();
 			
-			if(!this._isBlank(hash.id)){
+			if(!typeTest.isBlank(hash.id)){
 				if(this.store.inShortlist(hash.id)){
 					this.manageShortlistButton.set(
 						"label", "Remove from shortlist"
@@ -568,7 +566,7 @@ define([
 					);
 				}
 			}else{
-				if(this._isEqual(hash.section, "shortlist")){
+				if(typeTest.isEqual(hash.section, "shortlist")){
 					this.manageShortlistButton.set(
 						"label", "Empty shortlist"
 					);
@@ -586,7 +584,7 @@ define([
 		_shortlistClick: function(){
 			var hash = this._getHashObj();
 			
-			if(!this._isBlank(hash.id)){
+			if(!typeTest.isBlank(hash.id)){
 				if(this.store.inShortlist(hash.id)){
 					this.store.removeFromShortlist(hash.id);
 					this._setShortlistLabel();
@@ -595,7 +593,7 @@ define([
 					this._setShortlistLabel();
 				}
 			}else{
-				if(this._isEqual(hash.section, "shortlist")){
+				if(typeTest.isEqual(hash.section, "shortlist")){
 					this.store.emptyShortlist();
 					this.hideButtonPanel();
 				}
@@ -604,7 +602,7 @@ define([
 		
 		_getHashObj: function(cHash){
 			try{
-				if(!this._isObject(cHash) || this._isBlank(cHash)){
+				if(!typeTest.isObject(cHash) || typeTest.isBlank(cHash)){
 					cHash = ((cHash == undefined) ? hash() : cHash);
 					cHash = ioQuery.queryToObject(cHash);
 				}else{
@@ -633,9 +631,9 @@ define([
 		
 		_addPropertyToObject: function(obj, propName, defaultValue){
 			try{
-				if(!this._isBlank(propName) && !this._isBlank(obj)){
+				if(!typeTest.isBlank(propName) && !typeTest.isBlank(obj)){
 					defaultValue = ((defaultValue === undefined) ? "" : defaultValue);
-					obj[propName] = ((this._hasProperty(obj, propName)) ? obj[propName] : defaultValue);
+					obj[propName] = ((typeTest.isProperty(obj, propName)) ? obj[propName] : defaultValue);
 					
 				}
 			}catch(e){
@@ -652,7 +650,7 @@ define([
 			this.serviceListDisplayer.set("category", category);
 			this.serviceListDisplayer.set("tag", tag);
 			
-			if(this._isBlank(tag)){
+			if(typeTest.isBlank(tag)){
 				var services = this.store.getCategory(section, category);
 				this.serviceListDisplayer.set("value", services);
 				var tags = this.store.getTagsList(section, category);
@@ -666,7 +664,7 @@ define([
 		
 		_displaySearch: function(search){
 			var cHash = this._getHashObj(cHash);
-			if(this._isBlank(search)){
+			if(typeTest.isBlank(search)){
 				cHash.search = "";
 				this._hashChange(cHash);
 			}else{
@@ -675,8 +673,8 @@ define([
 					var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
 					var title = "Search Results: \""+search+"\"";
 			
-					if(!this._isBlank(cHash.section)){
-						if(!this._isEqual(cHash.section, "Family Services") && !this._isEqual(cHash.section, "Adult Services")){
+					if(!typeTest.isBlank(cHash.section)){
+						if(!typeTest.isEqual(cHash.section, "Family Services") && !typeTest.isEqual(cHash.section, "Adult Services")){
 							this._displayMenu("Adult Services");
 						}else{
 							this._displayMenu(cHash.section);
@@ -701,7 +699,6 @@ define([
 			var id = Math.floor((Math.random()*1000000000000)+1);
 			this._doSearchId = id;
 			
-			console.log("*",search,"*");
 			if(search !== ""){
 				var self = this;
 				setTimeout(function(){
@@ -712,67 +709,6 @@ define([
 			}else{
 				callback([], section);
 			}
-			
-			
-			/*var tests = this._parseSearch(search);
-			
-			var query = this.store.servicesStore.query(lang.hitch(this, function(obj){
-				var type = this._getField(obj, "type");
-				var data = this._getField(obj, "data");
-				
-				if((type == "service") && (!this._isBlank(data))){
-					try{
-						if(this._searchCategoryTest(data, section)){
-							var searcher = JSON.stringify(data);
-							return this._searchTest(searcher, tests);
-						}
-						return false;
-					}catch(e){
-						console.log(e);
-						return false;
-					}
-				}
-				return false;
-			}));
-			
-			return query;*/
-		},
-		
-		_searchCategoryTest: function(item, section){
-			if(this._isEqual(section, "Family Services")){
-				if(this._isBlank(item.category1)){
-					return false;
-				}
-			}else if(this._isEqual(section, "Adult Services")){
-				if(this._isBlank(item.category2)){
-					return false;
-				}
-			}
-			
-			return true;
-		},
-		
-		_searchTest: function(query, tests){
-			var found = true;
-			
-			array.every(tests, function(test){
-				if(!test.test(query)){
-					found = false;
-					return false;
-				}
-				return true;
-			}, this);
-			
-			return found;
-		},
-		
-		_parseSearch: function(search){
-			var words = search.split(" ");
-			var tests = new Array();
-			array.forEach(words, function(word){
-				tests.push(new RegExp("\\W"+word,"i"));
-			}, this);
-			return tests;
 		},
 		
 		_displaySectionMenu: function(section){
@@ -784,8 +720,8 @@ define([
 		_displayService: function(id, section){
 			var service = this.store.getService(id);
 			
-			if(!this._isBlank(service)){
-				if(this._isBlank(section)){
+			if(!typeTest.isBlank(service)){
+				if(typeTest.isBlank(section)){
 					this._setServiceHash(service, false);
 				}
 				
@@ -822,16 +758,16 @@ define([
 		},
 		
 		_getCategorySize: function(service, section){
-			if(this._isObject(service)){
-				if(this._hasProperty(service, "data")){
+			if(typeTest.isObject(service)){
+				if(typeTest.isProperty(service, "data")){
 					service = service.data;
 				}
 			}else{
 				return 0;
 			}
 			
-			if(this._hasProperty(service, section)){
-				if(this._isArray(service[section])){
+			if(typeTest.isProperty(service, section)){
+				if(typeTest.isArray(service[section])){
 					return service[section].length;
 				}else{
 					return 1;
@@ -846,7 +782,7 @@ define([
 			var newQuery = {};
 			
 			for(var key in query){
-				if(!this._isBlank(query[key])){
+				if(!typeTest.isBlank(query[key])){
 					newQuery[key] = query[key];
 				}
 			}
@@ -857,12 +793,12 @@ define([
 		},
 		
 		_parseCategory: function(service, section){
-			section = (this._isEqual(section,"Family Services")) ? 1 : 2;
+			section = (typeTest.isEqual(section,"Family Services")) ? 1 : 2;
 			var fieldName = "category" + section.toString();
 			
-			if(this._hasProperty(service, fieldName)){
-				if(!this._isArray(service[fieldName])){
-					if(this._isBlank(service[fieldName])){
+			if(typeTest.isProperty(service, fieldName)){
+				if(!typeTest.isArray(service[fieldName])){
+					if(typeTest.isBlank(service[fieldName])){
 						return new Array();
 					}else{
 						return this._trimArray(new Array(service[fieldName]));
@@ -880,7 +816,7 @@ define([
 			
 			array.forEach(ary, function(item){
 				item = lang.trim(item);
-				if(!this._isBlank(item)){
+				if(!typeTest.isBlank(item)){
 					newAry.push(item);
 				}
 			}, this);
@@ -889,9 +825,9 @@ define([
 		},
 		
 		_shortlistUpdate: function(shortlist){
-			if(this._isElement(this.shortlistCounterNode)){
+			if(typeTest.isElement(this.shortlistCounterNode)){
 				var counter = 0;
-				if(this._hasProperty(shortlist, "services")){
+				if(typeTest.isProperty(shortlist, "services")){
 					counter = shortlist.services.length;
 				}
 				domAttr.set(
@@ -902,16 +838,16 @@ define([
 			}
 			
 			var query = this._getHashObj();
-			if(this._isEqual(query.section, "shortlist")){
+			if(typeTest.isEqual(query.section, "shortlist")){
 				this.shortlist.set("value", shortlist.services);
 			}
 		},
 		
 		_serviceDataUpdate: function(id, data){
-			if(!this._isBlank(id)){
+			if(!typeTest.isBlank(id)){
 				var query = this._getHashObj();
 				
-				if(this._isEqual(query.id, id)){
+				if(typeTest.isEqual(query.id, id)){
 					this._displayService(query.id)
 				}
 			}
@@ -920,11 +856,11 @@ define([
 		_getField: function(data, fieldName){
 			var value = ""
 			
-			if(this._hasProperty(data, fieldName)){
+			if(typeTest.isProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			
-			if(this._isString(value)){
+			if(typeTest.isString(value)){
 				value = lang.trim(value);
 			}
 			

@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceDisplayer",
 	"dojo/text!./views/serviceDisplayer.html",
@@ -19,6 +18,7 @@ define([
 	"dojo/_base/array",
 	"dijit/form/Button",
 	"dojo/topic",
+	"simpo/typeTest",
 	"./serviceDisplayer/contactsTable",
 	"./serviceDisplayer/venuesDisplayer",
 	"./serviceDisplayer/costTable",
@@ -28,18 +28,16 @@ define([
 	"simpo/maps/google/canvas"
 ], function(
 	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
+	_widget, _templated, _wTemplate,
 	i18n, strings, template,
-	lang, domConstr, domAttr, array, Button, topic,
+	lang, domConstr, domAttr, array, Button, topic, typeTest,
 	
 	contactsTable, venuesDisplayer, costTable, accessTable, serviceHoursTable,
 	activityTimesTable, googleMap
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	],{
+	var construct = declare([_widget, _templated, _wTemplate],{
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -120,7 +118,7 @@ define([
 			this._initNodes();
 			this.value = value;
 			
-			if(this._isBlank(this.value)){
+			if(typeTest.isBlank(this.value)){
 				this._hideWidget();
 			}else{
 				this._showWidget();
@@ -147,16 +145,16 @@ define([
 		
 		_ifHasClear: function(nodeName, destroy){
 			destroy = ((destroy === undefined) ? false: destroy);
-			if(this._isElement(this[nodeName]) || this._isWidget(this[nodeName])){
+			if(typeTest.isElement(this[nodeName]) || typeTest.isWidget(this[nodeName])){
 				if(destroy){
-					if(this._isElement(this[nodeName])){
+					if(typeTest.isElement(this[nodeName])){
 						domConstr.destroy(this[nodeName]);
 					}else{
 						this[nodeName].destroy();
 					}
 					this[nodeName] = null;
 				}else{
-					if(this._isElement(this[nodeName])){
+					if(typeTest.isElement(this[nodeName])){
 						domConstr.empty(this[nodeName]);
 					}else{
 						domConstr.empty(this[nodeName].domNode);
@@ -168,18 +166,18 @@ define([
 		_createAttachPoint: function(propName, tagName, constructor){
 			constructor = ((constructor == undefined) ? {} : constructor);
 			
-			if(!this._isElement(this[propName]) && !this._isWidget(this[propName])){
+			if(!typeTest.isElement(this[propName]) && !typeTest.isWidget(this[propName])){
 				if(Object.prototype.toString.call(tagName) === '[object String]'){
 					this[propName] = domConstr.create(
 						tagName, constructor, this.domNode
 					);
 				}else{
 					this[propName] = new tagName(constructor);
-					if(this._isWidget(this[propName])){
+					if(typeTest.isWidget(this[propName])){
 						domConstr.place(this[propName].domNode, this.domNode);
 					}
 				}
-			}else if((this._isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
+			}else if((typeTest.isWidget(this[propName])) && (Object.prototype.toString.call(tagName) !== '[object String]')){
 				try{
 					for(var key in constructor){
 						this[propName].set(key, constructor[key]);
@@ -221,12 +219,12 @@ define([
 			var title = this._getTitleText(value);
 			if(this.show.titleLink){
 				var id = this._getField(value, "id");
-				if(!this._isBlank(id)){
+				if(!typeTest.isBlank(id)){
 					title = "<a href=\"#id="+id+"\">"+title+"</a>";
 				}
 			}
 			
-			if(this.show.title && !this._isBlank(title)){
+			if(this.show.title && !typeTest.isBlank(title)){
 				domAttr.set(this.titleNode, "innerHTML", title);
 			}
 			
@@ -240,7 +238,7 @@ define([
 		_getTitleText: function(value){
 			var title = this._getField(value, "title");
 			
-			if(this._isBlank(title)){
+			if(typeTest.isBlank(title)){
 				var serviceTitle = this._getField(value, "serviceName");
 				var orgTitle = this._getField(value, "orgName");
 				
@@ -285,7 +283,7 @@ define([
 			
 			var subTitleLevel = this.titleLevel + 1;
 			var ol = this._createFeaturesOl(value);
-			if(!this._isBlank(ol)){
+			if(!typeTest.isBlank(ol)){
 				domConstr.create("h"+subTitleLevel.toString(), {
 					"innerHTML": "Key Features:"
 				}, this.keyFeaturesNode);
@@ -300,7 +298,7 @@ define([
 			
 			array.forEach([1,2,3,4,5,6], function(key){
 				var feature = this._getField(value,"keyFeature"+key);
-				if(!this._isBlank(feature)){
+				if(!typeTest.isBlank(feature)){
 					domConstr.create("li", {
 						"innerHTML": feature
 					}, ol);
@@ -341,7 +339,7 @@ define([
 		},
 		
 		_createAccessTable: function(value){
-			if(!this._isBlank(value.days)){
+			if(!typeTest.isBlank(value.days)){
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
 					"constructor": accessTable,
@@ -384,7 +382,7 @@ define([
 			
 			array.forEach(venues, function(venue){
 				var postcode = this._getPostcode(venue.venueId);
-				if(!this._isBlank(postcode)){
+				if(!typeTest.isBlank(postcode)){
 					postcodes.push(postcode);
 				}
 				//console.log(postcode, venue.venueId);
@@ -396,8 +394,8 @@ define([
 		_createMap: function(value){
 			var postcodes = this._getPostcodes(value.venues);
 			
-			if(!this._isBlank(postcodes)){
-				if(!this._isWidget(this.mapNode)){
+			if(!typeTest.isBlank(postcodes)){
+				if(!typeTest.isWidget(this.mapNode)){
 					this._createAttachPoint(
 						"mapNode",
 						googleMap, {
@@ -412,7 +410,7 @@ define([
 					this._plotOnMap(postcodes);
 				}
 			}else{
-				if(this._isWidget(this.mapNode)){
+				if(typeTest.isWidget(this.mapNode)){
 					domConstr.place(this.mapNode.domNode, this.hiddenNode);
 				}
 			}
@@ -431,7 +429,7 @@ define([
 			var lookup = this.application.store.get(venueId.toLowerCase());
 			if(lookup !== undefined){
 				var postcode = lookup.data.postcode;
-				if(!this._isBlank(postcode)){
+				if(!typeTest.isBlank(postcode)){
 					return postcode;
 				}
 			}
@@ -446,7 +444,7 @@ define([
 			}
 			
 			var value = ""
-			if(this._hasProperty(data, fieldName)){
+			if(typeTest.isProperty(data, fieldName)){
 				value = data[fieldName];
 			}
 			
@@ -457,16 +455,16 @@ define([
 			args = this._getTableWidgetSetDataArgument(value, args);
 			
 			var node;
-			if(this._hasProperty(args, "data")){
+			if(typeTest.isProperty(args, "data")){
 				var obj = {
 					"data": args.data,
 					"title": args.title
 				};
-				if(this._hasProperty(args, "titleLevel")){
+				if(typeTest.isProperty(args, "titleLevel")){
 					obj.titleLevel = args.titleLevel;
 				}
 				
-				if(this._hasProperty(args, "propertyNode")){
+				if(typeTest.isProperty(args, "propertyNode")){
 					this._createAttachPoint(
 						args.propertyNode,
 						args.constructor, obj
@@ -479,7 +477,7 @@ define([
 			}
 			
 			if(node === undefined){
-				if(this._hasProperty(args, "propertyNode")){
+				if(typeTest.isProperty(args, "propertyNode")){
 					this._createAttachPoint(args.propertyNode, "div");
 					node = this.contactsWidget;
 				}else{
@@ -498,7 +496,7 @@ define([
 		},
 		
 		_getTableWidgetSetDataArgument: function(value, args){
-			if(this._hasProperty(args, "field")){
+			if(typeTest.isProperty(args, "field")){
 				args.data = value[args.field];
 			}else{
 				args.data = value;	
@@ -521,15 +519,15 @@ define([
 				return true;
 			}
 			
-			if(this._isBlank(this.value.accessDetails)){
+			if(typeTest.isBlank(this.value.accessDetails)){
 				return true;
 			}
 			return false;
 		},
 		
 		_hasAccessCheck: function(enableField, contentField){
-			if(this._isTrue(this.value[enableField])){
-				if(this._isBlank(this.value[contentField])){
+			if(typeTest.isTrue(this.value[enableField])){
+				if(typeTest.isBlank(this.value[contentField])){
 					return true;
 				}
 			}
@@ -538,11 +536,11 @@ define([
 		},
 		
 		_hasAccessCheckAge: function(){
-			if(this._isTrue(this.value.ageTarget)){
-				if((this._isBlank(this.value.age1)) || (this._isBlank(this.value.age2))){
+			if(typeTest.isTrue(this.value.ageTarget)){
+				if((typeTest.isBlank(this.value.age1)) || (typeTest.isBlank(this.value.age2))){
 					return true;
 				}
-				if((this._isBlank(this.value.age1Months)) || (this._isBlank(this.value.age2Months))){
+				if((typeTest.isBlank(this.value.age1Months)) || (typeTest.isBlank(this.value.age2Months))){
 					return true;
 				}
 			}

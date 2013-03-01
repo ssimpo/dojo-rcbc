@@ -11,9 +11,10 @@ define([
 	"dijit/_WidgetsInTemplateMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/skype",
-	"dojo/text!./views/skype.html"
+	"dojo/text!./views/skype.html",
+	"simpo/typeTest"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template
+	declare, _widget, _templated, _wTemplate, i18n, strings, template, typeTest
 ) {
 	"use strict";
 	

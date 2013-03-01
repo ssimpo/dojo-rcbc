@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/sideMenu",
 	"dojo/text!./views/sideMenu.html",
@@ -17,18 +16,17 @@ define([
 	"dojo/_base/array",
 	"dojo/dom-construct",
 	"dojo/dom-class",
-	"dojo/io-query"
+	"dojo/io-query",
+	"simpo/typeTest"
 ], function(
 	declare,
-	_widget, _templated, _wTemplate, _variableTestMixin,
+	_widget, _templated, _wTemplate,
 	i18n, strings, template,
-	lang, array, domConstr, domClass, ioQuery
+	lang, array, domConstr, domClass, ioQuery, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -78,7 +76,7 @@ define([
 			this._initNodes();
 			
 			domConstr.empty(this.domNode);
-			if(this._isBlank(value)){
+			if(typeTest.isBlank(value)){
 				this._hideWidget();
 			}else{
 				this._showWidget();
@@ -102,7 +100,7 @@ define([
 			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
 			href = href[0];
 			
-			if(this._isObject(value)){
+			if(typeTest.isObject(value)){
 				for(var key in value){
 					
 					menu.push({
@@ -125,8 +123,8 @@ define([
 		
 		_updateClass: function(nClass, oldClass){
 			if(nClass !== oldClass){
-				if(!this._isBlank(nClass)){
-					if(!this._isBlank(oldClass)){
+				if(!typeTest.isBlank(nClass)){
+					if(!typeTest.isBlank(oldClass)){
 						domClass.remove(this.domNode, oldClass);
 					}
 					
@@ -136,10 +134,10 @@ define([
 		},
 		
 		_parseMenuData: function(value){
-			if(!this._isBlank(value)){
+			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(item){
 					var listitem = this._createItem(item);
-					if(!this._isBlank(listitem)){
+					if(!typeTest.isBlank(listitem)){
 						domConstr.place(listitem, this.domNode);
 					}
 				}, this);

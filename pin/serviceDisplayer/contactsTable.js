@@ -17,18 +17,15 @@ define([
 	"dojo/dom-construct",
 	"dojo/dom-attr",
 	"dojo/_base/lang",
-	"require"
+	"require",
+	"simpo/typeTest"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, _tableMixin,
-	i18n, strings, template,
-	array, domConstr, domAttr, lang, require
+	declare, _widget, _templated, _wTemplate, _tableMixin, i18n, strings,
+	template, array, domConstr, domAttr, lang, require, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _tableMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate, _tableMixin], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -44,7 +41,7 @@ define([
 		
 		_fixTitleLevel: function(){
 			try{
-				if(!this._isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
+				if(!typeTest.isEqual(this.titleDom.tagName, "h"+this.titleLevel.toString())){
 					this.titleDom = domConstr.create(
 						"h"+this.titleLevel.toString(),
 						{"innerHTML": domAttr.get(this.titleDom, "innerHTML")},
@@ -87,7 +84,7 @@ define([
 		
 		_processContacts: function(){
 			var self = this;
-			var count = ((this._isArray(this.data)) ? this.data.length : 0);
+			var count = ((typeTest.isArray(this.data)) ? this.data.length : 0);
 			
 			var callback = function(){
 				try{
@@ -136,7 +133,7 @@ define([
 				var dojoId = "./contactsTable/"+this._camelize(type);
 				require([dojoId], lang.hitch(this, function(construct){
 					try{
-						if(!this._isBlank(tr.parentNode)){
+						if(!typeTest.isBlank(tr.parentNode)){
 							var rowWidget = new construct(contact);
 							domConstr.place(rowWidget.domNode, tr, "replace");
 							callback();

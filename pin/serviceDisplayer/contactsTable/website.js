@@ -47,7 +47,7 @@ define([
 		
 		_createAnchor: function(){
 			var details = lang.trim(this.details);
-			if(!this._isBlank(details)){
+			if(!typeTest.isBlank(details)){
 				domAttr.set(this.anchorNode, "href", this._parseUrl(details));
 				details = details.replace(/http\:\/\/|https\:\/\//,"");
 				domAttr.set(this.anchorNode, "innerHTML", details);

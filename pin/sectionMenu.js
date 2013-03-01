@@ -9,7 +9,6 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
-	"./_variableTestMixin",
 	"dojo/i18n",
 	"dojo/i18n!./nls/sectionMenu",
 	"dojo/text!./views/sectionMenu.html",
@@ -17,17 +16,16 @@ define([
 	"dojo/io-query",
 	"dojo/_base/array",
 	"dojo/dom-class",
-	"dojo/topic"
+	"dojo/topic",
+	"simpo/typeTest"
 ], function(
-	declare, _widget, _templated, _wTemplate, _variableTestMixin,
+	declare, _widget, _templated, _wTemplate,
 	i18n, strings, template,
-	domConstr, ioQuery, array, domClass, topic
+	domConstr, ioQuery, array, domClass, topic, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([
-		_widget, _templated, _wTemplate, _variableTestMixin
-	], {
+	var construct = declare([_widget, _templated, _wTemplate], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -77,7 +75,7 @@ define([
 			this._initNodes();
 			
 			domConstr.empty(this.domNode);
-			if(this._isBlank(value)){
+			if(typeTest.isBlank(value)){
 				this._hideWidget();
 			}else{
 				this._showWidget();
@@ -109,14 +107,14 @@ define([
 		},
 		
 		_parseMenuData: function(value){
-			if(!this._isBlank(value)){
+			if(!typeTest.isBlank(value)){
 				value = value.sort(function(a, b){
 					return ((a.title < b.title) ? -1 : 1);
 				});
 				
 				array.forEach(value, function(item){
 					var listitem = this._createItem(item);
-					if(!this._isBlank(listitem)){
+					if(!typeTest.isBlank(listitem)){
 						domConstr.place(listitem, this.domNode);
 					}
 				}, this);
@@ -144,8 +142,8 @@ define([
 		
 		_updateClass: function(nClass, oldClass){
 			if(nClass !== oldClass){
-				if(!this._isBlank(nClass)){
-					if(!this._isBlank(oldClass)){
+				if(!typeTest.isBlank(nClass)){
+					if(!typeTest.isBlank(oldClass)){
 						domClass.remove(this.domNode, oldClass);
 					}
 					
@@ -159,7 +157,7 @@ define([
 			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
 			href = href[0];
 			
-			if(this._isObject(value)){
+			if(typeTest.isObject(value)){
 				for(var key in value){
 					
 					menu.push({
