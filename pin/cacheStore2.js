@@ -548,11 +548,197 @@ define([
 			});
 		},
 		
+		"_getSectionCache": {},
+		getSection: function(section){
+			var self = this;
+			
+			function getCache(section){
+				section = section.toLowerCase();
+				if(typeTest.isProperty(self._getSectionCache, section)){
+					var cTimestamp = new Date().getTime();
+					var qTimestamp = self._getSectionCache[section].timestamp;
+					
+					if(cTimestamp < (qTimestamp + (1000*60*3))){
+						return self._getSectionCache[section].query;
+					}	
+				}
+				
+				return null;
+			}
+			
+			function setCache(section, query){
+				section = section.toLowerCase();
+				self._getSectionCache[section] = {
+					"query": query,
+					"timestamp": new Date().getTime()
+				};
+			}
+			
+			var query = getCache(section);
+			if(query !== null){
+				return query;
+			}
+			
+			var fieldName = self._getCategoryFieldName(section);
+			query = this.servicesStore.query(function(obj){
+				if(typeTest.isProperty(obj, "data")){
+					if(typeTest.isProperty(obj.data, fieldName)){
+						return !typeTest.isBlank(obj.data[fieldName])
+					}
+				}
+				return false;
+			});
+			
+			if(!typeTest.isBlank(query)){
+				query = query.sort(function(a, b){
+					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+				});
+				setCache(section, query);
+				return query;
+			}
+			return new Array();
+		},
+		
+		"_searchServicesCache": {},
+		searchServices: function(search, section){
+			var self = this;
+			
+			function getCache(section, search){
+				section = section.toLowerCase();
+				search = search.toLowerCase();
+				
+				if(typeTest.isProperty(self._searchServicesCache, section)){
+					if(typeTest.isProperty(self._searchServicesCache[section], search)){
+						var cTimestamp = new Date().getTime();
+						var qTimestamp = self._searchServicesCache[section][search].timestamp;
+					}
+					
+					if(cTimestamp < (qTimestamp + (1000*60))){
+						return self._searchServicesCache[section][search].query;
+					}	
+				}
+				
+				return null;
+			}
+			
+			function setCache(section, search, query){
+				section = section.toLowerCase();
+				search = search.toLowerCase();
+				
+				if(!typeTest.isProperty(self._searchServicesCache, section)){
+					self._searchServicesCache[section] = new Object();
+				}
+				
+				self._searchServicesCache[section][search] = {
+					"query": query,
+					"timestamp": new Date().getTime()
+				};
+			}
+			
+			var query = getCache(section, search);
+			if(query !== null){
+				console.log("FROM CACHE", search);
+				return query;
+			}
+			
+			if(search.length > 2){
+				query = getCache(section, search.substring(0, search.length - 1));
+			}
+			if(query === null){
+				if(!typeTest.isBlank(section)){
+					query = this.getSection(section);
+				}else{
+					query.servicesQuery.query({});
+				}
+			}else{
+				console.log("QUICK CACHE", search.substring(0, search.length - 1));
+			}
+			
+			var tests = this._parseSearch(search);
+			query = array.filter(query, function(service){
+				try{
+					if(typeTest.isProperty(service, "data")){
+						var searcher = JSON.stringify(service.data);
+						return this._searchTest(searcher, tests);
+					}
+				}catch(e){ }
+				return false;
+			}, this);
+			
+			if(!typeTest.isBlank(query)){
+				setCache(section, search, query);
+				return query;
+			}
+			return new Array();
+		},
+		
+		_parseSearch: function(search){
+			var words = search.split(" ");
+			var tests = new Array();
+			array.forEach(words, function(word){
+				tests.push(new RegExp("\\W"+word,"i"));
+			}, this);
+			return tests;
+		},
+		
+		_searchTest: function(query, tests){
+			var found = true;
+			
+			array.every(tests, function(test){
+				if(!test.test(query)){
+					found = false;
+					return false;
+				}
+				return true;
+			}, this);
+			
+			return found;
+		},
+		
+		"_getCategoryCache": {},
 		getCategory: function(section, category){
+			var self = this;
+			
+			function getCache(section, category){
+				section = section.toLowerCase();
+				category = category.toLowerCase();
+				
+				if(typeTest.isProperty(self._getCategoryCache, section)){
+					if(typeTest.isProperty(self._getCategoryCache[section], category)){
+						var cTimestamp = new Date().getTime();
+						var qTimestamp = self._getCategoryCache[section][category].timestamp;
+						
+						if(cTimestamp < (qTimestamp + (1000*60))){
+							return self._getCategoryCache[section][category].query;
+						}
+					}
+				}
+				
+				return null;
+			}
+			
+			function setCache(section, category, query){
+				section = section.toLowerCase();
+				category = category.toLowerCase();
+				
+				if(!typeTest.isProperty(self._getCategoryCache, section)){
+					self._getCategoryCache[section] = new Object();
+				}
+				
+				self._getCategoryCache[section][category] = {
+					"query": query,
+					"timestamp": new Date().getTime()
+				};
+			}
+			
+			var query = getCache(section, category);
+			if(query !== null){
+				return query;
+			}
 			
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
 				if(this.servicesStore.get(category.toLowerCase())){
-					var query = this.servicesStore.query(function(obj){
+					query = this.servicesStore.query(function(obj){
 						if(typeTest.isProperty(obj, "data")){
 							if(typeTest.isProperty(obj.data, "service")){
 								return (obj.data.service.toLowerCase() === category.toLowerCase());
@@ -561,15 +747,19 @@ define([
 						return false;
 					});
 					
-					return query.sort(function(a, b){
+					query = query.sort(function(a, b){
 						return (((a.data.title) < (b.data.title)) ? -1 : 1);
 					});
 				}else{
 					return [];
 				}
 			}else{
-				var self = this;
-				var query = this.servicesStore.query(function(obj){
+				query = this.getSection(section);
+				query = array.filter(query, function(service){
+					return self._itemHasCategory(service, section, category);
+				}, this);
+					
+				query = this.servicesStore.query(function(obj){
 					if(self._isServiceItem(obj)){
 						return self._itemHasCategory(obj, section, category);
 					}else{
@@ -577,10 +767,16 @@ define([
 					}
 				});
 				
-				return query.sort(function(a, b){
+				query = query.sort(function(a, b){
 					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 				});
 			}
+			
+			if(!typeTest.isBlank(query)){
+				setCache(section, category, query);
+				return query;
+			}
+			return new Array();
 		},
 		
 		_isServiceItem: function(item){
@@ -668,20 +864,59 @@ define([
 			return null;
 		},
 		
+		"_getTagCache": {},
 		getTag: function(section, category, tag){
 			var self = this;
 			
-			var query = this.servicesStore.query(function(object){
-				if(self._isServiceItem(object)){
-					if(self._itemHasCategory(object, section, category)){
-						return (self._itemHasTag(object, tag));
-					}else{
-						return false;
+			function getCache(section, category, tag){
+				section = section.toLowerCase();
+				category = category.toLowerCase();
+				tag  = tag.toLowerCase();
+				
+				if(typeTest.isProperty(self._getTagCache, section)){
+					if(typeTest.isProperty(self._getTagCache[section], category)){
+						if(typeTest.isProperty(self._getTagCache[section][category], tag)){
+							var cTimestamp = new Date().getTime();
+							var qTimestamp = self._getTagCache[section][category][tag].timestamp;
+						
+							if(cTimestamp < (qTimestamp + (1000*60))){
+								return self._getTagCache[section][category][tag].query;
+							}
+						}
+						
 					}
-				}else{
-					return false;
 				}
-			});
+				
+				return null;
+			}
+			
+			function setCache(section, category, tag, query){
+				section = section.toLowerCase();
+				category = category.toLowerCase();
+				tag  = tag.toLowerCase();
+				
+				if(!typeTest.isProperty(self._getTagCache, section)){
+					self._getTagCache[section] = new Object();
+					if(!typeTest.isProperty(self._getTagCache[section], category)){
+						self._getTagCache[section][category] = new Object();
+					}
+				}
+				
+				self._getTagCache[section][category][tag] = {
+					"query": query,
+					"timestamp": new Date().getTime()
+				};
+			}
+			
+			var query = getCache(section, category, tag);
+			if(query !== null){
+				return query;
+			}
+			
+			var query = this.getCategory(section, category);
+			query = array.filter(query, function(service){
+				return (self._itemHasTag(service, tag));
+			}, this);
 			
 			return query.sort(function(a, b){
 				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);

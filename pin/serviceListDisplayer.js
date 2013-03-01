@@ -22,14 +22,15 @@ define([
 	"dojo/hash",
 	"dojo/io-query",
 	"dojo/topic",
+	"simpo/typeTest",
+	"dojo/query",
 	
 	"rcbc/pin/expandingDiv"
-	
 ], function(
 	declare,
 	_widget, _templated, _wTemplate, _variableTestMixin,
 	i18n, strings, template, loadingStrings,
-	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic
+	lang, domConstr, domAttr, domClass, array, hash, ioQuery, topic, typeTest, $
 ){
 	"use strict";
 	
@@ -57,6 +58,7 @@ define([
 		"serviceListWidget": null,
 		"parentPosPlace": "last",
 		"i18nLoading": loadingStrings,
+		"_cache": {},
 		
 		postCreate: function(){
 			/*var displayer = new pagedColumnList({
@@ -110,10 +112,7 @@ define([
 			this.value = value;
 			if(this._isBlank(this.value)){
 				if(this._isElement(this.serviceListNode) || this._isWidget(this.serviceListNode)){
-					domConstr.empty(this.serviceListNode);
-					if(this.serviceListWidget !== null){
-						this.serviceListWidget.clear();
-					}
+					this._clearServiceList();
 				}
 				this._hideWidget();
 			}else{
@@ -183,9 +182,17 @@ define([
 		},
 		
 		_clear: function(){
-			this._ifHasClear("serviceListNode");
+			this._clearServiceList();
 			this._ifHasClear("tagListNode");
 			this.clearMessage();
+		},
+		
+		_clearServiceList: function(){
+			if(this.serviceListNode !== null){
+				$("li", this.serviceListNode).forEach(function(node){
+					domConstr.place(node, this.hiddenList);
+				}, this);
+			}
 		},
 		
 		_ifHasClear: function(nodeName, destroy){
@@ -357,13 +364,20 @@ define([
 			
 			if(!this._isBlank(value)){
 				array.forEach(value, function(service){
-					var li = domConstr.create("li", {}, this.serviceListNode);
-					var title = this._getTitle(service.data);
+					if(typeTest.isProperty(this._cache, service.id)){
+						domConstr.place(this._cache[service.id], this.serviceListNode);
+					}else{
+						var li = domConstr.create("li", {}, this.serviceListNode);
+						this._cache[service.id] = li;
+						var title = this._getTitle(service.data);
 					
-					domConstr.create("a", {
-						"innerHTML": title,
-						"href": service.data.href + "&section=" + this.section
-					}, li);
+						domConstr.create("a", {
+							"innerHTML": title,
+							"href": service.data.href + "&section=" + this.section
+						}, li);
+					}
+					
+					
 				}, this);
 			}
 		},
