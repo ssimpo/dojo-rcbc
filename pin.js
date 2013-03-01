@@ -671,33 +671,52 @@ define([
 				this._hashChange(cHash);
 			}else{
 				this.contentPane.clear();
-				var query = this._doSearch(search, this.section);
-				var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
-				var title = "Search Results: \""+search+"\"";
+				this._doSearch(search, this.section, lang.hitch(this, function(query){
+					var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
+					var title = "Search Results: \""+search+"\"";
 			
-				if(!this._isBlank(cHash.section)){
-					if(!this._isEqual(cHash.section, "Family Services") && !this._isEqual(cHash.section, "Adult Services")){
-						this._displayMenu("Adult Services");
-					}else{
-						this._displayMenu(cHash.section);
-						info += ", in: <b>"+cHash.section+"</b>";
+					if(!this._isBlank(cHash.section)){
+						if(!this._isEqual(cHash.section, "Family Services") && !this._isEqual(cHash.section, "Adult Services")){
+							this._displayMenu("Adult Services");
+						}else{
+							this._displayMenu(cHash.section);
+							info += ", in: <b>"+cHash.section+"</b>";
+						}
 					}
-				}
-				this.serviceDisplayer.clear();
-				this.sectionMenu.clear();
-				this.shortlist.clear();
-			
-				this.serviceListDisplayer.set("category", title);
-				this.serviceListDisplayer.set("value", query);
-				this.serviceListDisplayer.set("tags", []);
-				this.serviceListDisplayer.addMessage("<p>"+info+".</p>");
+				
+					this.serviceDisplayer.clear();
+					this.sectionMenu.clear();
+					this.shortlist.clear();
+				
+					this.serviceListDisplayer.set("category", title);
+					this.serviceListDisplayer.set("value", query);
+					this.serviceListDisplayer.set("tags", []);
+					this.serviceListDisplayer.addMessage("<p>"+info+".</p>");
+				}));
 			}
 		},
 		
-		_doSearch: function(search, section){
-			var tests = this._parseSearch(search);
+		"_doSearchId": 0,
+		_doSearch: function(search, section, callback){
+			var id = Math.floor((Math.random()*1000000000000)+1);
+			this._doSearchId = id;
 			
-			var query = this.store.query(lang.hitch(this, function(obj){
+			console.log("*",search,"*");
+			if(search !== ""){
+				var self = this;
+				setTimeout(function(){
+					if(id === self._doSearchId){
+						callback(self.store.searchServices(search, section));
+					}
+				}, 100);
+			}else{
+				callback([], section);
+			}
+			
+			
+			/*var tests = this._parseSearch(search);
+			
+			var query = this.store.servicesStore.query(lang.hitch(this, function(obj){
 				var type = this._getField(obj, "type");
 				var data = this._getField(obj, "data");
 				
@@ -709,13 +728,14 @@ define([
 						}
 						return false;
 					}catch(e){
+						console.log(e);
 						return false;
 					}
 				}
 				return false;
 			}));
 			
-			return query;
+			return query;*/
 		},
 		
 		_searchCategoryTest: function(item, section){
