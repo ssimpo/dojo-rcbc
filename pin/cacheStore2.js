@@ -676,14 +676,6 @@ define([
 							return self._itemHasCategory(service, section, category);
 						}, this);
 						
-						query = this.servicesStore.query(function(obj){
-							if(self._isServiceItem(obj)){
-								return self._itemHasCategory(obj, section, category);
-							}else{
-								return false;
-							}
-						});
-						
 						query = query.sort(function(a, b){
 							return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 						});
