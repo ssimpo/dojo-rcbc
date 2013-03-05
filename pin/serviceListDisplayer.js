@@ -23,12 +23,12 @@ define([
 	"dojo/topic",
 	"simpo/typeTest",
 	"dojo/query",
-	
+	"simpo/interval",
 	"rcbc/pin/expandingDiv"
 ], function(
 	declare, _widget, _templated, _wTemplate, i18n, strings, template,
 	loadingStrings, lang, domConstr, domAttr, domClass, array, hash, ioQuery,
-	topic, typeTest, $
+	topic, typeTest, $, interval
 ){
 	"use strict";
 	
@@ -55,6 +55,8 @@ define([
 		"parentPosPlace": "last",
 		"i18nLoading": loadingStrings,
 		"_cache": {},
+		"_loadingMessageIsShowing": false,
+		"_itemsShowing": {},
 		
 		postCreate: function(){
 			/*var displayer = new pagedColumnList({
@@ -112,10 +114,10 @@ define([
 				}
 				this._hideWidget();
 			}else{
-				this.loading(true);
+				//this.loading(true);
 				this._showWidget();
 				this._createContent(value);
-				this.loading(false);
+				//this.loading(false);
 			}
 		},
 		
@@ -166,14 +168,23 @@ define([
 		loading: function(isLoading){
 			isLoading = ((isLoading === undefined) ? true : isLoading);
 			if(isLoading){
-				this._clear();
-				domAttr.set(
-					this.infoNode,
-					"innerHTML",
-					loadingStrings.loadingState
-				);
+				if(!this._loadingMessageIsShowing){
+					this._loadingMessageIsShowing = true;
+					//this._clear();
+					//domAttr.set(
+						//this.infoNode,
+						//"innerHTML",
+						//loadingStrings.loadingState
+					//);
+					topic.publish(
+						"/rcbc/pin/titleChange",
+						loadingStrings.loadingState
+					);
+					
+				}
 			}else{
-				this.clearMessage();
+				this._loadingMessageIsShowing = false;
+				//this.clearMessage();
 			}
 		},
 		
@@ -185,9 +196,11 @@ define([
 		
 		_clearServiceList: function(){
 			if(this.serviceListNode !== null){
-				$("li", this.serviceListNode).forEach(function(node){
-					domConstr.place(node, this.hiddenList);
-				}, this);
+				for(var id in this._itemsShowing){
+					if(this._itemsShowing[id]){
+						domConstr.place(this._cache[id], this.hiddenList);
+					}
+				}
 			}
 		},
 		
@@ -299,8 +312,8 @@ define([
 		},
 		
 		_createContent: function(value){
-			this._createTitle();
 			this._createServiceList(value);
+			this._createTitle();
 		},
 		
 		_createTagList: function(value){
@@ -352,18 +365,20 @@ define([
 		},
 		
 		_createServiceList: function(value){
+			var itemsShowing = new Object();
 			this._createAttachPoint("serviceListNode", "ul");
-			domConstr.empty(this.serviceListNode);
-			if(this.serviceListWidget !== null){
-				this.serviceListWidget.clear();
-			}
+			//domConstr.empty(this.serviceListNode);
+			//if(this.serviceListWidget !== null){
+				//this.serviceListWidget.clear();
+			//}
 			
 			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(service){
+					var li = null;
 					if(typeTest.isProperty(this._cache, service.id)){
-						domConstr.place(this._cache[service.id], this.serviceListNode);
+						li = this._cache[service.id];
 					}else{
-						var li = domConstr.create("li", {}, this.serviceListNode);
+						li = domConstr.create("li", {});
 						this._cache[service.id] = li;
 						var title = this._getTitle(service.data);
 					
@@ -373,8 +388,19 @@ define([
 						}, li);
 					}
 					
-					
+					if(li !== null){
+						itemsShowing[service.id] = true;
+						this._itemsShowing[service.id] = true;
+						domConstr.place(this._cache[service.id], this.serviceListNode);
+					}	
 				}, this);
+				
+				for(var id in this._itemsShowing){
+					if((this._itemsShowing[id]) && (!typeTest.isProperty(itemsShowing, id))){
+						this._itemsShowing[id] = false;
+						domConstr.place(this._cache[id], this.hiddenList);
+					}
+				}
 			}
 		},
 		
