@@ -9,6 +9,7 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_listItems",
 	"dojo/i18n",
 	"dojo/i18n!./nls/serviceListDisplayer",
 	"dojo/text!./views/serviceListDisplayer.html",
@@ -26,13 +27,13 @@ define([
 	"simpo/interval",
 	"rcbc/pin/expandingDiv"
 ], function(
-	declare, _widget, _templated, _wTemplate, i18n, strings, template,
+	declare, _widget, _templated, _wTemplate, _listItems, i18n, strings, template,
 	loadingStrings, lang, domConstr, domAttr, domClass, array, hash, ioQuery,
 	topic, typeTest, $, interval
 ){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate],{
+	var construct = declare([_widget, _templated, _wTemplate, _listItems],{
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -54,9 +55,10 @@ define([
 		"serviceListWidget": null,
 		"parentPosPlace": "last",
 		"i18nLoading": loadingStrings,
-		"_cache": {},
+		
 		"_loadingMessageIsShowing": false,
-		"_itemsShowing": {},
+		"_serviceItemsShowing": {},
+		"_tagItemsShowing": {},
 		
 		postCreate: function(){
 			/*var displayer = new pagedColumnList({
@@ -289,11 +291,33 @@ define([
 						title = this._getField(item.data, "title");
 					}
 					
-					console.log(serviceTitle, orgTitle, title);
 				}
 			}
 			
 			return title;
+		},
+		
+		_getTagTitle: function(tag, tags){
+			return tag + " ("+tags[tag].toString()+")";
+		},
+		
+		_getServiceHref: function(itemData){
+			return itemData.data.href + "&section=" + this.section;
+		},
+		
+		_getTagHref: function(tag){
+			var hashQuery = ioQuery.queryToObject(hash());
+			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
+			
+			hashQuery.tag = tag;
+			href = href[0]+"#"+ioQuery.objectToQuery(hashQuery);
+			
+			return href;
+		},
+		
+		_getTagId: function(section, category, tag){
+			var id = section + "_" + category + "_" + tag;
+			return id.toLowerCase();
 		},
 		
 		_isServiceType: function(item){
@@ -318,35 +342,31 @@ define([
 		
 		_createTagList: function(value){
 			this._createTitle();
+			var itemsShowing = new Object();
 			this._createAttachPoint("tagListNode", "ul");
-			domConstr.empty(this.tagListNode);
 			
 			if(!typeTest.isBlank(value)){
-				var tags = new Array();
-				for(var tag in value){
-					if(!typeTest.isBlank(tag)){
-						tags.push(tag);
-					}
-				}
-				
-				if(this.sortTagsByAZ){
-					tags.sort();
-				}else{
-					tags.sort(function(a,b){
-						return ((value[a] > value[b]) ? -1 : 1);
-					});
-				}
+				var tags = this._getTagArrayFromTagObject(value);
+				tags = this._sortTags(tags);
 				
 				array.forEach(tags, function(tag){
-					var li = domConstr.create(
-						"li", {}, this.tagListNode
-					);
+					var id = this._getTagId(this.section, this.category, tag);
 					
-					domConstr.create("a", {
-						"innerHTML": tag + " ("+value[tag].toString()+")",
-						"href": this._createTagHref(tag)
-					}, li);
+					if(!typeTest.isProperty(this._cache, id)){
+						this._createItem({
+							"id": id,
+							"href": this._getTagHref(tag),
+							"title": this._getTagTitle(tag, value)
+						});
+					}
+					
+					itemsShowing[id] = true;
+					this._placeItem(id, this.tagListNode, this._tagItemsShowing);
 				}, this);
+				
+				this._hideNonItemsListedItems(
+					itemsShowing, this._tagItemsShowing, this.hiddenList
+				);
 				
 				this.expandingDiv.setHeader("Filter services:");
 			}else{
@@ -354,14 +374,25 @@ define([
 			}
 		},
 		
-		_createTagHref: function(tag){
-			var hashQuery = ioQuery.queryToObject(hash());
-			var href = location.href.replace(/^.*\/\/[^\/]+/, '').split("#");
+		_sortTags: function(tags){
+			if(this.sortTagsByAZ){
+				return tags.sort();
+			}else{
+				return tags.sort(function(a,b){
+					return ((value[a] > value[b]) ? -1 : 1);
+				});
+			}
+		},
+		
+		_getTagArrayFromTagObject: function(tagObj){
+			var tagAry = new Array();
+			for(var tag in tagObj){
+				if(!typeTest.isBlank(tag)){
+					tagAry.push(tag);
+				}
+			}
 			
-			hashQuery.tag = tag;
-			href = href[0]+"#"+ioQuery.objectToQuery(hashQuery);
-			
-			return href;
+			return tagAry;
 		},
 		
 		_createServiceList: function(value){
@@ -371,76 +402,25 @@ define([
 			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(service){
 					if(!typeTest.isProperty(this._cache, service.id)){
-						this._createItem(service);
+						this._createItem({
+							"id": service.data.id,
+							"href": this._getServiceHref(service),
+							"title": this._getServiceTitle(service)
+						});
 					}
 					
 					itemsShowing[service.id] = true;
-					this._placeItem(service);
+					this._placeItem(
+						service.data.id,
+						this.serviceListNode,
+						this._serviceItemsShowing
+					);
 				}, this);
 				
-				this._hideNonItemsListedItems(itemsShowing);
+				this._hideNonItemsListedItems(
+					itemsShowing, this._serviceItemsShowing, this.hiddenList
+				);
 			}
-		},
-		
-		_createItem: function(service){
-			var li = domConstr.create("li", {});
-			this._cache[service.id] = li;
-			var title = this._getTitle(service.data);
-					
-			domConstr.create("a", {
-				"innerHTML": title,
-				"href": service.data.href + "&section=" + this.section
-			}, li);
-			
-			return li;
-		},
-		
-		_placeItem: function(service){
-			var li = this._cache[service.id];
-			this._itemsShowing[service.id] = true;
-			domConstr.place(li, this.serviceListNode);
-		},
-		
-		_hideNonItemsListedItems: function(itemsShowing){
-			for(var id in this._itemsShowing){
-				if((this._itemsShowing[id]) && (!typeTest.isProperty(itemsShowing, id))){
-					this._itemsShowing[id] = false;
-					domConstr.place(this._cache[id], this.hiddenList);
-				}
-			}
-		},
-		
-		_getTitle: function(value){
-			var title = "";
-			var serviceTitle = this._getField(value, "serviceName");
-			var orgTitle = this._getField(value, "orgName");
-			
-			if((serviceTitle === "") && (orgTitle !== "")){
-				title = orgTitle;
-			}else if((serviceTitle !== "") && (orgTitle !== "")){
-				title = serviceTitle + " ("+orgTitle+")";
-			}else if(serviceTitle !== ""){
-				title = serviceTitle;
-			}else{
-				title = this._getField(value, "title");
-			}
-			
-			return title;
-		},
-		
-		_getField: function(data, fieldName){
-			if(fieldName == undefined){
-				fieldName = data;
-				data = this.value;
-			}
-			
-			var value = ""
-			
-			if(typeTest.isProperty(data, fieldName)){
-				value = data[fieldName];
-			}
-			
-			return lang.trim(value);
 		},
 		
 		_createItemClass: function(category){

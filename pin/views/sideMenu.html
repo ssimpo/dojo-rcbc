@@ -1,4 +1,11 @@
-<ul
-	class="rcbcWidgetsSideMenu sideMenu"
-	data-dojo-attach-point="ContainerNode"
-></ul>
+<div class="rcbcWidgetsSideMenu sideMenu">
+	<div
+		class="hiddenDiv"
+		data-dojo-attach-point="hiddenDiv"
+	>
+		<ul data-dojo-attach-point="hiddenList"></ul>
+	</div>
+	<ul
+		data-dojo-attach-point="containerNode"
+	></ul>
+</div>

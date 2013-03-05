@@ -9,6 +9,7 @@ define([
 	"dijit/_WidgetBase",
 	"dijit/_TemplatedMixin",
 	"dijit/_WidgetsInTemplateMixin",
+	"./_listItems",
 	"dojo/i18n",
 	"dojo/i18n!./nls/sectionMenu",
 	"dojo/text!./views/sectionMenu.html",
@@ -19,13 +20,12 @@ define([
 	"dojo/topic",
 	"simpo/typeTest"
 ], function(
-	declare, _widget, _templated, _wTemplate,
-	i18n, strings, template,
+	declare, _widget, _templated, _wTemplate, _listItems, i18n, strings, template,
 	domConstr, ioQuery, array, domClass, topic, typeTest
 ){
 	"use strict";
 	
-	var construct = declare([_widget, _templated, _wTemplate], {
+	var construct = declare([_widget, _templated, _wTemplate, _listItems], {
 		// i18n: object
 		//		The internationalisation text-strings for current browser language.
 		"i18n": strings,
@@ -41,6 +41,8 @@ define([
 		"parentNode": null,
 		"hiddenNode": null,
 		"parentPosPlace": "after",
+		
+		"_sectionItemsShowing": {},
 		
 		_initNodes: function(){
 			if(this.application !== null){
@@ -74,7 +76,6 @@ define([
 		_setValueAttr: function(value){
 			this._initNodes();
 			
-			domConstr.empty(this.domNode);
 			if(typeTest.isBlank(value)){
 				this._hideWidget();
 			}else{
@@ -108,36 +109,49 @@ define([
 		
 		_parseMenuData: function(value){
 			if(!typeTest.isBlank(value)){
+				var itemsShowing = new Object();
+				
 				value = value.sort(function(a, b){
 					return ((a.title < b.title) ? -1 : 1);
 				});
 				
 				array.forEach(value, function(item){
-					var listitem = this._createItem(item);
-					if(!typeTest.isBlank(listitem)){
-						domConstr.place(listitem, this.domNode);
+					var id = this._getCategoryId(this.section, item.title);
+					if(!typeTest.isProperty(this._cache, id)){
+						var title = this._getCategoryTitle(item);
+						
+						this._createItem({
+							"id": id,
+							"href": this._getCategoryHref(item),
+							"title": title,
+							"class": this._createItemClass(title)
+						});
 					}
+					
+					itemsShowing[id] = true;
+					
+					this._placeItem(
+						id, this.containerNode, this._sectionItemsShowing
+					);
 				}, this);
+				
+				this._hideNonItemsListedItems(
+					itemsShowing, this._sectionItemsShowing, this.hiddenList
+				);
 			}
 		},
-		
-		_createItem: function(item){
-			var li = domConstr.create("li", {
-				"class": this._createItemClass(item.title)
-			});
-			domConstr.create("a", {
-				"innerHTML": item.title,
-				"href": item.href
-			}, li);
-			
-			return li;
+
+		_getCategoryHref: function(item){
+			return item.href;
 		},
 		
-		_createItemClass: function(title){
-			title = title.replace(/ \& | and /g," ");
-			title = title.replace(/ /g,"-");
-			
-			return title.toLowerCase();
+		_getCategoryTitle: function(item){
+			return item.title;
+		},
+		
+		_getCategoryId: function(section, category){
+			var id = section + "_" + category;
+			return id.toLowerCase();
 		},
 		
 		_updateClass: function(nClass, oldClass){
