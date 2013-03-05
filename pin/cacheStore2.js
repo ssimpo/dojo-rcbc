@@ -725,9 +725,33 @@ define([
 		},
 		
 		getCategoryList: function(section){
-			var services = this.servicesStore.query({});
+			var query = this._cache.getCache(
+				["getCategoryList", section], lang.hitch(this, function(){
+					var services = this.getSection(section);
+					var categoryList = {};
+					var fieldName = this._getCategoryFieldName(section);
+					
+					array.forEach(services, function(service){
+						var categories = this._getCategoryValue(service, fieldName);
+						
+						array.forEach(categories, function(category){
+							if(!typeTest.isBlank(category)){
+								if(!typeTest.isProperty(categoryList, category)){
+									categoryList[category] = true;
+								}
+							}
+						}, this);
+					}, this);
+					
+					return categoryList;
+				})
+			);
+			
+			return query;
+			
+			/*var services = this.servicesStore.query({});
 			var categoryList = {};
-			var fieldName = this._getCategoryFieldName(section);
+			
 			
 			array.forEach(services, function(service){
 				var categories = this._getCategoryValue(service, fieldName);
@@ -739,9 +763,9 @@ define([
 						}
 					}
 				}, this);
-			}, this);
+			}, this);*/
 			
-			return categoryList;
+			//return categoryList;
 		},
 		
 		_getCategoryValue: function(service, fieldName){
@@ -814,7 +838,35 @@ define([
 		},
 		
 		getTagsList: function(section, category){
-			var services = this.getCategory(section, category);
+			var query = this._cache.getCache(
+				["getTagsList", section, category], lang.hitch(this, function(){
+					var services = this.getCategory(section, category);
+					var tags = {};
+					
+					array.forEach(services, function(service){
+						array.forEach(service.data.tags, function(tag){
+							if(!typeTest.isBlank(tag)){
+								var cTags = tag.split(";");
+								array.forEach(cTags, function(cTag){
+									if(!typeTest.isBlank(cTag)){
+										if(typeTest.isProperty(tags, cTag)){
+											tags[cTag]++;
+										}else{
+											tags[cTag] = 1;
+										}
+									}
+								},this);
+							}
+						}, this);
+					}, this);
+					
+					return tags;
+				})
+			);
+			
+			
+			
+			/*var services = this.getCategory(section, category);
 			var tags = {};
 			
 			array.forEach(services, function(service){
@@ -832,9 +884,9 @@ define([
 						},this);
 					}
 				}, this);
-			}, this);
+			}, this);*/
 			
-			return tags;
+			return query;
 		},
 		
 		updateService: function(service){
