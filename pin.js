@@ -13,7 +13,6 @@ define([
 	"dojo/i18n!./nls/pin",
 	"dojo/i18n!dijit/nls/loading",
 	"dojo/text!./views/pin.html",
-	//"rcbc/console!./nls/errors",
 	"./pin/cacheStore2",
 	"dojo/hash",
 	"dojo/topic",
@@ -30,6 +29,7 @@ define([
 	"dijit/registry",
 	"dojo/string",
 	"simpo/typeTest",
+	"simpo/interval",
 	
 	"rcbc/pin/ContentPane",
 	"dijit/form/Button",
@@ -40,11 +40,9 @@ define([
 	"./pin/serviceListDisplayer",
 	"dijit/Tooltip"
 ], function(
-	declare,
-	_widget, _templated, _wTemplate, 
-	i18n, strings, loadingStrings, template, /*console,*/
-	store, hash, topic, lang, ioQuery, request, array,
-	domConstr, domAttr, domClass, domStyle, $, on, registry, string, typeTest
+	declare,_widget, _templated, _wTemplate, i18n, strings, loadingStrings,
+	template, store, hash, topic, lang, ioQuery, request, array, domConstr,
+	domAttr, domClass, domStyle, $, on, registry, string, typeTest, interval
 ){
 	"use strict";
 	
@@ -387,6 +385,7 @@ define([
 		},
 		
 		_hashChange: function(cHash){
+			profiler.reset();
 			var query = this._getHashObj(cHash);
 			
 			if(!typeTest.isBlank(query.pageId)){
@@ -486,26 +485,67 @@ define([
 			}
 		},
 		
- 		_hashChangeNewCategory: function(query){
-			if(!typeTest.isEqual(query.category, this.get("category"))){
-				this.set("category", query.category);
-			}
-			if(!typeTest.isEqual(query.tag, this.get("tag"))){
-				this.set("tag", query.tag);
+		_setNodeStyle: function(nodeName, styleProp, styleValue){
+			var node = ((typeTest.isString(nodeName)) ? this[nodeName] : nodeName);
+			node = ((typeTest.isWidget(node)) ? node.domNode : node);
+			
+			domStyle.set(node, styleProp, styleValue);
+			
+			try{
+				node.parentNode.style.cssText += "";
+				node.parentNode.style.zoom = 1;
+				node.style.cssText += "";
+				node.style.zoom = 1;
+			}catch(e){}
+		},
+		
+		_setVisibility: function(nodeName, visibility){
+			if(visibility === undefined){
+				nodeName = ((typeTest.isString(nodeName)) ? this[nodeName] : nodeName);
+				nodeName = ((typeTest.isWidget(nodeName)) ? nodeName.domNode : nodeName);
+			
+				visibility = (
+					(typeTest.isEqual(domStyle.get(nodeName, "visibility"), "hidden"))
+				? "visible" : "hidden");
 			}
 			
-			if(!typeTest.isBlank(query.section)){
-				this._displayMenu(query.section);
-			}
-			this.contentPane.set(
-				"pageId", query.section, query.category
-			);
+			this._setNodeStyle(nodeName, "visibility", visibility);
+		},
+		
+		"_currentDeferred": null,
+		
+ 		_hashChangeNewCategory: function(query){
+			this._setPageTitleAttr("Loading...");
+			this._setVisibility("serviceListDisplayer", "hidden");
 			this.sectionMenu.clear();
 			this.searchForm.clear();
 			this.shortlist.clear();
-			this._displayCategoryList(
-				query.section, query.category, query.tag
-			);
+			
+			if(this._currentDeferred !== null){
+				this._currentDeferred.cancel();
+			}
+			
+			this._currentDeferred = interval.add(lang.hitch(this, function(){
+				if(!typeTest.isEqual(query.category, this.get("category"))){
+					this.set("category", query.category);
+				}
+				if(!typeTest.isEqual(query.tag, this.get("tag"))){
+					this.set("tag", query.tag);
+				}
+				if(!typeTest.isBlank(query.section)){
+					this._displayMenu(query.section);
+				}
+				this.contentPane.set(
+					"pageId", query.section, query.category
+				);
+			
+				this._displayCategoryList(
+					query.section, query.category, query.tag
+				);
+				
+				this._setVisibility("serviceListDisplayer", "visible");
+				this._currentDeferred = null;
+			}));
 		},
 		
 		_hashChangeNewSectionIsShortlist: function(){
@@ -650,15 +690,16 @@ define([
 			this.serviceListDisplayer.set("category", category);
 			this.serviceListDisplayer.set("tag", tag);
 			
+			var self = this;
 			if(typeTest.isBlank(tag)){
-				var services = this.store.getCategory(section, category);
-				this.serviceListDisplayer.set("value", services);
-				var tags = this.store.getTagsList(section, category);
-				this.serviceListDisplayer.set("tags", tags);
+				var services = self.store.getCategory(section, category);
+				self.serviceListDisplayer.set("value", services);	
+				var tags = self.store.getTagsList(section, category);
+				self.serviceListDisplayer.set("tags", tags);
 			}else{
-				var services = this.store.getTag(section, category, tag);
-				this.serviceListDisplayer.set("value", services);
-				this.serviceListDisplayer.set("tags", []);
+				var services = self.store.getTag(section, category, tag);
+				self.serviceListDisplayer.set("value", services);
+				self.serviceListDisplayer.set("tags", []);
 			}
 		},
 		
@@ -780,15 +821,15 @@ define([
 		_updateHash: function(query, updateHistory){
 			updateHistory = ((updateHistory == undefined) ? true : updateHistory);
 			var newQuery = {};
-			
 			for(var key in query){
 				if(!typeTest.isBlank(query[key])){
 					newQuery[key] = query[key];
 				}
 			}
-			
 			newQuery = ioQuery.objectToQuery(newQuery);
-			hash(newQuery, !updateHistory);
+			interval.add(function(){
+				hash(newQuery, !updateHistory);
+			});
 			this._previousHash = newQuery;
 		},
 		
