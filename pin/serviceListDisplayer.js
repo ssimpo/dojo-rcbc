@@ -367,41 +367,45 @@ define([
 		_createServiceList: function(value){
 			var itemsShowing = new Object();
 			this._createAttachPoint("serviceListNode", "ul");
-			//domConstr.empty(this.serviceListNode);
-			//if(this.serviceListWidget !== null){
-				//this.serviceListWidget.clear();
-			//}
 			
 			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(service){
-					var li = null;
-					if(typeTest.isProperty(this._cache, service.id)){
-						li = this._cache[service.id];
-					}else{
-						li = domConstr.create("li", {});
-						this._cache[service.id] = li;
-						var title = this._getTitle(service.data);
-					
-						domConstr.create("a", {
-							"innerHTML": title,
-							"href": service.data.href + "&section=" + this.section
-						}, li);
+					if(!typeTest.isProperty(this._cache, service.id)){
+						this._createItem(service);
 					}
 					
-					if(li !== null){
-						itemsShowing[service.id] = true;
-						this._itemsShowing[service.id] = true;
-						
-						domConstr.place(li, this.serviceListNode);
-						li.className = li.className;
-					}	
+					itemsShowing[service.id] = true;
+					this._placeItem(service);
 				}, this);
 				
-				for(var id in this._itemsShowing){
-					if((this._itemsShowing[id]) && (!typeTest.isProperty(itemsShowing, id))){
-						this._itemsShowing[id] = false;
-						domConstr.place(this._cache[id], this.hiddenList);
-					}
+				this._hideNonItemsListedItems(itemsShowing);
+			}
+		},
+		
+		_createItem: function(service){
+			var li = domConstr.create("li", {});
+			this._cache[service.id] = li;
+			var title = this._getTitle(service.data);
+					
+			domConstr.create("a", {
+				"innerHTML": title,
+				"href": service.data.href + "&section=" + this.section
+			}, li);
+			
+			return li;
+		},
+		
+		_placeItem: function(service){
+			var li = this._cache[service.id];
+			this._itemsShowing[service.id] = true;
+			domConstr.place(li, this.serviceListNode);
+		},
+		
+		_hideNonItemsListedItems: function(itemsShowing){
+			for(var id in this._itemsShowing){
+				if((this._itemsShowing[id]) && (!typeTest.isProperty(itemsShowing, id))){
+					this._itemsShowing[id] = false;
+					domConstr.place(this._cache[id], this.hiddenList);
 				}
 			}
 		},
