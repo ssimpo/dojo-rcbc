@@ -391,17 +391,34 @@ define([
 					if(li !== null){
 						itemsShowing[service.id] = true;
 						this._itemsShowing[service.id] = true;
-						domConstr.place(this._cache[service.id], this.serviceListNode);
+						//this._placeNode(li, this.serviceListNode);
+						
+						domConstr.place(li, this.serviceListNode);
+						li.className = li.className;
 					}	
 				}, this);
 				
 				for(var id in this._itemsShowing){
 					if((this._itemsShowing[id]) && (!typeTest.isProperty(itemsShowing, id))){
 						this._itemsShowing[id] = false;
+						//this._placeNode(this._cache[id], this.hiddenList);
 						domConstr.place(this._cache[id], this.hiddenList);
 					}
 				}
 			}
+		},
+		
+		_placeNode: function(node, container, position){
+			position = ((position === undefined) ? "last" : position);
+			
+			domConstr.place(node, container, position);
+			
+			try{
+				node.parentNode.style.cssText += "";
+				node.parentNode.style.zoom = 1;
+				node.style.cssText += "";
+				node.style.zoom = 1;
+			}catch(e){}
 		},
 		
 		_getTitle: function(value){
