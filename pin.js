@@ -81,6 +81,8 @@ define([
 		"shortlistCounterNode": {},
 		"headTitleNode": null,
 		
+		"_currentDeferred": null,
+		
 		"_blankHashValue": {
 			"id": "",
 			"section": "",
@@ -512,8 +514,6 @@ define([
 			this._setNodeStyle(nodeName, "visibility", visibility);
 		},
 		
-		"_currentDeferred": null,
-		
  		_hashChangeNewCategory: function(query){
 			this._setPageTitleAttr("Loading...");
 			this._setVisibility("serviceListDisplayer", "hidden");
@@ -525,7 +525,7 @@ define([
 				this._currentDeferred.cancel();
 			}
 			
-			this._currentDeferred = interval.add(lang.hitch(this, function(){
+			this._currentDeferred = interval.priorityAdd(lang.hitch(this, function(){
 				if(!typeTest.isEqual(query.category, this.get("category"))){
 					this.set("category", query.category);
 				}
