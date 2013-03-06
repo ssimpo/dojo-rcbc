@@ -2,7 +2,7 @@ var profile = (function(){
 	var testResourceRe = /^rcbc\/tests\//;
 	var copyOnly = function(filename, mid){
 		var list = {};
-		return (mid in list) || /\.(png|jpg|jpeg|gif|tiff)$/.test(filename);
+		return (mid in list) || /\.(png|jpg|jpeg|gif|tiff|css|less)$/.test(filename);
 	};
 	
 	var excludes = [

@@ -31,7 +31,7 @@ define([
 	"simpo/typeTest",
 	"simpo/interval",
 	
-	"rcbc/pin/ContentPane",
+	"rcbc/pin/contentPane",
 	"dijit/form/Button",
 	"./pin/shortlist",
 	"./pin/sectionMenu",
