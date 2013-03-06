@@ -52,20 +52,6 @@ define([
 		},
 		
 		_init: function(){
-			var self = this;
-			var loadDone = false;
-			
-			on(this.mapNode, "idle", function(){
-				if(!loadDone){
-					require(["dojo/query"], function($){
-						$(".gmnoprint").forEach(function(area){
-							console.log("HELLO-3");
-							console.log(area);
-						}, self);
-					});
-					loadDone = true;
-				}
-			});
 			this._initTopicSubscriptions();
 		},
 		
@@ -130,7 +116,6 @@ define([
 		},
 		
 		_addVenues: function(venues){
-			console.log(venues);
 			array.forEach(venues, function(venue){
 				if(!typeTest.isProperty(this._venueIds, venue.venueId)){
 					var venueWidget = new venueDisplayer({
@@ -159,14 +144,16 @@ define([
 				
 				if(!typeTest.isBlank(data)){
 					var postcode = this._getPostcodeFromVenueData(data);
-					console.log(2, postcode);
-					//this.mapNode.centre(postcode);
 				
 					if(!typeTest.isBlank(postcode)){
 						this.mapNode.plot(postcode, lang.hitch(this, function(marker){
 							this._venueIds[venueId].mapMarker = marker;
 							marker.setIcon("/images/PINsml.png");
 							this._showMap();
+							this.mapNode.centre(
+								marker.position.ib,
+								marker.position.jb
+							);
 						}));
 					}
 				}else{
