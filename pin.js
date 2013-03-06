@@ -112,6 +112,7 @@ define([
 					"readyStubs": lang.hitch(this, this._databaseReadyStubs)
 				});*/
 				
+				this._initIntervalPeriod();
 				this.store = staticStore;
 				if(!staticStoreReadyStubs){
 					staticStore.readyStubs = lang.hitch(this, this._databaseReadyStubs);
@@ -131,6 +132,10 @@ define([
 			}catch(e){
 				console.warn("pin.couldNotInit", e);
 			}
+		},
+		
+		_initIntervalPeriod: function(){
+			interval.set("period", 75);
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -741,12 +746,19 @@ define([
 			this._doSearchId = id;
 			
 			if(search !== ""){
+				this._setPageTitleAttr("Loading...");
+				this._setVisibility("serviceListDisplayer", "hidden");
+				this.sectionMenu.clear();
+				this.shortlist.clear();
+				
 				var self = this;
-				setTimeout(function(){
+				interval.priorityAdd(function(){
 					if(id === self._doSearchId){
 						callback(self.store.searchServices(search, section));
 					}
-				}, 100);
+					
+					self._setVisibility("serviceListDisplayer", "visible");
+				});
 			}else{
 				callback([], section);
 			}
@@ -818,6 +830,7 @@ define([
 			return 0
 		},
 		
+		//"_updateHashDeferred": null,
 		_updateHash: function(query, updateHistory){
 			updateHistory = ((updateHistory == undefined) ? true : updateHistory);
 			var newQuery = {};
@@ -827,9 +840,13 @@ define([
 				}
 			}
 			newQuery = ioQuery.objectToQuery(newQuery);
-			interval.add(function(){
+			//if(this._updateHashDeferred !== null){
+				//this._updateHashDeferred.cancel();
+			//}
+			//interval.add(function(){
 				hash(newQuery, !updateHistory);
-			});
+				//this._updateHashDeferred = null;
+			//});
 			this._previousHash = newQuery;
 		},
 		
