@@ -31,7 +31,7 @@ define([
 		//		The loaded template string containing the HTML formatted template for this widget.
 		"templateString": template,
 		
-		"type": "Website",
+		"type": "Twitter",
 		"details": "",
 		"description": "",
 		"descriptionNode": null,
