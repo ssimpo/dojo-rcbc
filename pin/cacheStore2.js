@@ -441,6 +441,7 @@ define([
 				item.isStub = isStub;
 				item.data.isStub = isStub;
 				this.servicesStore.put(item);
+				topic.publish("/rcbc/pin/updateService", item.id, item);
 				this._checkForServiceVenues(service);
 			}catch(e){
 				console.info("Failed to update service", e);
