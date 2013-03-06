@@ -302,7 +302,12 @@ define([
 		},
 		
 		_getServiceHref: function(itemData){
-			return itemData.data.href + "&section=" + this.section;
+			var hash = ioQuery.objectToQuery({
+				"id": itemData.data.id,
+				"section": this.section
+			});
+			
+			return location.pathname+location.search+"#"+hash;
 		},
 		
 		_getTagHref: function(tag){
