@@ -38,6 +38,7 @@ define([
 		"settingsStore": null,
 		
 		"readyStubs": function(){},
+		"ready": function(){},
 		
 		"_cache": null,
 		"_throttle": 50,
@@ -61,8 +62,12 @@ define([
 		_initStores: function(){
 			this._deleteStore("");
 			this._deleteStore("type");
+			this.servicesStore = this._getStore(
+				"services", lang.hitch(this, function(data){
+					this.ready(data);
+				})
+			);
 			this.venuesStore = this._getStore("venues");
-			this.servicesStore = this._getStore("services");
 			this.eventsStore = this._getStore("events");
 			this.activitiesStore = this._getStore("activities");
 			this.settingsStore = this._getStore("settings");
