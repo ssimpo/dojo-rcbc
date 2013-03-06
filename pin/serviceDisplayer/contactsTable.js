@@ -139,7 +139,7 @@ define([
 							callback();
 						}
 					}catch(e){
-						console.info("Could not run require callback.");
+						console.info("Could not run require callback for: ", dojoId);
 					}
 				}));
 			}
