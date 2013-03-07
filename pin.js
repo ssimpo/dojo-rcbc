@@ -135,7 +135,7 @@ define([
 		},
 		
 		_initIntervalPeriod: function(){
-			interval.set("period", 75);
+			//interval.set("period", 75);
 		},
 		
 		_initTopicSubscriptions: function(){
@@ -781,7 +781,7 @@ define([
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
-					this.store.updateService(id);
+					this.store.priorityUpdateService(id);
 				}
 			}else{
 				this.store.updateService(id);
