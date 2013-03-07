@@ -320,7 +320,7 @@ define([
 			
 			try{
 				array.forEach(ids, function(id){
-					var service = this.application.store.get(id);
+					var service = this.application.store.getService(id);
 					if(!typeTest.isBlank(service)){
 						services.push(service);
 					}
