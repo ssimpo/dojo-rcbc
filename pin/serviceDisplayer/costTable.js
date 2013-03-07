@@ -83,7 +83,7 @@ define([
 		
 		_createRow: function(row){
 			domConstr.place(
-				this._createTr([row.type, this._getCostDetails(row)]),
+				this._createTr([row.type+":", this._getCostDetails(row)]),
 				this.tableNode
 			)
 		},
