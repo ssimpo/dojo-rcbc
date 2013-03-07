@@ -73,6 +73,9 @@ define([
 				this._writeLastRow();
 			}else{
 				this._hideTable();
+				if(!typeTest.isBlank(this.data.accessDetails)){
+					this._showDetailsNode();
+				}
 			}
 		},
 		
