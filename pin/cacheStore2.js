@@ -42,7 +42,7 @@ define([
 		
 		"_cache": null,
 		"_throttle": 50,
-		"_serverThrottle": 100,
+		"_serverThrottle": 50,
 		"_serviceIdsToUpdate": [],
 		"_venueIdsToUpdate": [],
 		"_activityIdsToUpdate": [],
@@ -354,6 +354,10 @@ define([
 				ids.push(this._serviceIdsToUpdate.shift());
 			}
 			
+			this._callServicesUpdate2(ids);
+		},
+		
+		_callServicesUpdate2: function(ids){
 			if(!typeTest.isBlank(ids)){
 				xhrManager.add({
 					"url": "/pin.nsf/getService2?openagent&stub=false&id="+ids.join(",")
@@ -549,7 +553,8 @@ define([
 				"compress": ((has("ie")) ? false : this.compress),
 				"encrypt": this.encrypt,
 				"id": this.id + type,
-				"ready": ready
+				"ready": ready,
+				"slicer": 50
 			});
 		},
 		
@@ -870,28 +875,6 @@ define([
 				})
 			);
 			
-			
-			
-			/*var services = this.getCategory(section, category);
-			var tags = {};
-			
-			array.forEach(services, function(service){
-				array.forEach(service.data.tags, function(tag){
-					if(!typeTest.isBlank(tag)){
-						var cTags = tag.split(";");
-						array.forEach(cTags, function(cTag){
-							if(!typeTest.isBlank(cTag)){
-								if(typeTest.isProperty(tags, cTag)){
-									tags[cTag]++;
-								}else{
-									tags[cTag] = 1; 
-								}
-							}
-						},this);
-					}
-				}, this);
-			}, this);*/
-			
 			return query;
 		},
 		
@@ -906,6 +889,26 @@ define([
 			}else if(typeTest.isObject(service)){
 				if(typeTest.isProperty(service, "id")){
 					this._serviceIdsToUpdate.push(service.id);
+					return true;
+				}else{
+					return false;
+				}
+			}
+				
+			return false;
+		},
+		
+		priorityUpdateService: function(service){
+			if(typeTest.isString(service)){
+				if(service.length == 32){
+					this._callServicesUpdate2([service]);
+					return true;
+				}else{
+					return false;
+				}
+			}else if(typeTest.isObject(service)){
+				if(typeTest.isProperty(service, "id")){
+					this._callServicesUpdate2([service.id]);
 					return true;
 				}else{
 					return false;

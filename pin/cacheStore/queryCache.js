@@ -26,6 +26,7 @@ define([
 				"sessionOnly": true,
 				"compress": false,
 				"encrypt": false,
+				"slicer": 50,
 				"id": "rcbcPINqueryCache",
 				"ready": lang.hitch(this, function(){
 					this.ready = true;
