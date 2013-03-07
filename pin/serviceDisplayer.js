@@ -339,7 +339,8 @@ define([
 		},
 		
 		_createAccessTable: function(value){
-			if(!typeTest.isBlank(value.days)){
+			console.log(1, value, this._hasAccessDetails(value));
+			if(this._hasAccessDetails(value)){
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
 					"constructor": accessTable,
@@ -353,7 +354,7 @@ define([
 		},
 		
 		_createActivityTimesTable: function(value){
-			if(this._hasAccessDetails()){
+			if(!typeTest.isBlank(value.days)){
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessTableWidget",
 					"constructor": activityTimesTable,
@@ -505,42 +506,50 @@ define([
 			return args;
 		},
 		
-		_hasAccessDetails: function(){
+		_hasAccessDetails: function(value){
 			for(var i = 0; i < this._accessTesters.length; i++){
 				if(this._hasAccessCheck(
 					this._accessTesters[i][0],
-					this._accessTesters[i][1]
+					this._accessTesters[i][1],
+					value
 				)){
 					return true;
 				}
 			}
 			
-			if(this._hasAccessCheckAge()){
+			if(this._hasAccessCheckAge(value)){
 				return true;
 			}
 			
-			if(typeTest.isBlank(this.value.accessDetails)){
+			if(!typeTest.isBlank(value.accessDetails)){
 				return true;
 			}
+			
+			if(!typeTest.isBlank(value.servicePeriodsOld)){
+				return true;
+			}
+			
 			return false;
 		},
 		
-		_hasAccessCheck: function(enableField, contentField){
-			if(typeTest.isTrue(this.value[enableField])){
-				if(typeTest.isBlank(this.value[contentField])){
-					return true;
+		_hasAccessCheck: function(enableField, contentField, value){
+			if(typeTest.isProperty(value, enableField) && typeTest.isProperty(value, contentField)){
+				if(typeTest.isTrue(value[enableField])){
+					if(!typeTest.isBlank(value[contentField])){
+						return true;
+					}
 				}
 			}
 			
 			return false;
 		},
 		
-		_hasAccessCheckAge: function(){
-			if(typeTest.isTrue(this.value.ageTarget)){
-				if((typeTest.isBlank(this.value.age1)) || (typeTest.isBlank(this.value.age2))){
+		_hasAccessCheckAge: function(value){
+			if(typeTest.isTrue(value.ageTarget)){
+				if((!typeTest.isBlank(value.age1)) || (!typeTest.isBlank(value.age2))){
 					return true;
 				}
-				if((typeTest.isBlank(this.value.age1Months)) || (typeTest.isBlank(this.value.age2Months))){
+				if((!typeTest.isBlank(value.age1Months)) || (!typeTest.isBlank(value.age2Months))){
 					return true;
 				}
 			}

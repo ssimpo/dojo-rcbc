@@ -83,6 +83,7 @@ define([
 			this._addDropIn();
 			this._addAge();
 			this._addOther();
+			this._addOldServiceHours();
 		},
 		
 		_addDetails: function(){
@@ -92,6 +93,15 @@ define([
 					"innerHTML",
 					this.data.accessDetails
 				)
+			}
+		},
+		
+		_addOldServiceHours: function(){
+			if(!typeTest.isBlank(this.data.servicePeriodsOld)){
+				this._addRow(
+					strings.servicePeriodsOld + ":",
+					this.data.servicePeriodsOld
+				);
 			}
 		},
 		

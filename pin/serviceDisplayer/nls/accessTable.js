@@ -2,6 +2,7 @@ define({
 	root: ({
 		"referrelOnly": "By referral only",
 		"appointmentOnly": "By appointment only",
+		"servicePeriodsOld": "Service period",
 		"dropinDetails": "Dropin details",
 		"ageTarget": "Age target",
 		"otherRestrictions": "Other restrictions",
