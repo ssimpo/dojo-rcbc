@@ -124,13 +124,18 @@ define([
 		_processContact: function(contact, tr, callback){
 			var type = lang.trim(contact.type);
 			
+			var dojoId = "";
 			require.on("error", function(e){
-				console.info("Load failure in contact table.");
+				console.info(
+					"Load failure in contact table.",
+					e //, dojoId, require.toUrl(dojoId)
+				);
 				callback();
 			});
 			
 			if(type !== ""){
-				var dojoId = "./contactsTable/"+this._camelize(type);
+				dojoId = "./contactsTable/"+this._camelize(type);
+				//console.log(dojoId, contact);
 				require([dojoId], lang.hitch(this, function(construct){
 					try{
 						if(!typeTest.isBlank(tr.parentNode)){
