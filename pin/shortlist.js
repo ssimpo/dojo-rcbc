@@ -58,7 +58,8 @@ define([
 			"costs": true,
 			"venues": false,
 			"serviceHours": false,
-			"accessDetails": true
+			"accessDetails": true,
+			"map": false
 		},
 		
 		postCreate: function(){
