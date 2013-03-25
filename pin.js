@@ -523,6 +523,7 @@ define([
 			this._setPageTitleAttr("Loading...");
 			this._setVisibility("serviceListDisplayer", "hidden");
 			this.sectionMenu.clear();
+			this.serviceListDisplayer.clearMessage();
 			this.searchForm.clear();
 			this.shortlist.clear();
 			
