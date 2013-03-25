@@ -25,6 +25,8 @@ define([
 	"./serviceDisplayer/accessTable",
 	"./serviceDisplayer/serviceHoursTable",
 	"./serviceDisplayer/activityTimesTable",
+	"./serviceDisplayer/kiteMarks",
+	"./serviceDisplayer/downloads",
 	"simpo/maps/google/canvas"
 ], function(
 	declare,
@@ -33,7 +35,7 @@ define([
 	lang, domConstr, domAttr, array, Button, topic, typeTest,
 	
 	contactsTable, venuesDisplayer, costTable, accessTable, serviceHoursTable,
-	activityTimesTable, googleMap
+	activityTimesTable, kiteMarks, Downloads, googleMap
 ){
 	"use strict";
 	
@@ -55,6 +57,8 @@ define([
 		"accessWidget": null,
 		"serviceHoursWidget": null,
 		"venuesNode": null,
+		"kiteMarksNode": null,
+		"downloadsNode": null,
 		"mapNode": null,
 		"accessTableWidget": null,
 		
@@ -72,6 +76,8 @@ define([
 			"titleLink": false,
 			"description": true,
 			"keyFeatures": true,
+			"kiteMarks": true,
+			"downloads": true,
 			"contacts": true,
 			"costs": true,
 			"venues": true,
@@ -121,6 +127,7 @@ define([
 			if(typeTest.isBlank(this.value)){
 				this._hideWidget();
 			}else{
+				this._clear();
 				this._showWidget();
 				this._createContent(value);
 			}
@@ -134,6 +141,8 @@ define([
 			this._ifHasClear("titleNode", !this.show.title);
 			this._ifHasClear("descriptionNode");
 			this._ifHasClear("keyFeaturesNode");
+			this._ifHasClear("kiteMarksNode");
+			this._ifHasClear("downloadsNode");
 			this._ifHasClear("accessTableWidget");
 			this._ifHasClear("contactsWidget");
 			this._ifHasClear("costsWidget");
@@ -193,6 +202,8 @@ define([
 			
 			this._createSection(this.show.description, "_createDescription", value);
 			this._createSection(this.show.keyFeatures, "_createKeyFeatures", value);
+			this._createSection(this.show.kiteMarks, "_createKiteMarks", value);
+			this._createSection(this.show.kiteMarks, "_createDownloads", value);
 			this._createSection(this.show.contacts, "_createContactsTable", value);
 			this._createSection(this.show.activityTimes, "_createActivityTimesTable", value);
 			this._createSection(this.show.venues, "_createVenues", value);
@@ -263,6 +274,17 @@ define([
 				this.descriptionNode, description
 			);
 			
+			var accreditation = this._getField(value, "accreditation");
+			if(!typeTest.isBlank(accreditation)){
+				if(typeTest.isArray(accreditation)){
+					accreditation = accreditation.join(", ");
+				}
+				
+				domConstr.create("p", {
+					"innerHTML": "<b>Accreditation:</b> " + accreditation + "."
+				}, this.descriptionNode);
+			}
+			
 			return this.descriptionNode;
 		},
 		
@@ -291,6 +313,24 @@ define([
 			}
 			
 			return this.keyFeaturesNode;
+		},
+		
+		_createKiteMarks: function(value){
+			if(typeTest.isProperty(value, "kiteMarks")){
+				if(!typeTest.isBlank(value.kiteMarks)){
+					this._createAttachPoint("kiteMarksNode", kiteMarks);
+					this.kiteMarksNode.set("data", value.kiteMarks);
+				}
+			}
+		},
+		
+		_createDownloads: function(value){
+			if(typeTest.isProperty(value, "downloads")){
+				if(!typeTest.isBlank(value.downloads)){
+					this._createAttachPoint("downloadsNode", Downloads);
+					this.downloadsNode.set("data", value.downloads);
+				}
+			}
 		},
 		
 		_createFeaturesOl: function(value){
@@ -323,7 +363,8 @@ define([
 			this._createAttachPoint("venuesNode", venuesDisplayer, {
 				"application": this.application,
 				"titleLevel": this.titleLevel+1,
-				"value": value.venues
+				"value": value.venues,
+				"show": this.show
 			});
 		},
 		
@@ -339,7 +380,6 @@ define([
 		},
 		
 		_createAccessTable: function(value){
-			console.log(1, value, this._hasAccessDetails(value));
 			if(this._hasAccessDetails(value)){
 				this._getTableWidgetDom(value, {
 					"propertyNode": "accessWidget",
@@ -449,7 +489,11 @@ define([
 				value = data[fieldName];
 			}
 			
-			return lang.trim(value);
+			if(typeTest.isString(value)){
+				return lang.trim(value);
+			}
+			
+			return value;
 		},
 		
 		_getTableWidgetDom: function(value, args){
