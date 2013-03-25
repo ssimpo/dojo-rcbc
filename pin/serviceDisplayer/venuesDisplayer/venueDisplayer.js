@@ -38,7 +38,6 @@ define([
 		"data": {},
 		"titleLevel": 2,
 		
-		
 		postCreate: function(){
 			this._init();
 		},
