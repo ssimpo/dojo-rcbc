@@ -46,6 +46,10 @@ define([
 		"value": null,
 		"_venueIds": {},
 		
+		"show": {
+			"map": true
+		},
+		
 		
 		postCreate: function(){
 			this._init();
@@ -74,28 +78,32 @@ define([
 					this.value = new Array();
 				}
 			}catch(e){
-				console.info("Could not set the venues displayer value.", e);
+				console.info("Could not set the venues displayer value.", e, value);
 			}
 		},
 		
 		_parseVenuesArray: function(venues){
 			var newVenues = new Array();
 			
-			if(typeTest.isArray(venues)){
-				array.forEach(venues, function(venue, n){
-					if(typeTest.isString(venue)){
-						newVenues.push({
-							"description": "",
-							"venueId": venue
-						});
-					}else if(this._isValueVenueObject(venue)){
-						newVenues.push(venue);
+			try{
+				if(typeTest.isArray(venues)){
+					array.forEach(venues, function(venue, n){
+						if(typeTest.isString(venue)){
+							newVenues.push({
+								"description": "",
+								"venueId": venue
+							});
+						}else if(this._isValueVenueObject(venue)){
+							newVenues.push(venue);
+						}
+					}, this);
+				}else if(typeTest.isObject(venues)){
+					if(this._isValueVenueObject(venues)){
+						newVenues.push(venues);
 					}
-				}, this);
-			}else if(typeTest.isObject(venues)){
-				if(this._isValueVenueObject(venues)){
-					newVenues.push(venues);
 				}
+			}catch(e){
+				console.info("Could not parse venues array: ", venues);
 			}
 			
 			return newVenues;
@@ -110,29 +118,50 @@ define([
 		},
 		
 		clear: function(){
-			this._venueIds = new Object();
-			domConstr.empty(this.venuesNode);
-			this.mapNode.clear();
+			try{
+				this._venueIds = new Object();
+				domConstr.empty(this.venuesNode);
+				if(this.show.map){
+					this.mapNode.clear();
+				}
+			}catch(e){
+				console.info("Could not clear the map.");
+			}
 		},
 		
 		_addVenues: function(venues){
 			array.forEach(venues, function(venue){
 				if(!typeTest.isProperty(this._venueIds, venue.venueId)){
-					var venueWidget = new venueDisplayer({
-						"application": this.application,
-						"value": venue.venueId,
-						"description": venue.description,
-						"titleLevel": this.titleLevel
-					});
-					domConstr.place(
-						venueWidget.domNode,
-						this.venuesNode
-					);
-					this._venueIds[venue.venueId.toLowerCase()] = {
-						"widget": venueWidget,
-						"mapMarker": null
-					};
-					this._plotOnMap(venue.venueId);
+					try{
+						var venueWidget = new venueDisplayer({
+							"application": this.application,
+							"value": venue.venueId,
+							"description": venue.description,
+							"titleLevel": this.titleLevel
+						});
+						domConstr.place(
+							venueWidget.domNode,
+							this.venuesNode
+						);
+						domConstr.place(
+							this.venuesNode,
+							this.domNode
+						);
+					}catch(e){
+						console.info("Could not place venue widget.");
+					}
+					
+					if(this.show.map){
+						try{
+							this._venueIds[venue.venueId.toLowerCase()] = {
+								"widget": venueWidget,
+								"mapMarker": null
+							};
+							this._plotOnMap(venue.venueId);
+						}catch(e){
+							console.info("Could not plot venue: ", venue);
+						}
+					}
 				}
 			}, this);
 		},
@@ -144,15 +173,15 @@ define([
 				
 				if(!typeTest.isBlank(data)){
 					var postcode = this._getPostcodeFromVenueData(data);
-				
+					
 					if(!typeTest.isBlank(postcode)){
 						this.mapNode.plot(postcode, lang.hitch(this, function(marker){
 							this._venueIds[venueId].mapMarker = marker;
 							marker.setIcon("/images/PINsml.png");
 							this._showMap();
 							this.mapNode.centre(
-								marker.position.ib,
-								marker.position.jb
+								marker.position.lat(),
+								marker.position.lng()
 							);
 						}));
 					}
@@ -175,7 +204,11 @@ define([
 		},
 		
 		_hideMap: function(){
-			this._hideNode(this.mapNode);
+			try{
+				this._hideNode(this.mapNode);
+			}catch(e){
+				console.info("Could not hide the map");
+			}
 		},
 		
 		_hideNode: function(node){
