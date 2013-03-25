@@ -41,12 +41,13 @@ define([
 		"ready": function(){},
 		
 		"_cache": null,
-		"_throttle": 50,
-		"_serverThrottle": 50,
+		"_throttle": 100,
+		"_serverThrottle": 100,
 		"_serviceIdsToUpdate": [],
 		"_venueIdsToUpdate": [],
 		"_activityIdsToUpdate": [],
 		"_eventIdsToUpdate": [],
+		"_servicesReady": 0,
 		
 		constructor: function(){
 			this._init();
@@ -62,9 +63,16 @@ define([
 		_initStores: function(){
 			this._deleteStore("");
 			this._deleteStore("type");
+			
 			this.servicesStore = this._getStore(
 				"services", lang.hitch(this, function(data){
+					console.log("READY", data.size);
 					this.ready(data);
+					this._servicesReady++;
+					if(this._servicesReady >= 2){
+						this._servicesReady = 0;
+						this._removeOldServices(data);
+					}
 				})
 			);
 			this.venuesStore = this._getStore("venues");
@@ -382,7 +390,11 @@ define([
 				"url": "/servicesStub.json",
 			}).then(
 				lang.hitch(this, function(data){
-					this._removeOldServices(data);
+					this._servicesReady++;
+					if(this._servicesReady >= 2){
+						this._servicesReady = 0;
+						this._removeOldServices(data);
+					}
 					this._updateServiceSuccess(
 						data,
 						lang.hitch(this, this.readyStubs)
