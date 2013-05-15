@@ -168,7 +168,7 @@ define([
 				if(!typeTest.isBlank(age)){
 					html += strings.below + " " + age;
 				}
-			}else if(typeTest.isEqual(this.data.ageTargetType, "Between")){
+			}else if(typeTest.isEqual(this.data.ageTargetType, "Range")){
 				html += strings.between + " " + this._getAgeBlock(1)+" - "+this._getAgeBlock(2);
 			}
 				
@@ -181,7 +181,7 @@ define([
 		
 		_addOther: function(){
 			var html = "";
-			if(typeTest.isTrue(this.data.genderTarget) || typeTest.isTrue(this.data.geographicRestriction)){
+			if(typeTest.isTrue(this.data.genderTarget) && !typeTest.isBlank(this.data.genderTargetType)){
 				if(typeTest.isTrue(this.data.genderTarget) && typeTest.isEqual(this.data.genderTargetType, "Male")){
 					html += strings.restrictedToMen + ".  "
 				}else if(typeTest.isTrue(this.data.genderTarget) && typeTest.isEqual(this.data.genderTargetType, "Female")){
@@ -190,7 +190,10 @@ define([
 			}
 			
 			if(typeTest.isTrue(this.data.geographicRestriction) && !typeTest.isBlank(this.data.geographicCoverage)){
-				if(Object.prototype.toString.call(this.data.geographicCoverage) === '[object Array]'){
+				if(typeTest.isString(this.data.geographicCoverage)){
+					this.data.geographicCoverage = new Array(this.data.geographicCoverage);
+				}
+				if(typeTest.isArray(this.data.geographicCoverage)){
 					html += strings.restrictedToAreas + ": " + this._combineListAsText(this.data.geographicCoverage) + ".  ";
 				}
 			}

@@ -18,10 +18,11 @@ define([
 	"simpo/interval",
 	"dojo/topic",
 	"dojo/has",
-	"dojo/sniff"
+	"dojo/sniff",
+	"dojo/store/Memory"
 ], function(
 	declare, Store, queryCache, typeTest, xhrManager, lang, iArray, array,
-	interval, topic, has, sniff
+	interval, topic, has, sniff, Memory
 ){
 	"use strict";
 	
@@ -41,7 +42,7 @@ define([
 		"ready": function(){},
 		
 		"_cache": null,
-		"_throttle": 100,
+		"_throttle": 200,
 		"_serverThrottle": 100,
 		"_serviceIdsToUpdate": [],
 		"_venueIdsToUpdate": [],
@@ -66,19 +67,22 @@ define([
 			
 			this.servicesStore = this._getStore(
 				"services", lang.hitch(this, function(data){
-					console.log("READY", data.size);
+					/*console.log("READY", data.size);
 					this.ready(data);
 					this._servicesReady++;
 					if(this._servicesReady >= 2){
 						this._servicesReady = 0;
 						this._removeOldServices(data);
-					}
+					}*/
 				})
 			);
+			this.ready({});
 			this.venuesStore = this._getStore("venues");
 			this.eventsStore = this._getStore("events");
 			this.activitiesStore = this._getStore("activities");
 			this.settingsStore = this._getStore("settings");
+			
+			
 		},
 		
 		_deleteStore: function(storeName){
@@ -391,10 +395,11 @@ define([
 			}).then(
 				lang.hitch(this, function(data){
 					this._servicesReady++;
-					if(this._servicesReady >= 2){
-						this._servicesReady = 0;
-						this._removeOldServices(data);
-					}
+					this._servicesReady = 0;
+					//if(this._servicesReady >= 2){
+						//this._servicesReady = 0;
+						//this._removeOldServices(data);
+					//}
 					this._updateServiceSuccess(
 						data,
 						lang.hitch(this, this.readyStubs)
@@ -432,7 +437,10 @@ define([
 					this._updateService,
 					this
 				).then(
-					lang.hitch(this, callback)
+					lang.hitch(this, function(){
+						var callback2 = lang.hitch(this, callback);
+						callback2();
+					})
 				);
 			}
 		},
@@ -457,8 +465,11 @@ define([
 				item.isStub = isStub;
 				item.data.isStub = isStub;
 				this.servicesStore.put(item);
-				topic.publish("/rcbc/pin/updateService", item.id, item);
-				this._checkForServiceVenues(service);
+				
+				if(!item.isStub){
+					topic.publish("/rcbc/pin/updateService", item.id, item);
+					this._checkForServiceVenues(service);
+				}
 			}catch(e){
 				console.info("Failed to update service", e);
 			}
@@ -560,8 +571,11 @@ define([
 		_getStore: function(type, ready){
 			ready = ((ready === undefined) ? function(){} : ready);
 			
+			return new Memory();
+			
 			return new Store({
-				"sessionOnly": this.sessionOnly,
+				//"sessionOnly": this.sessionOnly,
+				"sessionOnly": ((has("ie")) ? true : this.sessionOnly),
 				"compress": ((has("ie")) ? false : this.compress),
 				"encrypt": this.encrypt,
 				"id": this.id + type,
@@ -571,11 +585,9 @@ define([
 		},
 		
 		getSection: function(section){
-			var self = this;
-			
 			var query = this._cache.getCache(
 				["getSection", section], lang.hitch(this, function(){
-					var fieldName = self._getCategoryFieldName(section);
+					var fieldName = this._getCategoryFieldName(section);
 					var query = this.servicesStore.query(function(obj){
 						if(typeTest.isProperty(obj, "data")){
 							if(typeTest.isProperty(obj.data, fieldName)){
@@ -589,6 +601,7 @@ define([
 						return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 					});
 					
+					
 					return query;
 				})
 			);
@@ -600,8 +613,6 @@ define([
 		},
 		
 		searchServices: function(search, section){
-			var self = this;
-			
 			var query = this._cache.getCache(
 				["searchServices", section, search], lang.hitch(this, function(){
 					var query = null;
@@ -666,8 +677,6 @@ define([
 		},
 		
 		getCategory: function(section, category){
-			var self = this;
-			
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
 				var query = this._cache.getCache(
 					["getCategory", section, category], lang.hitch(this, function(){
@@ -696,7 +705,7 @@ define([
 					["getCategory", section, category], lang.hitch(this, function(){
 						var query = this.getSection(section);
 						query = array.filter(query, function(service){
-							return self._itemHasCategory(service, section, category);
+							return this._itemHasCategory(service, section, category);
 						}, this);
 						
 						query = query.sort(function(a, b){
@@ -824,13 +833,11 @@ define([
 		},
 		
 		getTag: function(section, category, tag){
-			var self = this;
-			
 			var query = this._cache.getCache(
 				["getTag", section, category, tag], lang.hitch(this, function(){
 					var query = this.getCategory(section, category);
 					query = array.filter(query, function(service){
-						return (self._itemHasTag(service, tag));
+						return (this._itemHasTag(service, tag));
 					}, this);
 			
 					return query.sort(function(a, b){
@@ -871,6 +878,7 @@ define([
 							if(!typeTest.isBlank(tag)){
 								var cTags = tag.split(";");
 								array.forEach(cTags, function(cTag){
+									cTag = lang.trim(cTag);
 									if(!typeTest.isBlank(cTag)){
 										if(typeTest.isProperty(tags, cTag)){
 											tags[cTag]++;

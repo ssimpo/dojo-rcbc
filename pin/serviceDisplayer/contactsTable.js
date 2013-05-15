@@ -83,24 +83,23 @@ define([
 		},
 		
 		_processContacts: function(){
-			var self = this;
 			var count = ((typeTest.isArray(this.data)) ? this.data.length : 0);
 			
-			var callback = function(){
+			var callback = lang.hitch(this, function(){
 				try{
 					count--;
 					if(count <= 0){
-						if(!self._tableIsEmpty()){
-							self._showTable();
-							self._writeLastRow();
+						if(!this._tableIsEmpty()){
+							this._showTable();
+							this._writeLastRow();
 						}else{
-							self._hideTable();
+							this._hideTable();
 						}
 					}
 				}catch(e){
 					console.info("Could not handle show/hide in contact table.");
 				}
-			};
+			});
 			
 			try{
 				domConstr.empty(this.tableNode);

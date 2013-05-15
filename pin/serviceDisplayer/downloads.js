@@ -43,7 +43,7 @@ define([
 					this._showContent();
 				}
 			}catch(e){
-				console.info("Could not set data attribute for downloads widget.", e);
+				console.info("Could not set data attribute for downloads widget.", e, data);
 			}
 		},
 		
@@ -54,11 +54,9 @@ define([
 		
 		_getLinksHtml: function(value){
 			var html = "<ul>";
-			
 			array.forEach(value, function(item){
 				html += "<li><a href=\""+item.href+"\">"+item.name+"</a></li>";
 			}, this);
-			
 			return html + "</ul>";
 		},
 		
