@@ -298,7 +298,17 @@ define([
 		},
 		
 		_getTagTitle: function(tag, tags){
-			return tag + " ("+tags[tag].toString()+")";
+			
+			try{
+				return tag + " ("+tags[tag].toString()+")";
+			}catch(e){
+				console.log(tag, tags);
+				for(var key in tags){
+					console.log("*"+key+"*", "*"+tags[key]+"*");
+				}
+				return tag + " ("+tags[tag].toString()+")";
+			}
+			
 		},
 		
 		_getServiceHref: function(itemData){
@@ -393,7 +403,7 @@ define([
 			var tagAry = new Array();
 			for(var tag in tagObj){
 				if(!typeTest.isBlank(tag)){
-					tagAry.push(tag);
+					tagAry.push(lang.trim(tag));
 				}
 			}
 			

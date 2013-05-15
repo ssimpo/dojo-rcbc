@@ -38,6 +38,7 @@ define([
 		"data": [],
 		"columnWidths": [10, 20],
 		"titleLevel": 2,
+		"colsCount": 3,
 		
 		_days: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
 		
@@ -78,15 +79,26 @@ define([
 		},
 		
 		_createTableRows: function(){
+			var descriptionLog = "";
 			var rows = {};
+			
+			array.forEach(this.data, function(row){
+				descriptionLog += row.description;
+			},this);
+			this.colsCount = ((lang.trim(descriptionLog) == "") ? 2 : 3);
+			if(this.colsCount === 2){
+				this.columnWidths[0] += this.columnWidths.pop();
+			}
+			
 			array.forEach(this.data, function(row){
 				rows = this._mixin(rows, this._createRows(row));
 			},this);
+			
 			this._placeRows(rows);
 		},
 		
 		_writeLastRow: function(){
-			domConstr.place(this._createLastTr(3), this.tableNode);
+			domConstr.place(this._createLastTr(this.colsCount), this.tableNode);
 		},
 		
 		_placeRows: function(rows){
@@ -143,6 +155,10 @@ define([
 		
 		_createRow: function(day, row){
 			var hours = this._formatHoursRange(row.hours1, row.hours2);
+			
+			if(this.colsCount === 2){
+				return this._createTr([day, hours]);
+			}
 			return this._createTr([day, hours, row.description]);
 		},
 		

@@ -36,18 +36,16 @@ define([
 		},
 		
 		_createHiddenField: function(type, fieldname, nodeName){
-			var self = this;
-			
 			var tx = new TextBox({
 				"type": "hidden",
 				"name": this.name+"["+type+"]["+fieldname+"]",
-				"_getValueAttr": function(){
-					return self.moreDetailsNode[nodeName].get("value");
-				},
-				"_setValueAttr": function(value){
-					self.moreDetailsNode[nodeName].set("value",value);
-					this.value = value;
-				}
+				"_getValueAttr": lang.hitch(this, function(){
+					return this.moreDetailsNode[nodeName].get("value");
+				}),
+				"_setValueAttr": lang.hitch(this, function(value){
+					this.moreDetailsNode[nodeName].set("value",value);
+					tx.value = value;
+				})
 			});
 			domConstr.place(tx.domNode, this.checkboxCell);
 			return tx;

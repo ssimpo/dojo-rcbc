@@ -65,18 +65,16 @@ define([
 		},
 		
 		getCategory: function(section, category){
-			var self = this;
-			
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
 				if(this.get(category.toLowerCase())){
-					var query = this.query(function(obj){
-						if(self._hasProperty(obj, "data")){
-							if(self._hasProperty(obj.data, "service")){
+					var query = this.query(lang.hitch(this, function(obj){
+						if(this._hasProperty(obj, "data")){
+							if(this._hasProperty(obj.data, "service")){
 								return (obj.data.service.toLowerCase() === category.toLowerCase());
 							}
 						}
 						return false;
-					});
+					}));
 					
 					return query.sort(function(a, b){
 						return (((a.data.title) < (b.data.title)) ? -1 : 1);
@@ -85,13 +83,13 @@ define([
 					return [];
 				}
 			}else{
-				var query = this.query(function(obj){
-					if(self._isServiceItem(obj)){
-						return self._itemHasCategory(obj, section, category);
+				var query = this.query(lang.hitch(function(obj){
+					if(this._isServiceItem(obj)){
+						return this._itemHasCategory(obj, section, category);
 					}else{
 						return false;
 					}
-				});
+				}));
 				
 				return query.sort(function(a, b){
 					return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
@@ -140,19 +138,17 @@ define([
 		},
 		
 		getTag: function(section, category, tag){
-			var self = this;
-			
-			var query = this.query(function(object){
-				if(self._isServiceItem(object)){
-					if(self._itemHasCategory(object, section, category)){
-						return (self._itemHasTag(object, tag));
+			var query = this.query(lang.hitch(this, function(object){
+				if(this._isServiceItem(object)){
+					if(this._itemHasCategory(object, section, category)){
+						return (this._itemHasTag(object, tag));
 					}else{
 						return false;
 					}
 				}else{
 					return false;
 				}
-			});
+			}));
 			
 			return query.sort(function(a, b){
 				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);

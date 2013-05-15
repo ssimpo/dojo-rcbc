@@ -48,10 +48,9 @@ define([
 					
 					if(action !== undefined){
 						if(cTimestamp < (timestamp + timeout)){
-							var self = this;
-							interval.add(function(){
-								self._setAndReturnCache(lookup, action, self);
-							});
+							interval.add(lang.hitch(this, function(){
+								this._setAndReturnCache(lookup, action, this);
+							}));
 						}
 					}
 					

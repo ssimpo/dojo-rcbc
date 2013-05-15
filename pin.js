@@ -392,8 +392,13 @@ define([
 		},
 		
 		_hashChange: function(cHash){
-			profiler.reset();
 			var query = this._getHashObj(cHash);
+			
+			if(typeTest.isProperty(window,"ga")){
+				ga('send','pageview',{
+					"page": location.pathname + location.search  + location.hash
+				});
+			}
 			
 			if(!typeTest.isBlank(query.pageId)){
 				this._hashChangeNewPageId(query);
@@ -696,16 +701,15 @@ define([
 			this.serviceListDisplayer.set("category", category);
 			this.serviceListDisplayer.set("tag", tag);
 			
-			var self = this;
 			if(typeTest.isBlank(tag)){
-				var services = self.store.getCategory(section, category);
-				self.serviceListDisplayer.set("value", services);	
-				var tags = self.store.getTagsList(section, category);
-				self.serviceListDisplayer.set("tags", tags);
+				var services = this.store.getCategory(section, category);
+				this.serviceListDisplayer.set("value", services);	
+				var tags = this.store.getTagsList(section, category);
+				this.serviceListDisplayer.set("tags", tags);
 			}else{
-				var services = self.store.getTag(section, category, tag);
-				self.serviceListDisplayer.set("value", services);
-				self.serviceListDisplayer.set("tags", []);
+				var services = this.store.getTag(section, category, tag);
+				this.serviceListDisplayer.set("value", services);
+				this.serviceListDisplayer.set("tags", []);
 			}
 		},
 		
@@ -752,14 +756,13 @@ define([
 				this.sectionMenu.clear();
 				this.shortlist.clear();
 				
-				var self = this;
-				interval.priorityAdd(function(){
-					if(id === self._doSearchId){
-						callback(self.store.searchServices(search, section));
+				interval.priorityAdd(lang.hitch(this, function(){
+					if(id === this._doSearchId){
+						callback(this.store.searchServices(search, section));
 					}
 					
-					self._setVisibility("serviceListDisplayer", "visible");
-				});
+					this._setVisibility("serviceListDisplayer", "visible");
+				}));
 			}else{
 				callback([], section);
 			}
