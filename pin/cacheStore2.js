@@ -580,7 +580,8 @@ define([
 			ready = ((ready === undefined) ? function(){} : ready);
 			
 			return new Store({
-				"sessionOnly": ((has("ie")) ? true : this.sessionOnly),
+				"sessionOnly": this.sessionOnly,
+				//"sessionOnly": ((has("ie")) ? true : this.sessionOnly),
 				"compress": ((has("ie")) ? false : this.compress),
 				"encrypt": this.encrypt,
 				"id": this.id + type,
