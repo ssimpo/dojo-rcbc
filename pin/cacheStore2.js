@@ -592,24 +592,8 @@ define([
 		
 		getSection: function(section){
 			var query = this._cache.getCache(
-				["getSection", section], lang.hitch(this, function(){
-					var fieldName = this._getCategoryFieldName(section);
-					var query = this.servicesStore.query(function(obj){
-						if(typeTest.isProperty(obj, "data")){
-							if(typeTest.isProperty(obj.data, fieldName)){
-								return !typeTest.isBlank(obj.data[fieldName])
-							}
-						}
-						return false;
-					});
-					
-					query = query.sort(function(a, b){
-						return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-					});
-					
-					
-					return query;
-				})
+				["getSection", section],
+				lang.hitch(this, this._getSection, section)
 			);
 			
 			if(!typeTest.isBlank(query)){
@@ -618,45 +602,65 @@ define([
 			return new Array();
 		},
 		
+		_getSection: function(section){
+			var fieldName = this._getCategoryFieldName(section);
+			var query = this.servicesStore.query(function(obj){
+				if(typeTest.isProperty(obj, "data")){
+					if(typeTest.isProperty(obj.data, fieldName)){
+						return !typeTest.isBlank(obj.data[fieldName])
+					}
+				}
+				return false;
+			});
+			
+			query = query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+			});
+			
+			return query;
+		},
+		
 		searchServices: function(search, section){
 			var query = this._cache.getCache(
-				["searchServices", section, search], lang.hitch(this, function(){
-					var query = null;
-					if(search.length > 2){
-						query = this._cache.getCache([
-							"searchServices",
-							section,
-							search.substring(0, search.length - 1)
-						]);
-					}
-					if(query === null){
-						if(!typeTest.isBlank(section)){
-							query = this.getSection(section);
-						}else{
-							query.servicesQuery.query({});
-						}
-					}
-					
-					var tests = this._parseSearch(search);
-					query = array.filter(query, function(service){
-						try{
-							if(typeTest.isProperty(service, "data")){
-								var searcher = JSON.stringify(service.data);
-								return this._searchTest(searcher, tests);
-							}
-						}catch(e){ }
-						
-						return false;
-					}, this);
-					
-					return query;
-				})
+				["searchServices", section, search],
+				lang.hitch(this, this._searchServices, search, section)
 			);
 			
 			if(!typeTest.isBlank(query)){
 				return query;
 			}
 			return new Array();
+		},
+		
+		_searchServices: function(search, section){
+			var query = null;
+			if(search.length > 2){
+				query = this._cache.getCache([
+					"searchServices",
+					section,
+					search.substring(0, search.length - 1)
+				]);
+			}
+			if(query === null){
+				if(!typeTest.isBlank(section)){
+					query = this.getSection(section);
+				}else{
+					query.servicesQuery.query({});
+				}
+			}
+			
+			var tests = this._parseSearch(search);
+			query = array.filter(query, function(service){
+			try{
+				if(typeTest.isProperty(service, "data")){
+					var searcher = JSON.stringify(service.data);
+					return this._searchTest(searcher, tests);
+				}
+			}catch(e){ }
+				return false;
+			}, this);
+			
+			return query;
 		},
 		
 		_parseSearch: function(search){
@@ -685,41 +689,13 @@ define([
 		getCategory: function(section, category){
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
 				var query = this._cache.getCache(
-					["getCategory", section, category], lang.hitch(this, function(){
-						if(this.servicesStore.get(category.toLowerCase())){
-							var query = this.servicesStore.query(function(obj){
-								if(typeTest.isProperty(obj, "data")){
-									if(typeTest.isProperty(obj.data, "service")){
-										return (obj.data.service.toLowerCase() === category.toLowerCase());
-									}
-								}
-								return false;
-							});
-					
-							query = query.sort(function(a, b){
-								return (((a.data.title) < (b.data.title)) ? -1 : 1);
-							});
-							
-							return query;
-						}else{
-							return [];
-						}
-					}
-				));
+					["getCategory", section, category],
+					lang.hitch(this, this._getIdCategory, section, category)
+				);
 			}else{
 				var query = this._cache.getCache(
-					["getCategory", section, category], lang.hitch(this, function(){
-						var query = this.getSection(section);
-						query = array.filter(query, function(service){
-							return this._itemHasCategory(service, section, category);
-						}, this);
-						
-						query = query.sort(function(a, b){
-							return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-						});
-						
-						return query;
-					})
+					["getCategory", section, category],
+					lang.hitch(this, this._getCategory, section, category)
 				);
 			}
 			
@@ -727,6 +703,40 @@ define([
 				return query;
 			}
 			return new Array();
+		},
+		
+		_getCategory: function(section, category){
+			var query = this.getSection(section);
+			query = array.filter(query, function(service){
+				return this._itemHasCategory(service, section, category);
+			}, this);
+			
+			query = query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+			});
+			
+			return query;
+		},
+		
+		_getIdCategory: function(section, category){
+			if(this.servicesStore.get(category.toLowerCase())){
+				var query = this.servicesStore.query(function(obj){
+					if(typeTest.isProperty(obj, "data")){
+						if(typeTest.isProperty(obj.data, "service")){
+							return (obj.data.service.toLowerCase() === category.toLowerCase());
+						}
+					}
+					return false;
+				});
+				
+				query = query.sort(function(a, b){
+					return (((a.data.title) < (b.data.title)) ? -1 : 1);
+				});
+				
+				return query;
+			}else{
+				return [];
+			}
 		},
 		
 		_isServiceItem: function(item){
@@ -764,32 +774,17 @@ define([
 		
 		getCategoryList: function(section){
 			var query = this._cache.getCache(
-				["getCategoryList", section], lang.hitch(this, function(){
-					var services = this.getSection(section);
-					var categoryList = {};
-					var fieldName = this._getCategoryFieldName(section);
-					
-					array.forEach(services, function(service){
-						var categories = this._getCategoryValue(service, fieldName);
-						
-						array.forEach(categories, function(category){
-							if(!typeTest.isBlank(category)){
-								if(!typeTest.isProperty(categoryList, category)){
-									categoryList[category] = true;
-								}
-							}
-						}, this);
-					}, this);
-					
-					return categoryList;
-				})
+				["getCategoryList", section],
+				lang.hitch(this, this._getCategoryList, section)
 			);
 			
 			return query;
-			
-			/*var services = this.servicesStore.query({});
+		},
+		
+		_getCategoryList: function(section){
+			var services = this.getSection(section);
 			var categoryList = {};
-			
+			var fieldName = this._getCategoryFieldName(section);
 			
 			array.forEach(services, function(service){
 				var categories = this._getCategoryValue(service, fieldName);
@@ -801,9 +796,9 @@ define([
 						}
 					}
 				}, this);
-			}, this);*/
+			}, this);
 			
-			//return categoryList;
+			return categoryList;
 		},
 		
 		_getCategoryValue: function(service, fieldName){
@@ -840,16 +835,8 @@ define([
 		
 		getTag: function(section, category, tag){
 			var query = this._cache.getCache(
-				["getTag", section, category, tag], lang.hitch(this, function(){
-					var query = this.getCategory(section, category);
-					query = array.filter(query, function(service){
-						return (this._itemHasTag(service, tag));
-					}, this);
-			
-					return query.sort(function(a, b){
-						return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-					});
-				})
+				["getTag", section, category, tag],
+				lang.hitch(this, this._getTag, section, category, tag)
 			);
 			
 			if(query !== null){
@@ -857,6 +844,17 @@ define([
 			}
 			
 			return new Array();
+		},
+		
+		_getTag: function(section, category, tag){
+			var query = this.getCategory(section, category);
+			query = array.filter(query, function(service){
+				return (this._itemHasTag(service, tag));
+			}, this);
+			
+			return query.sort(function(a, b){
+				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
+			});
 		},
 		
 		_itemHasTag: function(item, tag){
@@ -875,33 +873,36 @@ define([
 		
 		getTagsList: function(section, category){
 			var query = this._cache.getCache(
-				["getTagsList", section, category], lang.hitch(this, function(){
-					var services = this.getCategory(section, category);
-					var tags = {};
-					
-					array.forEach(services, function(service){
-						array.forEach(service.data.tags, function(tag){
-							if(!typeTest.isBlank(tag)){
-								var cTags = tag.split(";");
-								array.forEach(cTags, function(cTag){
-									cTag = lang.trim(cTag);
-									if(!typeTest.isBlank(cTag)){
-										if(typeTest.isProperty(tags, cTag)){
-											tags[cTag]++;
-										}else{
-											tags[cTag] = 1;
-										}
-									}
-								},this);
-							}
-						}, this);
-					}, this);
-					
-					return tags;
-				})
+				["getTagsList", section, category],
+				lang.hitch(this, this._getTagsList, section, category)
 			);
 			
 			return query;
+		},
+		
+		_getTagsList: function(section, category){
+			var services = this.getCategory(section, category);
+			var tags = {};
+			
+			array.forEach(services, function(service){
+				array.forEach(service.data.tags, function(tag){
+					if(!typeTest.isBlank(tag)){
+						var cTags = tag.split(";");
+						array.forEach(cTags, function(cTag){
+							cTag = lang.trim(cTag);
+							if(!typeTest.isBlank(cTag)){
+								if(typeTest.isProperty(tags, cTag)){
+									tags[cTag]++;
+								}else{
+									tags[cTag] = 1;
+								}
+							}
+						},this);
+					}
+				}, this);
+			}, this);
+			
+			return tags;
 		},
 		
 		updateService: function(service){
