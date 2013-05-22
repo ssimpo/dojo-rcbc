@@ -65,18 +65,18 @@ define([
 			this._deleteStore("");
 			this._deleteStore("type");
 			
-			this.servicesStore = this._getStore(
-				"services", lang.hitch(this, function(data){
-					/*console.log("READY", data.size);
+			this.servicesStore = this._getStore("services"
+				/*"services", lang.hitch(this, function(data){
+					console.log("READY", data.size);
 					this.ready(data);
 					this._servicesReady++;
 					if(this._servicesReady >= 2){
 						this._servicesReady = 0;
 						this._removeOldServices(data);
-					}*/
-				})
+					}
+				})*/
 			);
-			this.ready({});
+			//this.ready({});
 			this.venuesStore = this._getStore("venues");
 			this.eventsStore = this._getStore("events");
 			this.activitiesStore = this._getStore("activities");
@@ -320,7 +320,11 @@ define([
 			
 			if(!typeTest.isBlank(ids)){
 				xhrManager.add({
-					"url": "/pin.nsf/getVenue?openagent&id="+ids.join(",")
+					"url": "/pin.nsf/getVenue?openagent",
+					"method": "post",
+					"data": {
+						"id": ids.join(",")
+					}
 				}).then(
 					lang.hitch(this, this._updateVenueSuccess),
 					lang.hitch(this, function(e){
@@ -372,7 +376,11 @@ define([
 		_callServicesUpdate2: function(ids){
 			if(!typeTest.isBlank(ids)){
 				xhrManager.add({
-					"url": "/pin.nsf/getService2?openagent&stub=false&id="+ids.join(",")
+					"url": "/pin.nsf/getService2?openagent&stub=false",
+					"method": "post",
+					"data": {
+						"id": ids.join(",")
+					}
 				}).then(
 					lang.hitch(this, this._updateServiceSuccess),
 					lang.hitch(this, function(e){
@@ -571,10 +579,7 @@ define([
 		_getStore: function(type, ready){
 			ready = ((ready === undefined) ? function(){} : ready);
 			
-			return new Memory();
-			
 			return new Store({
-				//"sessionOnly": this.sessionOnly,
 				"sessionOnly": ((has("ie")) ? true : this.sessionOnly),
 				"compress": ((has("ie")) ? false : this.compress),
 				"encrypt": this.encrypt,
