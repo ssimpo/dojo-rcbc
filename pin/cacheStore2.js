@@ -613,11 +613,7 @@ define([
 				return false;
 			});
 			
-			query = query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
-			
-			return query;
+			return this._serviceSort(query);
 		},
 		
 		searchServices: function(search, section){
@@ -707,10 +703,15 @@ define([
 		
 		_getCategory: function(section, category){
 			var query = this.getSection(section);
+			
 			query = array.filter(query, function(service){
 				return this._itemHasCategory(service, section, category);
 			}, this);
 			
+			return this._serviceSort(query);
+		},
+		
+		_serviceSort: function(query){
 			query = query.sort(function(a, b){
 				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 			});
@@ -852,9 +853,7 @@ define([
 				return (this._itemHasTag(service, tag));
 			}, this);
 			
-			return query.sort(function(a, b){
-				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
-			});
+			return this._serviceSort(query);
 		},
 		
 		_itemHasTag: function(item, tag){
