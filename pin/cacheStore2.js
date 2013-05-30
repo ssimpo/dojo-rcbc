@@ -49,6 +49,7 @@ define([
 		"_activityIdsToUpdate": [],
 		"_eventIdsToUpdate": [],
 		"_servicesReady": 0,
+		"_servicesData": [],
 		
 		constructor: function(){
 			this._init();
@@ -65,16 +66,15 @@ define([
 			this._deleteStore("");
 			this._deleteStore("type");
 			
-			this.servicesStore = this._getStore("services"
-				/*"services", lang.hitch(this, function(data){
-					console.log("READY", data.size);
+			this.servicesStore = this._getStore(
+				"services", lang.hitch(this, function(data){
 					this.ready(data);
 					this._servicesReady++;
-					if(this._servicesReady >= 2){
-						this._servicesReady = 0;
-						this._removeOldServices(data);
-					}
-				})*/
+					//if(this._servicesReady >= 2){
+						//this._servicesReady = 0;
+						//this._removeOldServices(data);
+					//}
+				})
 			);
 			//this.ready({});
 			this.venuesStore = this._getStore("venues");
@@ -89,7 +89,7 @@ define([
 			var store = this._getStore(storeName, function(){
 				var items = store.query({});
 				array.forEach(items, function(item){
-					store.remove(item.id);
+					store.remove(item.id.toLowerCase());
 				}, this);
 			});
 		},
@@ -176,7 +176,7 @@ define([
 			try{
 				if(typeTest.isProperty(activity, "id")){
 					var item = this._convertActivityToDataItem(activity);
-					var cItem = this.getActivity(item.id);
+					var cItem = this.getActivity(item.id.toLowerCase());
 					var callUpdate = false;
 				
 					if((item.isStub) && (cItem !== null)){
@@ -184,10 +184,10 @@ define([
 					}
 				
 					if(item.isStub){
-						this._activityIdsToUpdate.push(item.id);
+						this._activityIdsToUpdate.push(item.id.toLowerCase());
 					}else if(cItem !== null){
 						if(this._needsUpdating(cItem, item)){
-							this._activityIdsToUpdate.push(item.id);
+							this._activityIdsToUpdate.push(item.id.toLowerCase());
 						}
 					}
 				
@@ -196,7 +196,7 @@ define([
 					item.data.isStub = isStub;
 				
 					this.activitesStore.put(item);
-					topic.publish("/rcbc/pin/updateActivity", item.id, item);
+					topic.publish("/rcbc/pin/updateActivity", item.id.toLowerCase(), item);
 					this._checkForServiceVenues(activity);
 				}
 			}catch(e){
@@ -205,7 +205,7 @@ define([
 		},
 		
 		_checkForServiceVenues: function(service){
-			if(typeTest.isProperty(service, "data")){
+			if(!typeTest.isProperty(service, "data")){
 				service = service.data;
 			}
 			
@@ -216,7 +216,7 @@ define([
 					}
 					if(typeTest.isString(venueId)){
 						if(venueId.length == 32){
-							var venue = this.venuesStore.get(venueId.toLowerCase());
+							var venue = this.venuesStore.get(venue.id.toLowerCase());
 							if(typeTest.isBlank(venue)){
 								this._venueIdsToUpdate.push(venueId);
 							}
@@ -230,7 +230,7 @@ define([
 			try{
 				if(typeTest.isProperty(event,"id")){
 					var item = this._convertEventToDataItem(event);
-					var cItem = this.getEvent(item.id);
+					var cItem = this.getEvent(item.id.toLowerCase());
 					var callUpdate = false;
 				
 					if((item.isStub) && (cItem !== null)){
@@ -238,10 +238,10 @@ define([
 					}
 				
 					if(item.isStub){
-						this._eventIdsToUpdate.push(item.id);
+						this._eventIdsToUpdate.push(item.id.toLowerCase());
 					}else if(cItem !== null){
 						if(this._needsUpdating(cItem, item)){
-							this._eventIdsToUpdate.push(item.id);
+							this._eventIdsToUpdate.push(item.id.toLowerCase());
 						}
 					}
 				
@@ -250,7 +250,7 @@ define([
 					item.data.isStub = isStub;
 				
 					this.eventsStore.put(item);
-					topic.publish("/rcbc/pin/updateEvent", item.id, item);
+					topic.publish("/rcbc/pin/updateEvent", item.id.toLowerCase(), item);
 					this._checkForServiceVenues(event)
 				}
 			}catch(e){
@@ -349,7 +349,7 @@ define([
 		_updateVenue: function(venue){
 			var data = this._convertVenueToDataItem(venue);
 			this.venuesStore.put(data);
-			topic.publish("/rcbc/pin/updateVenue", data.id, data);
+			topic.publish("/rcbc/pin/updateVenue", data.id.toLowerCase(), data);
 		},
 		
 		_convertVenueToDataItem: function(venue){
@@ -402,12 +402,9 @@ define([
 				"url": "/servicesStub.json",
 			}).then(
 				lang.hitch(this, function(data){
+					this._servicesData = data;
 					this._servicesReady++;
-					this._servicesReady = 0;
-					//if(this._servicesReady >= 2){
-						//this._servicesReady = 0;
-						//this._removeOldServices(data);
-					//}
+					this.readyStubs(data);
 					this._updateServiceSuccess(
 						data,
 						lang.hitch(this, this.readyStubs)
@@ -456,7 +453,7 @@ define([
 		_updateService: function(service){
 			try{
 				var item = this._convertServiceToDataItem(service);
-				var cItem = this.getService(item.id);
+				var cItem = this.getService(item.id.toLowerCase());
 				var callUpdate = false;
 				
 				if((item.isStub) && (cItem !== null)){
@@ -464,18 +461,22 @@ define([
 				}
 				
 				if(item.isStub){
-					this._serviceIdsToUpdate.push(item.id);
+					this._serviceIdsToUpdate.push(item.id.toLowerCase());
 				}else if(this._needsUpdating(cItem, item)){
-					this._serviceIdsToUpdate.push(item.id);
+					this._serviceIdsToUpdate.push(item.id.toLowerCase());
 				}
 				
 				var isStub = this._isServiceStub(item);
 				item.isStub = isStub;
 				item.data.isStub = isStub;
+				
+				if(typeTest.isProperty(item.data, "data")){
+					delete item.data["data"];
+				}
 				this.servicesStore.put(item);
 				
 				if(!item.isStub){
-					topic.publish("/rcbc/pin/updateService", item.id, item);
+					topic.publish("/rcbc/pin/updateService", item.id.toLowerCase(), item);
 					this._checkForServiceVenues(service);
 				}
 			}catch(e){
@@ -493,7 +494,7 @@ define([
 			var query = this.servicesStore.query({});
 			array.forEach(query, function(item){
 				if(!typeTest.isProperty(lookup, item.id.toLowerCase())){
-					this.servicesStore.remove(item.id);
+					this.servicesStore.remove(item.id.toLowerCase());
 				}
 			}, this);
 		},
@@ -584,34 +585,50 @@ define([
 				//"sessionOnly": ((has("ie")) ? true : this.sessionOnly),
 				"compress": ((has("ie")) ? false : this.compress),
 				"encrypt": this.encrypt,
-				"id": this.id + type,
+				"id": this.id.toLowerCase() + type,
 				"ready": ready,
 				"slicer": 50
 			});
 		},
 		
 		getSection: function(section){
-			var query = this._cache.getCache(
-				["getSection", section],
-				lang.hitch(this, this._getSection, section)
-			);
-			
-			if(!typeTest.isBlank(query)){
-				return query;
+			if(this._servicesReady >= 2){
+				return this._cache.getCache(
+					["getSection", section],
+					lang.hitch(this, this._getSection, section)
+				);
+			}else{
+				return this._getSection(section);
 			}
-			return new Array();
 		},
 		
 		_getSection: function(section){
 			var fieldName = this._getCategoryFieldName(section);
-			var query = this.servicesStore.query(function(obj){
-				if(typeTest.isProperty(obj, "data")){
+			var query =  new Array();
+			
+			if(this._servicesReady >= 2){
+				query = this.servicesStore.query(function(obj){
+					if(!typeTest.isProperty(obj, "data")){
+						obj.data = obj;
+					}
 					if(typeTest.isProperty(obj.data, fieldName)){
 						return !typeTest.isBlank(obj.data[fieldName])
 					}
-				}
-				return false;
-			});
+				
+					return false;
+				});
+			}else{
+				query = array.filter(this._servicesData.services, function(obj){
+					if(!typeTest.isProperty(obj, "data")){
+						obj.data = obj;
+					}
+					if(typeTest.isProperty(obj.data, fieldName)){
+						return !typeTest.isBlank(obj.data[fieldName])
+					}
+					
+					return false;
+				});
+			}
 			
 			return this._serviceSort(query);
 		},
@@ -647,12 +664,14 @@ define([
 			
 			var tests = this._parseSearch(search);
 			query = array.filter(query, function(service){
-			try{
-				if(typeTest.isProperty(service, "data")){
+				try{
+					if(!typeTest.isProperty(service, "data")){
+						service.data = service;
+					}
+					
 					var searcher = JSON.stringify(service.data);
 					return this._searchTest(searcher, tests);
-				}
-			}catch(e){ }
+				}catch(e){ }
 				return false;
 			}, this);
 			
@@ -683,16 +702,25 @@ define([
 		},
 		
 		getCategory: function(section, category){
+			var query = new Array();
 			if(/^[A-Fa-f0-9]{32,32}$/.test(category)){
-				var query = this._cache.getCache(
-					["getCategory", section, category],
-					lang.hitch(this, this._getIdCategory, section, category)
-				);
+				if(this._servicesReady >= 2){
+					query = this._cache.getCache(
+						["getCategory", section, category],
+						lang.hitch(this, this._getIdCategory, section, category)
+					);
+				}else{
+					query = this._getIdCategory(section, category);
+				}
 			}else{
-				var query = this._cache.getCache(
-					["getCategory", section, category],
-					lang.hitch(this, this._getCategory, section, category)
-				);
+				if(this._servicesReady >= 2){
+					query = this._cache.getCache(
+						["getCategory", section, category],
+						lang.hitch(this, this._getCategory, section, category)
+					);
+				}else{
+					query = this._getCategory(section, category);
+				}
 			}
 			
 			if(!typeTest.isBlank(query)){
@@ -712,21 +740,29 @@ define([
 		},
 		
 		_serviceSort: function(query){
-			query = query.sort(function(a, b){
+			if(query.length > 0){
+				if(!typeTest.isProperty(query[0], "data")){
+					return query.sort(function(a, b){
+						return (((a.serviceName + a.orgName) < (b.serviceName + b.orgName)) ? -1 : 1);
+					});
+				}
+			}
+			
+			return query.sort(function(a, b){
 				return (((a.data.serviceName + a.data.orgName) < (b.data.serviceName + b.data.orgName)) ? -1 : 1);
 			});
-			
-			return query;
 		},
 		
 		_getIdCategory: function(section, category){
 			if(this.servicesStore.get(category.toLowerCase())){
 				var query = this.servicesStore.query(function(obj){
-					if(typeTest.isProperty(obj, "data")){
-						if(typeTest.isProperty(obj.data, "service")){
-							return (obj.data.service.toLowerCase() === category.toLowerCase());
-						}
+					if(!typeTest.isProperty(obj, "data")){
+						obj.data = obj;
 					}
+					if(typeTest.isProperty(obj.data, "service")){
+						return (obj.data.service.toLowerCase() === category.toLowerCase());
+					}
+					
 					return false;
 				});
 				
@@ -753,6 +789,9 @@ define([
 		_itemHasCategory: function(item, section, category){
 			var found = false;
 			var fieldName = this._getCategoryFieldName(section);
+			if(!typeTest.isProperty(item, "data")){
+				item.data = item;
+			}
 			
 			array.every(item.data[fieldName], function(cCat){
 				if(typeTest.isEqual(cCat, category)){
@@ -774,12 +813,14 @@ define([
 		},
 		
 		getCategoryList: function(section){
-			var query = this._cache.getCache(
-				["getCategoryList", section],
-				lang.hitch(this, this._getCategoryList, section)
-			);
-			
-			return query;
+			if(this._servicesReady >= 2){
+				return this._cache.getCache(
+					["getCategoryList", section],
+					lang.hitch(this, this._getCategoryList, section)
+				);
+			}else{
+				return this._getCategoryList(section);
+			}
 		},
 		
 		_getCategoryList: function(section){
@@ -835,16 +876,14 @@ define([
 		},
 		
 		getTag: function(section, category, tag){
-			var query = this._cache.getCache(
-				["getTag", section, category, tag],
-				lang.hitch(this, this._getTag, section, category, tag)
-			);
-			
-			if(query !== null){
-				return query;
+			if(this._servicesReady >= 2){
+				return this._cache.getCache(
+					["getTag", section, category, tag],
+					lang.hitch(this, this._getTag, section, category, tag)
+				);
+			}else{
+				return this._getTag(section, category, tag);
 			}
-			
-			return new Array();
 		},
 		
 		_getTag: function(section, category, tag){
@@ -858,6 +897,9 @@ define([
 		
 		_itemHasTag: function(item, tag){
 			var found = false;
+			if(typeTest.isProperty(service, "data")){
+				service = service.data;
+			}
 			
 			array.every(item.data.tags, function(cTag){
 				if(typeTest.isEqual(cTag, tag)){
@@ -871,12 +913,14 @@ define([
 		},
 		
 		getTagsList: function(section, category){
-			var query = this._cache.getCache(
-				["getTagsList", section, category],
-				lang.hitch(this, this._getTagsList, section, category)
-			);
-			
-			return query;
+			if(this._servicesReady >= 2){
+				return this._cache.getCache(
+					["getTagsList", section, category],
+					lang.hitch(this, this._getTagsList, section, category)
+				);
+			}else{
+				return this._getTagsList(section, category);
+			}
 		},
 		
 		_getTagsList: function(section, category){
@@ -884,6 +928,13 @@ define([
 			var tags = {};
 			
 			array.forEach(services, function(service){
+				if(!typeTest.isProperty(service, "data")){
+					service.data = service;
+				}
+				
+				if(typeTest.isString(service.data.tags)){
+					service.data.tags = service.data.tags.split(";");
+				}
 				array.forEach(service.data.tags, function(tag){
 					if(!typeTest.isBlank(tag)){
 						var cTags = tag.split(";");
@@ -914,7 +965,7 @@ define([
 				}
 			}else if(typeTest.isObject(service)){
 				if(typeTest.isProperty(service, "id")){
-					this._serviceIdsToUpdate.push(service.id);
+					this._serviceIdsToUpdate.push(service.id.toLowerCase());
 					return true;
 				}else{
 					return false;
@@ -934,7 +985,7 @@ define([
 				}
 			}else if(typeTest.isObject(service)){
 				if(typeTest.isProperty(service, "id")){
-					this._callServicesUpdate2([service.id]);
+					this._callServicesUpdate2([service.id.toLowerCase()]);
 					return true;
 				}else{
 					return false;
@@ -1114,7 +1165,7 @@ define([
 				}
 			}else if(typeTest.isObject(venue)){
 				if(typeTest.isProperty(venue, "id")){
-					this._venueIdsToUpdate.push(venue.id);
+					this._venueIdsToUpdate.push(venue.id.toLowerCase());
 					return true;
 				}else{
 					return false;
