@@ -108,7 +108,6 @@ define([
 		
 		_setValueAttr: function(value){
 			this._initNodes();
-			
 			this.value = value;
 			if(typeTest.isBlank(this.value)){
 				if(typeTest.isElement(this.serviceListNode) || typeTest.isWidget(this.serviceListNode)){
@@ -274,24 +273,21 @@ define([
 		
 		_getServiceTitle: function(item){
 			var title = "";
+			if(!typeTest.isProperty(item, "data")){
+				item.data = item;
+			}
 			
-			if(this._isServiceType(item)){
-				if(typeTest.isProperty(item, "data")){
-					
-					var serviceTitle = this._getField(item.data, "serviceName");
-					var orgTitle = this._getField(item.data, "orgName");
-					
-					if((serviceTitle === "") && (orgTitle !== "")){
-						title = orgTitle;
-					}else if((serviceTitle !== "") && (orgTitle !== "")){
-						title = serviceTitle + " ("+orgTitle+")";
-					}else if(serviceTitle !== ""){
-						title = serviceTitle;
-					}else{
-						title = this._getField(item.data, "title");
-					}
-					
-				}
+			var serviceTitle = this._getField(item.data, "serviceName");
+			var orgTitle = this._getField(item.data, "orgName");
+			
+			if((serviceTitle === "") && (orgTitle !== "")){
+				title = orgTitle;
+			}else if((serviceTitle !== "") && (orgTitle !== "")){
+				title = serviceTitle + " ("+orgTitle+")";
+			}else if(serviceTitle !== ""){
+				title = serviceTitle;
+			}else{
+				title = this._getField(item.data, "title");
 			}
 			
 			return title;
@@ -312,8 +308,12 @@ define([
 		},
 		
 		_getServiceHref: function(itemData){
+			if(!typeTest.isProperty(itemData, "data")){
+				itemData.data = itemData;
+			}
+			
 			var hash = ioQuery.objectToQuery({
-				"id": itemData.data.id,
+				"id": itemData.data.id.toLowerCase(),
 				"section": this.section
 			});
 			
@@ -417,16 +417,20 @@ define([
 			if(!typeTest.isBlank(value)){
 				array.forEach(value, function(service){
 					if(!typeTest.isProperty(this._cache, service.id)){
+						if(!typeTest.isProperty(service, "data")){
+							service.data = service;
+						}
+						
 						this._createItem({
-							"id": service.data.id,
+							"id": service.data.id.toLowerCase(),
 							"href": this._getServiceHref(service),
 							"title": this._getServiceTitle(service)
 						});
 					}
 					
-					itemsShowing[service.id] = true;
+					itemsShowing[service.data.id.toLowerCase()] = true;
 					this._placeItem(
-						service.data.id,
+						service.data.id.toLowerCase(),
 						this.serviceListNode,
 						this._serviceItemsShowing
 					);
