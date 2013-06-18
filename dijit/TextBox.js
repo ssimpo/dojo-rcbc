@@ -228,7 +228,7 @@ define([
 					(this._isEmpty(value) ||
 					this.parse(value, constraints) !== undefined);
 			}else{
-				return (new RegExp("^(?:" + this._getPatternAttr(constraints) + ")"+(this.required?"":"?")+"$")).test(value) &&
+				return (new RegExp("^(?:" + this.get("pattern") + ")"+(this.required?"":"?")+"$")).test(value) &&
 				(!this.required || !this._isEmpty(value)) &&
 				(this._isEmpty(value) || this.parse(value, constraints) !== undefined);
 			}
