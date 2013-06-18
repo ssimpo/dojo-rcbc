@@ -897,8 +897,12 @@ define([
 		
 		_itemHasTag: function(item, tag){
 			var found = false;
-			if(typeTest.isProperty(service, "data")){
-				service = service.data;
+			if(!typeTest.isProperty(item, "data")){
+				item = item.data;
+			}
+			
+			if(typeTest.isString(item.data.tags)){
+				item.data.tags = item.data.tags.split(";");
 			}
 			
 			array.every(item.data.tags, function(cTag){
