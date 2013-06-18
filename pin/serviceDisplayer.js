@@ -418,66 +418,6 @@ define([
 			return this.serviceHoursWidget.domNode;
 		},
 		
-		_getPostcodes: function(venues){
-			var postcodes = new Array();
-			
-			array.forEach(venues, function(venue){
-				var postcode = this._getPostcode(venue.venueId);
-				if(!typeTest.isBlank(postcode)){
-					postcodes.push(postcode);
-				}
-				//console.log(postcode, venue.venueId);
-			}, this);
-			
-			return postcodes;
-		},
-		
-		_createMap: function(value){
-			var postcodes = this._getPostcodes(value.venues);
-			
-			if(!typeTest.isBlank(postcodes)){
-				if(!typeTest.isWidget(this.mapNode)){
-					this._createAttachPoint(
-						"mapNode",
-						googleMap, {
-							"callback": lang.hitch(
-								this,
-								this._plotOnMap,
-								postcodes
-							)
-						}
-					);
-				}else{
-					this._plotOnMap(postcodes);
-				}
-			}else{
-				if(typeTest.isWidget(this.mapNode)){
-					domConstr.place(this.mapNode.domNode, this.hiddenNode);
-				}
-			}
-		},
-		
-		_plotOnMap: function(postcodes){
-			this.mapNode.clear();
-			domConstr.place(this.mapNode.domNode, this.domNode, "last");
-			array.forEach(postcodes, function(postcode){
-				this.mapNode.plot(postcode);
-			}, this);
-			this.mapNode.centre(postcodes[0]);
-		},
-		
-		_getPostcode: function(venueId){
-			var lookup = this.application.store.get(venueId.toLowerCase());
-			if(lookup !== undefined){
-				var postcode = lookup.data.postcode;
-				if(!typeTest.isBlank(postcode)){
-					return postcode;
-				}
-			}
-			
-			return null;
-		},
-		
 		_getField: function(data, fieldName){
 			if(fieldName == undefined){
 				fieldName = data;
