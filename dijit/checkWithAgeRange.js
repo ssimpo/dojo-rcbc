@@ -6,9 +6,10 @@ define([
 	"dojo/dom-style",
 	"dijit/form/TextBox",
 	"dijit/form/NumberSpinner",
-	"dijit/form/Select"
+	"dijit/form/Select",
+	"dojo/_base/lang"
 ], function(
-	declare, _checkWithDetails, ageRange, domConstr, domStyle, TextBox
+	declare, _checkWithDetails, ageRange, domConstr, domStyle, TextBox, lang
 ){
 	"use strict";
 	
