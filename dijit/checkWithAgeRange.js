@@ -4,7 +4,7 @@ define([
 	"./ageRange",
 	"dojo/dom-construct",
 	"dojo/dom-style",
-	"dijit/form/TextBox",
+	"./checkWithAgeRange/HiddenTextBox",
 	"dijit/form/NumberSpinner",
 	"dijit/form/Select",
 	"dojo/_base/lang"
@@ -40,14 +40,9 @@ define([
 			var tx = new TextBox({
 				"type": "hidden",
 				"name": this.name+"["+type+"]["+fieldname+"]",
-				"_getValueAttr": lang.hitch(this, function(){
-					return this.moreDetailsNode[nodeName].get("value");
-				}),
-				"_setValueAttr": lang.hitch(this, function(value){
-					this.moreDetailsNode[nodeName].set("value",value);
-					tx.value = value;
-				})
+				"moreDetailsNode": this.moreDetailsNode[nodeName]
 			});
+			
 			domConstr.place(tx.domNode, this.checkboxCell);
 			return tx;
 		}
