@@ -82,47 +82,70 @@ define([
 		},
 		
 		add: function(data, tooltipLabels, dialogRef){
-			if(!this._testBlankData(data, this.valueField)){
-				return;
+			if(this._testBlankData(data, this.valueField)){
+				this._showHidePlaceHolder();
+				
+				tooltipLabels = ((tooltipLabels === undefined) ?
+					this.tooltipLabels : tooltipLabels
+				);
+				data.id = this._getIdFromData(data);
+				
+				if(!this._updateItem(data)){
+					var item = this._addItemToWidget(
+						data, tooltipLabels, dialogRef
+					);
+					this._addItem(data, item);
+				}
+			
+				this._showHidePlaceHolder();
+				this._updateValue();
 			}
+		},
+		
+		_addItemToWidget: function(data, tooltipLabels, dialogRef){
+			var item = this._createNewItem(data, tooltipLabels, dialogRef);
+			domConstr.place(item.domNode, this.container);
+			var br = domConstr.create("br",{
+				"style":{"clear":"both"}
+			}, this.container);
+			this._addItemEvents(item, br);
 			
-			if(tooltipLabels == undefined){
-				tooltipLabels = this.tooltipLabels;
-			}
+			return item;
+		},
+		
+		_addItem: function(data, item){
+			this._data.put({ "id": data.id, "item": item });
+		},
+		
+		_updateItem: function(data){
+			var qry = this._getItemById(data.id);
 			
-			this._showHidePlaceHolder();
-			data.id = this._getIdFromData(data);
-			
-			var qry = this._data.query({"id":data.id});
 			if(qry.length > 0){
 				qry[0].item.update(data);
+				return true;
 			}else{
-				var qry = this._data.query({});
-				var item = this._createNewItem(data, tooltipLabels, dialogRef);
-				this._data.put({ "id": data.id, "item": item });
-				domConstr.place(item.domNode, this.container, "last");
-				
-				var br = domConstr.create("br",{
-					"style":{"clear":"both"}
-				}, this.container, "last");
-				
-				on(
-					item.domNode,
-					"delete",
-					lang.hitch(this, this._itemDeleted, br),
-					br
-				);
-				
-				on.emit(
-					this.domNode,
-					"additem", {
-						"bubbles": false, "cancelable": false
-					}
-				);
+				return false;
 			}
+		},
+		
+		_getItemById: function(id){
+			return this._data.query({"id":id});
+		},
+		
+		_addItemEvents: function(item, br){
+			on(
+				item.domNode,
+				"delete",
+				lang.hitch(this, this._itemDeleted, br),
+				br
+			);
 			
-			this._showHidePlaceHolder();
-			this._updateValue();
+			on.emit(
+				this.domNode,
+				"additem", {
+					"bubbles": false, "cancelable": false
+				}
+			);
 		},
 		
 		_getIdFromData: function(data){
