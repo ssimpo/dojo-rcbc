@@ -11,10 +11,11 @@ define([
 	"dojo/_base/lang",
 	"dojo/dom-style",
 	"dojo/_base/array",
-	"dijit/registry"
+	"dijit/registry",
+	"simpo/typeTest"
 ], function(
 	declare, _widget, _templated, template, listItem, memory,
-	domAttr, domConstr, on, lang, domStyle, array, registry
+	domAttr, domConstr, on, lang, domStyle, array, registry, typeTest
 ){
 	"use strict";
 	
@@ -36,11 +37,6 @@ define([
 			this._data = new memory({});
 		},
 		
-		_setDefaultTextAttr: function(value){
-			this.defaultText = value;
-			domAttr.set(this.placeHolder, "innerHTML", this.defaultText);
-		},
-		
 		_getValueAttr: function(){
 			var items = this._data.query({});
 			var values = {};
@@ -52,18 +48,19 @@ define([
 			return values;
 		},
 		
+		_setDefaultTextAttr: function(value){
+			this.defaultText = value;
+			domAttr.set(this.placeHolder, "innerHTML", this.defaultText);
+		},
+		
 		_setValueAttr: function(value){
 			for(var id in value){
 				this.add(value[id]);
 			}
 		},
 		
-		_isArray: function(obj){
-			return (Object.prototype.toString.call(obj) === '[object Array]')
-		},
-		
 		_makeArray: function(value){
-			return ((this._isArray(value)) ? value : new Array(value));
+			return ((typeTest.isArray(value)) ? value : new Array(value));
 		},
 		
 		_testBlankData: function(data, fields){
