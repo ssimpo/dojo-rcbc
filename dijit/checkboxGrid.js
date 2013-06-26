@@ -10,10 +10,11 @@ define([
 	"dijit/form/CheckBox",
 	"dojo/on",
 	"dojo/_base/lang",
-	"dijit/registry"
+	"dijit/registry",
+	"simpo/typeTest"
 ], function(
 	declare, _widget, _templated, i18n, strings, template, domConstr, array,
-	Checkbox, on, lang, registry
+	Checkbox, on, lang, registry, typeTest
 ){
 	"use strict";
 	
@@ -111,7 +112,12 @@ define([
 			if(value === false){
 				this.value = "";
 			}else{
-				var values = value.split(",");
+				if(typeTest.isString(value)){
+					var values = value.split(",");
+				}else if(typeTest.isArray(value)){
+					var values = value
+				}
+				
 				array.forEach(values, function(label){
 					if(this._hasProperty(this._checkboxes, label)){
 						this._checkboxes[label].set("checked", true);
