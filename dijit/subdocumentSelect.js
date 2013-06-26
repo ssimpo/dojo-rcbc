@@ -10,6 +10,8 @@ define([
 	"dojo/_base/lang",
 	"./dialog",
 	"dijit/registry",
+	"simpo/typeTest",
+	"dojo/_base/array",
 	
 	"dijit/form/Button",
 	"rcbc/dijit/linkedIdList",
@@ -19,7 +21,7 @@ define([
 	"dijit/form/Textarea"
 ], function(
 	declare, i18n, strings, _widget, _templated, _wTemplate, template,
-	on, lang, Dialog, registry
+	on, lang, Dialog, registry, typeTest, array
 ){
 	"use strict";
 	
@@ -66,19 +68,33 @@ define([
 		},
 		
 		_setValueAttr: function(value){
+			if(typeTest.isArray(value)){
+				array.forEach(value, this._setValueItem, this);
+			}else if(typeTest.isObject(value)){
+				if(typeTest.isProperty(value, "id")){
+					this._setValueItem(value);
+				}else{
+					for(var id in value){
+						if(!typeTest.isProperty(value[id], "id")){
+							value[id].id = id;
+						}
+						this._setValueItem(value[id]);
+					}
+				}
+			}
+		},
+		
+		_setValueItem: function(item){
 			var dia = new Dialog({
 				"title": this.popupTitle,
 				"href": this.dialogTemplate
 			});
 			
-			for(var id in value){
-				var itemObj = value[id];
-				this.itemList.add(
-					value[id],
-					dia.getTooltips(),
-					dia
-				);
-				on(dia, "hide", lang.hitch(this, this._dialogHide));
+			if(typeTest.isProperty(item, "id")){
+				if(item.id.length == 32){
+					this.itemList.add(item, dia.getTooltips(), dia);
+					on(dia, "hide", lang.hitch(this, this._dialogHide));
+				}
 			}
 		},
 		
