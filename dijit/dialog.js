@@ -8,9 +8,10 @@ define([
 	"dojo/aspect",
 	"dojo/dom-attr",
 	"dojo/dom-class",
-	"dojo/_base/array"
+	"dojo/_base/array",
+	"simpo/typeTest"
 ], function(
-	declare, Dialog, on, lang, $, registry, aspect, domAttr, domClass, array
+	declare, Dialog, on, lang, $, registry, aspect, domAttr, domClass, array, typeTest
 ){
 	"use strict";
 	
@@ -169,7 +170,7 @@ define([
 			
 			if(form != null){
 				var widget = this._getFormWidgetByName(fieldName);
-				if(widget != undefined){
+				if(widget !== undefined){
 					widget.set("value", value);
 				}
 			}

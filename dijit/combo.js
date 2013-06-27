@@ -8,13 +8,13 @@ define([
 	"dojo/_base/lang",
 	"dojo/_base/array",
 	"dojo/aspect",
-	"dojo/dom-construct"
+	"dojo/dom-construct",
+	"simpo/typeTest",
+	"dojo/when"
 ], function(
 	declare, _select, _combo, jsonRest, textbox, domAttr, lang,
-	array, aspect, domConstr
+	array, aspect, domConstr, typeTest, when
 ){
-	"use strict";
-	
 	var construct = declare(null,{
 		"autoComplete": false,
 		"fieldName": "",
@@ -111,8 +111,48 @@ define([
 		}
 	});
 	
+	var construct2 = declare(null,{
+		_setValueAttr: function(/*String*/ value, /*Boolean?*/ priorityChange, /*String?*/ displayedValue, /*item?*/ item){
+			// summary:
+			//		Hook so set('value', value) works.
+			// description:
+			//		Sets the value of the select.
+			//		Also sets the label to the corresponding value by reverse lookup.
+			if(!this._onChangeActive){ priorityChange = null; }
+
+			if(item === undefined){
+				if(value === null || value === ''){
+					value = '';
+					if(!lang.isString(displayedValue)){
+						this._setDisplayedValueAttr(displayedValue||'', priorityChange);
+						return;
+					}
+				}
+
+				var self = this;
+				this._lastQuery = value;
+				when(this.store.get(value), function(item){
+					if(typeTest.isArray(item)){
+						array.every(item, function(cItem){
+							if(typeTest.isEqual(cItem.id, value)){
+								item = cItem;
+								return false;
+							}
+							return true;
+						}, this);
+					}
+					
+					self._callbackSetLabel(item? [item] : [], undefined, undefined, priorityChange);
+				});
+			}else{
+				this.valueNode.value = value;
+				this.inherited(arguments);
+			}
+		}
+	});
+	
 	var combo = declare([_combo, construct],{});
-	var select = declare([_select, construct],{});
+	var select = declare([_select, construct, construct2],{});
 	
 	return {
 		load: function(id, require, callback){
