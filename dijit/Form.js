@@ -131,7 +131,6 @@ define([
 		},
 		
 		_getServiceDataSuccess: function(data){
-			console.log("GOT SERVICE DATA", data);
 			if(!typeTest.isBlank(data)){
 				if(typeTest.isProperty(data, "services")){
 					if(data.services.length > 0){
@@ -143,7 +142,6 @@ define([
 		},
 		
 		_getVenueDataSuccess: function(data){
-			console.log("GOT VENUE DATA", data);
 			if(typeTest.isProperty(data, "venues")){
 				if(typeTest.isArray(data.venues)){
 					if(data.venues.length > 0){
@@ -176,7 +174,7 @@ define([
 		
 		_parseServerData: function(data){
 			array.forEach(
-				["Access", "Venues", "Contacts"],
+				["Access", "Venues", "Contacts", "servicePeriods"],
 				function(parser){
 					data = this["_parseService"+parser](data);
 				},
@@ -230,6 +228,39 @@ define([
 						}
 					}, this);
 					
+				}
+			}
+			
+			return data;
+		},
+		
+		_parseServiceservicePeriods: function(data){
+			if(typeTest.isProperty(data, "servicePeriods")){
+				if(typeTest.isArray(data.servicePeriods)){
+					var servicePeriodWidget = this._getWidget("hours");
+					
+					array.forEach(data.servicePeriods, function(servicePeriod){
+						if(servicePeriodWidget !== undefined){
+							var id = "";
+							var value = servicePeriodWidget.get("value");
+							if(!typeTest.isProperty(servicePeriod, "id")){
+								id = this._createUnid();
+							}else{
+								id = servicePeriod.id.toLowerCase();
+							}
+							
+							if(!typeTest.isProperty(value, id)){
+								value[id] = servicePeriod;
+								
+								var hours1 = servicePeriod.hours1.split(":");
+								servicePeriod.from = new Date(2013,0,1,hours1[0],hours1[1],hours1[2]);
+								var hours2 = servicePeriod.hours2.split(":");
+								servicePeriod.to = new Date(2013,0,1,hours2[0],hours2[1],hours2[2]);
+
+								servicePeriodWidget.set("value", value);
+							}
+						}
+					}, this);
 				}
 			}
 			
