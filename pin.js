@@ -466,6 +466,7 @@ define([
 				
 			this._displayService(query.id.toLowerCase(), query.section);
 			this.set("serviceId", query.id.toLowerCase());
+			this.set("category", "");
 		},
 		
 		_hashChangeNewSection: function(query){
@@ -721,7 +722,11 @@ define([
 			}else{
 				this.contentPane.clear();
 				this._doSearch(search, this.section, lang.hitch(this, function(query){
-					var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
+					if(query.length < 1){
+						var info = "Found no results for search: \""+search+"\"";
+					}else{
+						var info = "Found "+query.length.toString()+" items for search: <b>\""+search+"\"</b>";
+					}
 					var title = "Search Results: \""+search+"\"";
 			
 					if(!typeTest.isBlank(cHash.section)){
@@ -741,6 +746,10 @@ define([
 					this.serviceListDisplayer.set("value", query);
 					this.serviceListDisplayer.set("tags", []);
 					this.serviceListDisplayer.addMessage("<p>"+info+".</p>");
+					
+					if(query.length < 1){
+						this._setPageTitleAttr(info);
+					}
 				}));
 			}
 		},
@@ -910,7 +919,7 @@ define([
 				var query = this._getHashObj();
 				
 				if(typeTest.isEqual(query.id, id)){
-					this._displayService(query.id)
+					this._displayService(query.id, query.section)
 				}
 			}
 		},
