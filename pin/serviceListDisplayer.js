@@ -130,7 +130,7 @@ define([
 						this.expandingDiv.domNode,
 						this.hiddenDiv
 					);
-					domConstr.empty(this.tagListNode);
+					//domConstr.empty(this.tagListNode);
 				}
 			}else{
 				domConstr.place(
@@ -298,10 +298,6 @@ define([
 			try{
 				return tag + " ("+tags[tag].toString()+")";
 			}catch(e){
-				console.log(tag, tags);
-				for(var key in tags){
-					console.log("*"+key+"*", "*"+tags[key]+"*");
-				}
 				return tag + " ("+tags[tag].toString()+")";
 			}
 			
@@ -376,13 +372,14 @@ define([
 					}
 					
 					itemsShowing[id] = true;
-					this._placeItem(id, this.tagListNode, this._tagItemsShowing);
+					var li = this._placeItem(
+						id, this.tagListNode, this._tagItemsShowing
+					);
 				}, this);
 				
 				this._hideNonItemsListedItems(
 					itemsShowing, this._tagItemsShowing, this.hiddenList
 				);
-				
 				this.expandingDiv.setHeader("Filter services:");
 			}else{
 				this.expandingDiv.setHeader("");
