@@ -9,9 +9,11 @@ define([
 	"dojo/dom-construct",
 	"simpo/typeTest",
 	"dojo/_base/lang",
-	"dojo/dom-class"
+	"dojo/dom-class",
+	"dojo/dom-attr",
+	"dojo/io-query"
 ], function(
-	declare, domConstr, typeTest, lang, domClass
+	declare, domConstr, typeTest, lang, domClass, domAttr, ioQuery
 ) {
 	"use strict";
 	
@@ -22,7 +24,7 @@ define([
 			var li = domConstr.create("li", {});
 			this._cache[itemData.id.toLowerCase()] = li;
 			
-			domConstr.create("a", {
+			li.anchor = domConstr.create("a", {
 				"innerHTML": itemData.title,
 				"href": itemData.href
 			}, li);
@@ -38,7 +40,20 @@ define([
 			id = id.toLowerCase();
 			var li = this._cache[id];
 			showingLog[id] = true;
+			
+			var href = domAttr.get(li.anchor, "href");
+			var parts = href.split("#");
+			if(parts.length > 0){
+				var hash = ioQuery.queryToObject(parts[1]);
+				hash.section = this.section;
+				domAttr.set(
+					li.anchor, "href", parts[0]+"#"+ioQuery.objectToQuery(hash)
+				);
+			}
+			
 			domConstr.place(li, parentNode);
+			
+			return li;
 		},
 		
 		_hideNonItemsListedItems: function(currentItems, allItems, hiddenList){
