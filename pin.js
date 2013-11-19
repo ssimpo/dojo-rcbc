@@ -30,6 +30,7 @@ define([
 	"dojo/string",
 	"simpo/typeTest",
 	"simpo/interval",
+	"dojo/aspect",
 	
 	"rcbc/pin/contentPane",
 	"dijit/form/Button",
@@ -42,7 +43,8 @@ define([
 ], function(
 	declare,_widget, _templated, _wTemplate, i18n, strings, loadingStrings,
 	template, store, hash, topic, lang, ioQuery, request, array, domConstr,
-	domAttr, domClass, domStyle, $, on, registry, string, typeTest, interval
+	domAttr, domClass, domStyle, $, on, registry, string, typeTest,
+	interval, aspect
 ){
 	"use strict";
 	
@@ -386,8 +388,55 @@ define([
 						}
 					}
 				}
+				
+				this._sendGoogleAnalyticsTitle(title);
 			}catch(e){
 				console.warn("pin.couldNotChangePageTitle");
+			}
+		},
+		
+		"_previousPageTitle": "",
+		"_gaInitialLoad": true,
+		"_gaLoadingTimer": new Date().getTime(),
+		_sendGoogleAnalyticsTitle: function(title){
+			try{
+				if(this._previousPageTitle !== title){
+					this._previousPageTitle = title;
+					
+					if((title !== "")&&(title.toLowerCase() !== "loading...")){
+						if(this._gaLoadingTimer !== null){
+							if(this._gaInitialLoad){
+								this._gaInitialLoad = false;
+								ga(
+									"send", "timing",
+									"content loading", title,
+									((new Date().getTime()) - this._gaLoadingTimer),
+									"Initial Load"
+								);
+							}else{
+								ga(
+									"send", "timing",
+									"content loading", title,
+									((new Date().getTime()) - this._gaLoadingTimer),
+									"Using Cache"
+								);
+							}
+							this._gaLoadingTimer = null;
+						}
+						ga("send", "pageview", {
+							"page": location.pathname + location.search  + location.hash,
+							"title": title
+						});
+					}else{
+						if((title === "")||(title.toLowerCase() === "loading...")){
+							if(this._gaLoadingTimer === null){
+								this._gaLoadingTimer = new Date().getTime();
+							}
+						}
+					}
+				}
+			}catch(e){
+				console.warn("pin.failedToSendToGoogleAnalytics");
 			}
 		},
 		
@@ -783,6 +832,8 @@ define([
 			this.sectionMenu.set("value", categories);
 		},
 		
+		"_previousPageId": "",
+		"_gaServiceLoadingTimer": null,
 		_displayService: function(id, section){
 			var service = this.store.getService(id);
 			
@@ -794,9 +845,27 @@ define([
 				this.serviceDisplayer.set("value", service.data);
 				
 				if(service.isStub){
+					this._gaServiceLoadingTimer = new Date().getTime();
+					this._previousPageId = id;
 					this.store.priorityUpdateService(id);
+				}else{
+					if(this._gaServiceLoadingTimer !== null){
+						if(this._previousPageId === id){
+							ga(
+								"send", "timing",
+								"service update", id,
+								((new Date().getTime()) - this._gaServiceLoadingTimer)
+							);
+							this._gaServiceLoadingTimer = null;
+						}else{
+							this._previousPageId = id;
+							this._gaServiceLoadingTimer = null;
+						}
+					}
 				}
 			}else{
+				this._gaServiceLoadingTimer = new Date().getTime();
+				this._previousPageId = id;
 				this.store.updateService(id);
 			}
 		},
@@ -852,6 +921,7 @@ define([
 					newQuery[key] = query[key];
 				}
 			}
+			
 			newQuery = ioQuery.objectToQuery(newQuery);
 			//if(this._updateHashDeferred !== null){
 				//this._updateHashDeferred.cancel();
@@ -860,7 +930,6 @@ define([
 				hash(newQuery, !updateHistory);
 				//this._updateHashDeferred = null;
 			//});
-			this._previousHash = newQuery;
 		},
 		
 		_parseCategory: function(service, section){
