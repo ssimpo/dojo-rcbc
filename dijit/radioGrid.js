@@ -138,6 +138,10 @@ define([
 		_randomId: function(prefix){
 			var no = Math.floor((Math.random()*1000000000000)+1);
 			return prefix + "_" + no.toString();
+		},
+		
+		validate: function(){
+			return true;
 		}
 	});
 	

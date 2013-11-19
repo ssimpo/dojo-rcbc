@@ -163,6 +163,10 @@ define([
 					this.set("value", this.itemList.get("value"));
 				}
 			}
+		},
+		
+		validate: function(){
+			return true;
 		}
 	});
 	
