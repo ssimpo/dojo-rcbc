@@ -10,7 +10,8 @@ define({
 			"couldNotChangePageTitle": "Could not change the page title",
 			"couldNotGetHash": "Could not get the hash object",
 			"couldNotSanitizeHash": "Could not sanitize the hash object",
-			"failedToAddProperty": "Failed to add property ${propertyName} to object"
+			"failedToAddProperty": "Failed to add property ${propertyName} to object",
+			"failedToSendToGoogleAnalytics": "Could not send data to Google Analytics"
 		}
 	})
 });
