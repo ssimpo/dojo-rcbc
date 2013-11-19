@@ -154,6 +154,10 @@ define([
 			}
 			
 			this.value = "";
+		},
+		
+		validate: function(){
+			return true;
 		}
 	});
 	

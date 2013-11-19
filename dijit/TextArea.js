@@ -27,6 +27,10 @@ define([
 		
 		_hasProperty: function(obj, propName){
 			return Object.prototype.hasOwnProperty.call(obj, propName);
+		},
+		
+		validate: function(){
+			return true;
 		}
 	});
 	

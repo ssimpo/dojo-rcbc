@@ -101,6 +101,10 @@ define([
 					widgets[i].reset();
 				}
 			}
+		},
+		
+		validate: function(){
+			return true;
 		}
 	});
 	
