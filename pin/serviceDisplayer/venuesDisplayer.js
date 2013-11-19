@@ -51,6 +51,8 @@ define([
 			"map": true
 		},
 		
+		"_mapShown": false,
+		
 		constructor: function(){
 			this._initTopicSubscriptions();
 		},
@@ -256,8 +258,11 @@ define([
 		
 		_hideMap: function(){
 			try{
-				if(this.mapWidget !== null){
-					this._hideNode(this.mapWidget);
+				if(this._mapShown){
+					if(this.mapWidget !== null){
+						this._hideNode(this.mapWidget);
+						this._mapShown = false;
+					}
 				}
 			}catch(e){
 				console.info("Could not hide the map");
@@ -281,13 +286,17 @@ define([
 		},
 		
 		_showMap: function(){
-			this._showNode(
-				this.mapWidget.domNode,
-				this.application.serviceDisplayer.domNode,
-				"last"
-			);
-			if(google){
-				google.maps.event.trigger(this.mapWidget.map, "resize");
+			if(!this._mapShown){
+				this._showNode(
+					this.mapWidget.domNode,
+					this.application.serviceDisplayer.domNode,
+					"last"
+				);
+				this._mapShown = true;
+				if(google){
+					window.serviceMap = this.mapWidget.map;
+					google.maps.event.trigger(window.serviceMap, "resize");
+				}
 			}
 		},
 		
